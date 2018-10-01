@@ -1,0 +1,14 @@
+{
+  "name": "meha-nodejs",
+  "version": "1.0.0",
+  "description": "Webhook meha",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Minnu Ann, Kavya Puranik, Sai Gowri",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4"
+  }
+}
