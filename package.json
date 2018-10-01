@@ -1,14 +1,20 @@
 {
   "name": "meha-nodejs",
-  "version": "1.0.0",
-  "description": "Webhook meha",
-  "main": "index.js",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "start": "node index.js"
+    "start": "node ./bin/www"
   },
-  "author": "Minnu Ann, Kavya Puranik, Sai Gowri",
   "dependencies": {
-    "body-parser": "^1.15.0",
-    "express": "^4.13.4"
+    "apiai": "^4.0.3",
+    "body-parser": "^1.18.3",
+    "circular-json": "^0.3.3",
+    "cookie-parser": "~1.4.3",
+    "debug": "^3.1.0",
+    "ejs": "~2.5.6",
+    "express": "^4.16.3",
+    "morgan": "^1.9.0",
+    "socket.io": "^2.1.1",
+    "yargs": "*"
   }
 }
