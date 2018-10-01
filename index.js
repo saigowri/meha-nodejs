@@ -1,6 +1,18 @@
-var http = require('http');
+var express = require('express');
+var app = express();
 
-http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello World!');
-}).listen(8080);
+var port = process.env.PORT || 8080
+
+app.use(express.static(__dirname));
+
+// routes
+
+app.get("/", function(req, res)
+{
+	res.render("index");
+})
+
+app.listen(port, function()
+{
+	console.log("App running")
+})
