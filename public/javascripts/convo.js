@@ -1,21 +1,5 @@
-var socket = io.connect('http://localhost:8010');
+var socket = io();
 
-		$(document).ready(function() 
-		{
-			$('.hide-chat-box').click(function()
-			{
-					$('.chat-content').slideToggle();
-					$('#minimize-icon').toggle();
-					$('#maximize-icon').toggle();
-			});
-			
-			$("#input").keypress(function(event) {
-				if (event.which == 13) {
-					event.preventDefault();
-					send();
-				}
-			});
-		});
 
 		function setInput(disp,text) 
 		{
