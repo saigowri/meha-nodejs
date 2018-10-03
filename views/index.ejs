@@ -1,25 +1,64 @@
 <!DOCTYPE html>
-<html>
+  
+<html lang="en">
   <head>
-    <meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="stylesheets/custom.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <title><%=title%></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui-theme-default.css" />
-    <%# Custom StyleSheet for Black Color (Totally Optional)%>
-    <link rel="stylesheet" href="stylesheets/black.css" />
   </head>
   <body>
-      <%# Bot Declaration%>
-    <div class="botui-app-container" id="api-bot">
-      <bot-ui></bot-ui>
+  
+    <div class="container">
+        <div class="row pt-3">
+            <div class="chat-main">
+                <div class="col-md-12 chat-header rounded-top bg-primary text-white">
+                    <div class="row">
+                        <div class="col-md-10 username pl-2">
+                            <i class="fa fa-circle text-success" aria-hidden="true"></i>
+                            <h6 class="m-0">Mental Health Assistant</h6>
+                        </div>
+                        <div class="col-md-2 options text-right pr-2">
+                            <i id="minimize-icon" class="fa fa-window-minimize hide-chat-box" aria-hidden="true"></i>
+                            <i id="maximize-icon" style="display: none;" class="fa fa-window-maximize hide-chat-box" aria-hidden="true"></i>
+                          </div>
+                    </div>
+                </div>
+                <div class="chat-content">
+                    <div id="chat-scroll" class="col-md-12 chats border">
+                        <ul id="response" class="p-0">
+                        </ul>
+                    </div>
+                    <div class="col-md-12 message-box border pl-2 pr-2 border-top-0">
+                        <input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
+                        <div class="tools">
+                            <i class="fa fa-home tooltipicon" aria-hidden="true"><span class="tooltiptext" style="white-space: nowrap;">Home</span></i>
+                            <i class="fa fa-link tooltipicon" aria-hidden="true"><span class="tooltiptext" style="white-space: nowrap;">Useful Links</span></i>
+                           <!--  <i class="fa fa-meh-o" aria-hidden="true"></i>
+                            <i class="fa fa-paperclip" aria-hidden="true"></i>
+                            <i class="fa fa-camera" aria-hidden="true"></i>
+                            <i class="fa fa-thumbs-o-up m-0" aria-hidden="true"></i> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+	
+      
 
     <%# JS STUFF%>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/botui/build/botui.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/botui/build/botui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <%# Edit the Conversation from Convo.js%>
     <script src="javascripts/convo.js"></script>
