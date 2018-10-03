@@ -1,4 +1,4 @@
-var socket = io.connect('http://meha-nodejs.herokuapp.com/');
+var socket = io.connect('http://localhost:8010');
 
 		$(document).ready(function() 
 		{
