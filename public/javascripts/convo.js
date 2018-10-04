@@ -1,11 +1,40 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
 
+function setSessionId()
+{
+	var random1 = getRandomInt(100000);
+	var random2 = getRandomInt(100000);
+	var timestamp =  "" + parseInt(Date.now()) + random1 + random2;
+	var sessionId ;
+	if (typeof(Storage) !== "undefined") 
+	{
+		// Store
+		if(localStorage.getItem("sessionId")==null)
+		{
+			localStorage.setItem("sessionId", timestamp);
+		}
+		sessionId = localStorage.getItem("sessionId");
+		return sessionId;		
+	} 
+	else 
+	{
+		//document.getElementById("response").innerHTML = "Sorry, your browser does not support Web Storage...";
+		return "Dummy Session Id"
+	}
+}
+
+function getRandomInt(max) 
+{
+	return Math.floor(Math.random() * Math.floor(max));
+}
+
 function setInput(disp,text) 
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	socket.emit('fromClient', { client : text });
+	var sessionId = setSessionId();
+	socket.emit('fromClient', { client : text , sessionId : sessionId } );
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 disp+"</li>");
@@ -45,18 +74,24 @@ function processResponse(fulfillment)
 		if(type==4)
 		{
 			var return_val = "";
+			
+			// For 2 messages (to be deprecated)
 			if(fulfillment.messages[i].payload.hasOwnProperty('instruction'))
 			responseMessage = responseMessage +	"    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								fulfillment.messages[i].payload.instruction+"</div>";
+			
+			// For multiple texts and links
 			if(fulfillment.messages[i].payload.hasOwnProperty('instructions'))
 			{
 				responseMessage = responseMessage +	"  </div><div class='row' style='margin-top:4px'>";
 				var width = fulfillment.messages[i].payload.width;
 				for (var key in fulfillment.messages[i].payload.instructions) 
 				{
+					// Text bubbles
 					if(fulfillment.messages[i].payload.instructions[key].hasOwnProperty('text'))
 						responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								fulfillment.messages[i].payload.instructions[key].text+"</div>";
+					// Link URLs
 					if(fulfillment.messages[i].payload.instructions[key].hasOwnProperty('link'))
 						responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 											"<a href='"+fulfillment.messages[i].payload.instructions[key].link.url+"'"+
