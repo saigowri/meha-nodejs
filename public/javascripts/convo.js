@@ -1,29 +1,17 @@
 var socket = io();
 
 
-		function setInput(disp,text) 
-		{
-			$("#input").attr("disabled", false);
-			$(".btn-xs").attr("disabled", true);
-			setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
+function setInput(disp,text) 
+{
+	$("#input").attr("disabled", false);
+	$(".btn-xs").attr("disabled", true);
+	socket.emit('fromClient', { client : text });
+	console.log("Input:", text);
+	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 disp+"</li>");
-			$("#input").val(text);
-			socket.emit('fromClient', { client : text });
-			//sendReply();
-			$("#input").val("");
-		}
-		
-		
-		function send() 
-		{
-			var text = $("#input").val();
-			socket.emit('fromClient', { client : text });
-			console.log("User says:", text);
-			setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
-                                text+"</li>");
-			//sendReply();
-			$("#input").val("");
-		}
+	//sendReply();
+	$("#input").val("");
+}
 
 		function buttonDisplay(data) 
 		{
@@ -150,33 +138,38 @@ var socket = io();
 		
 		}*/
 		
-			socket.on('fromServer', function (data) 
-				{ // recieveing a reply from server.
-				  console.log(data.server);
+socket.on('fromServer', function (data) 
+{ // recieveing a reply from server.
+	console.log(data.server);
 				  
-					var output = data.server.fulfillment.speech;
-					if(output.localeCompare('button')==0)
-					{
-						buttonDisplay(data);
-					}
-					else if(output.localeCompare('link')==0)
-					{
-						linkDisplay(data);
-					}
-					else
-					setResponse("<li class='p-1 rounded mb-1'>"+
-                                "<div class='receive-msg'>"+
-                                "    <img src='https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png'>"+
-                                "    <div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
-                                "        <p class='pl-2 pr-2 rounded'>"+output+"</p>"+
-                                "    </div>"+
-                                "</div>"+
-                            "</li>");
-				})
+	var output = data.server.fulfillment.speech;
+	if(output.localeCompare('button')==0)
+	{
+		buttonDisplay(data);
+	}
+	else if(output.localeCompare('link')==0)
+	{
+		linkDisplay(data);
+	}
+	else
+	setResponse("<li class='p-1 rounded mb-1'>"+
+                    "<div class='receive-msg'>"+
+                    "    <img src='https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png'>"+
+                    "    <div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
+                    "        <p class='pl-2 pr-2 rounded'>"+output+"</p>"+
+                    "    </div>"+
+                    "</div>"+
+                "</li>");
+})
 				
-		function setResponse(val) 
-		{
-			$("#response").append(val);
-			var chat_scroll=document.getElementById("chat-scroll");
-			chat_scroll.scrollTop=chat_scroll.scrollHeight;
-		}
+function setResponse(val) 
+{
+	$("#response").append(val);
+	var chat_scroll=document.getElementById("chat-scroll");
+	chat_scroll.scrollTop=chat_scroll.scrollHeight;
+}
+
+function home()
+{
+	setInput('Home','Hi');
+}

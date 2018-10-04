@@ -28,7 +28,9 @@
 			$("#input").keypress(function(event) {
 				if (event.which == 13) {
 					event.preventDefault();
-					send();
+					//send();
+					var text = $("#input").val();
+					setInput(text,text);
 				}
 			});
 		});
@@ -60,8 +62,12 @@
                     <div class="col-md-12 message-box border pl-2 pr-2 border-top-0">
                         <input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
                         <div class="tools">
-                            <i class="fa fa-home tooltipicon" aria-hidden="true"><span class="tooltiptext" style="white-space: nowrap;">Home</span></i>
-                            <i class="fa fa-link tooltipicon" aria-hidden="true"><span class="tooltiptext" style="white-space: nowrap;">Useful Links</span></i>
+                            <i class="fa fa-home tooltipicon" aria-hidden="true" onclick="home()">
+								<span class="tooltiptext" style="white-space: nowrap;">Home</span>
+							</i>
+                            <i class="fa fa-link tooltipicon" aria-hidden="true">
+								<span class="tooltiptext" style="white-space: nowrap;">Useful Links</span>
+							</i>
                            <!--  <i class="fa fa-meh-o" aria-hidden="true"></i>
                             <i class="fa fa-paperclip" aria-hidden="true"></i>
                             <i class="fa fa-camera" aria-hidden="true"></i>
