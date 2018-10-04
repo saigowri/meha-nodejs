@@ -61,7 +61,7 @@ function processResponse(fulfillment)
 	{
 		var type = JSON.stringify(fulfillment.messages[i].type);
 		var val = JSON.stringify(fulfillment.messages[i].textToSpeech);
-		if(type.includes('simple_response')&&!val.includes('"button"'))
+		if(type.includes('simple_response')&&!val.includes('"button"')&&!val.includes('"link"')&&!val.includes('"multiple"'))
 		{
 			responseMessage = responseMessage +	"    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								fulfillment.messages[i].textToSpeech+"</div>";
