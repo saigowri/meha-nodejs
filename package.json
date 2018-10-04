@@ -12,9 +12,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "dependencies": {   
     "apiai": "^4.0.3",
     "express": "^4.16.3",
-    "socket.io": "^1.4.6"
+    "socket.io": "^2.1.1",
   }
 }
