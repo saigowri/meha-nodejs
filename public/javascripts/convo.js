@@ -1,5 +1,7 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
+var whoScore = 0;
+
 
 function setSessionId()
 {
@@ -27,6 +29,41 @@ function setSessionId()
 function getRandomInt(max) 
 {
 	return Math.floor(Math.random() * Math.floor(max));
+}
+
+function calcScore(currScore)
+{
+		if(localStorage.getItem("whoScore")==null)
+		{
+			localStorage.setItem("whoScore", whoScore);
+		}
+		whoScore = localStorage.getItem("whoScore");
+		whoScore = parseInt(whoScore) + parseInt(currScore);
+		localStorage.setItem("whoScore", whoScore);
+		console.log("Score",whoScore);
+}
+		
+function scoreDisplay()
+{
+	if(parseInt(whoScore)>=50)
+	{
+		display("Great! You have done well. Your WHO score is "+ whoScore + ". There is no need for you to worry.");
+		var sessionId = setSessionId();
+		socket.emit('fromClient', { client : "WHO-High-Score" , sessionId : sessionId } );	
+	}
+	else
+	{
+		display("Your WHO score is "+ whoScore + ". This is not a very good score. However, don't worry, I am here to help.");
+		var sessionId = setSessionId();
+		socket.emit('fromClient', { client : "WHO-Low-Score" , sessionId : sessionId } );	
+	}
+	localStorage.setItem("whoScore", 0);
+}
+
+function setScore(disp,score,text) 
+{
+	calcScore(score);
+	setInput(disp,text);
 }
 
 function setInput(disp,text) 
@@ -108,13 +145,19 @@ function processResponse(fulfillment)
 				var width = fulfillment.messages[i].payload.width;
 				for (var key in fulfillment.messages[i].payload.Option) 
 				{
-					if(return_val.localeCompare('next')==0)
+					console.log("return: ",return_val);
+					if(fulfillment.messages[i].payload.hasOwnProperty('type') && 
+						fulfillment.messages[i].payload.type.localeCompare('WHO')== 0 )
+						{
+							var buttonClick = 'setScore(this.value,this.id,"'+return_val+'")';
+						}
+					else if(return_val.localeCompare('next')==0)
 						var buttonClick = 'setInput(this.value,"'+return_val+'")';
 					else
 						var buttonClick = 'setInput(this.value,this.value)';
 					var buttons =	"    <div class='col-sm-"+width+"' style='margin-top:2px'>"+
 									"		<button type='button' value='"+fulfillment.messages[i].payload.Option[key].title+
-									"		' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>"+
+									"		' id='"+fulfillment.messages[i].payload.Option[key].score+"' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>"+
 									fulfillment.messages[i].payload.Option[key].title+
 									"		</button></div>";
 					responseMessage = responseMessage + buttons;
@@ -201,17 +244,8 @@ function processWebhook(fulfillment)
 		
 		}*/
 		
-socket.on('fromServer', function (data) 
-{ // recieveing a reply from server.
-	console.log(JSON.stringify(data));
-				  
-	var output = data.server.fulfillment.speech;
-	
-	if(output.localeCompare('button')==0 || output.localeCompare('link')==0 || output.localeCompare('multiple')==0)
-	{
-		processResponse(data.server.fulfillment);
-	}
-	else
+function display(output)
+{
 	setResponse("<li class='p-1 rounded mb-1'>"+
                     "<div class='receive-msg'>"+
                     "    <img src='"+img+"'>"+
@@ -219,9 +253,31 @@ socket.on('fromServer', function (data)
                     "    </div>"+
                     "</div>"+
                 "</li>");
+}
+		
+socket.on('fromServer', function (data) 
+{ // recieveing a reply from server.
+	console.log(JSON.stringify(data));
+				  
+	var output = data.server.fulfillment.speech;
+	
+	if(output.localeCompare('WHO-End')==0)
+	{
+		scoreDisplay();
+	}
+	else if(output.localeCompare('button')==0)
+	{
+		buttonDisplay(data.server.fulfillment);
+	}
+	else if(output.localeCompare('link')==0 || output.localeCompare('multiple')==0)
+	{
+		processResponse(data.server.fulfillment);
+	}
+	else
+		display(output);
 				
 				
-	if(data.server.fulfillment.source.localeCompare('webhook-dm')==0)
+	if(data.server.fulfillment.hasOwnProperty('source') && data.server.fulfillment.source.localeCompare('webhook-dm')==0)
 	{
 		processWebhook(data.server.fulfillment);
 	}
