@@ -92,6 +92,7 @@ right: 10px;
 	*/
 	background-position: left top;
 	background-repeat: repeat;  
+	text-align: justify;
 }
 .tooltipicon{
 	position:relative;
