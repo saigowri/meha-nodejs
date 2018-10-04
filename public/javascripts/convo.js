@@ -151,7 +151,36 @@ function processResponse(fulfillment)
 	setResponse(responseMessage);
 }
 		
-
+function processWebhook(fulfillment)
+{
+	var responseMessage = "<li class='p-1 rounded mb-1'>"+
+							"<div class='receive-msg'>"+
+							"<div class='container-fluid'>"+
+						"  <div class='row'>";
+		for (var key in fulfillment.messages) 
+		{
+			// Link URLs
+			// 0th element of link will be hardcoded to 'webhook-link'
+			// 1st element of link will be link title
+			// 2nd element of link will be link URL
+			if(fulfillment.messages[key].speech[0].includes('webhook-link'))
+			{
+				responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+								"<a href='"+fulfillment.messages[key].speech[2]+"'"+
+								" rel='noopener noreferrer' target='_blank'>"+
+								fulfillment.messages[key].speech[1]+"</a></div>";
+			}
+			else
+				responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+								fulfillment.messages[key].speech+"</div>";
+		}
+	responseMessage =	responseMessage +
+						"			</div>"+
+						"		</div>"+
+						"	</div>"+
+						"</li>";
+	setResponse(responseMessage);
+}
 		
 			/*
 		function sendReply() 
@@ -190,6 +219,12 @@ socket.on('fromServer', function (data)
                     "    </div>"+
                     "</div>"+
                 "</li>");
+				
+				
+	if(data.server.fulfillment.source.localeCompare('webhook-dm')==0)
+	{
+		processWebhook(data.server.fulfillment);
+	}
 })
 				
 function setResponse(val) 
