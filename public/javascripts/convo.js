@@ -177,12 +177,8 @@ socket.on('fromServer', function (data)
 	console.log(JSON.stringify(data));
 				  
 	var output = data.server.fulfillment.speech;
-	processResponse(data.server.fulfillment);
-	/*if(output.localeCompare('button')==0)
-	{
-		buttonDisplay(data.server.fulfillment);
-	}
-	else if(output.localeCompare('link')==0)
+	
+	if(output.localeCompare('button')==0 || output.localeCompare('link')==0 || output.localeCompare('multiple')==0)
 	{
 		processResponse(data.server.fulfillment);
 	}
@@ -193,7 +189,7 @@ socket.on('fromServer', function (data)
                     "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+output+
                     "    </div>"+
                     "</div>"+
-                "</li>");*/
+                "</li>");
 })
 				
 function setResponse(val) 
