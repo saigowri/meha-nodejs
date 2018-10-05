@@ -43,12 +43,18 @@
         <div class="row pt-3">
             <div class="chat-main">
                 <div class="col-md-12 chat-header rounded-top bg-primary text-white">
-                    <div class="row">
-                        <div class="col-md-10 username pl-2">
+                    <div style="height:25px;padding-top:3px"  class="row">
+                        <div class="col-md-8 username pl-2">
                             <i class="fa fa-circle text-success" aria-hidden="true"></i>
                             <h6 class="m-0">Mental Health Assistant</h6>
                         </div>
-                        <div class="col-md-2 options text-right pr-2">
+                        <div class="col-md-4 options text-right pr-2">
+                            <i style="color:white;font-size:20px" class="fa fa-home tooltipicon" onclick="home()">
+								<span class="tooltiptext" style="white-space: nowrap;">Home</span>
+							</i>
+                            <i style="color:white;font-size:20px" class="fa fa-link tooltipicon" onclick="usefulLinks()">
+								<span class="tooltiptext" style="white-space: nowrap;">Useful Links</span>
+							</i>
                             <i id="minimize-icon" class="fa fa-window-minimize hide-chat-box" aria-hidden="true"></i>
                             <i id="maximize-icon" style="display: none;" class="fa fa-window-maximize hide-chat-box" aria-hidden="true"></i>
                           </div>
@@ -61,18 +67,6 @@
                     </div>
                     <div class="col-md-12 message-box border pl-2 pr-2 border-top-0">
                         <input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
-                        <div class="tools">
-                            <i class="fa fa-home tooltipicon" aria-hidden="true" onclick="home()">
-								<span class="tooltiptext" style="white-space: nowrap;">Home</span>
-							</i>
-                            <i class="fa fa-link tooltipicon" aria-hidden="true">
-								<span class="tooltiptext" style="white-space: nowrap;">Useful Links</span>
-							</i>
-                           <!--  <i class="fa fa-meh-o" aria-hidden="true"></i>
-                            <i class="fa fa-paperclip" aria-hidden="true"></i>
-                            <i class="fa fa-camera" aria-hidden="true"></i>
-                            <i class="fa fa-thumbs-o-up m-0" aria-hidden="true"></i> -->
-                        </div>
                     </div>
                 </div>
             </div>

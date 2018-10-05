@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
   socket.on('fromClient', function (data) 
 	{
 		console.log('req', data.client);
-        api.getRes(data.client,data.sessionId).then(function(res){
+        api.getRes(data.client,data.sessionId,data.context).then(function(res){
         console.log('response', res);
         socket.emit('fromServer', { server: res });
         });

@@ -3,6 +3,12 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a46
 var whoScore = 0;
 
 
+function requestToDialogflow(text,context)
+{
+	var sessionId = setSessionId();
+	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context } );
+}
+
 function setSessionId()
 {
 	var random1 = getRandomInt(100000);
@@ -48,14 +54,12 @@ function scoreDisplay()
 	if(parseInt(whoScore)>=50)
 	{
 		display("Great! You have done well. Your WHO score is "+ whoScore + ". There is no need for you to worry.");
-		var sessionId = setSessionId();
-		socket.emit('fromClient', { client : "WHO-High-Score" , sessionId : sessionId } );	
+		requestToDialogflow("WHO-High-Score",""); 	
 	}
 	else
 	{
 		display("Your WHO score is "+ whoScore + ". This is not a very good score. However, don't worry, I am here to help.");
-		var sessionId = setSessionId();
-		socket.emit('fromClient', { client : "WHO-Low-Score" , sessionId : sessionId } );	
+		requestToDialogflow("WHO-Low-Score",""); 	
 	}
 	localStorage.setItem("whoScore", 0);
 }
@@ -70,8 +74,7 @@ function setInput(disp,text)
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	var sessionId = setSessionId();
-	socket.emit('fromClient', { client : text , sessionId : sessionId } );
+	requestToDialogflow(text,"");
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 disp+"</li>");
@@ -293,4 +296,9 @@ function setResponse(val)
 function home()
 {
 	setInput('Home','Hi');
+}
+
+function usefulLinks()
+{
+	requestToDialogflow("lighten mood","Lighten-mood");
 }
