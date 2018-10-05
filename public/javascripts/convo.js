@@ -160,9 +160,13 @@ function processResponse(fulfillment)
 						var buttonClick = 'setInput(this.value,this.value)';
 					var buttons =	"    <div class='col-sm-"+width+"' style='margin-top:2px'>"+
 									"		<button type='button' value='"+fulfillment.messages[i].payload.Option[key].title+
-									"		' id='"+fulfillment.messages[i].payload.Option[key].score+"' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>"+
-									fulfillment.messages[i].payload.Option[key].title+
-									"		</button></div>";
+									"		' id='"+fulfillment.messages[i].payload.Option[key].score+"' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>";
+					if(fulfillment.messages[i].payload.Option[key].hasOwnProperty('icon'))
+						buttons = buttons +	"<i class='"+fulfillment.messages[i].payload.Option[key].icon+" fa-3x'></i>&nbsp;";
+					else
+						buttons = buttons +fulfillment.messages[i].payload.Option[key].title;
+					
+					buttons = buttons +"		</button></div>";
 					responseMessage = responseMessage + buttons;
 				}
 				responseMessage =	responseMessage + "  </div>";
