@@ -12,7 +12,8 @@ var getRes = function(query,sessionId,context)
     sessionId: sessionId,
     contexts: [{
             name: context,
-            parameters: {}
+            parameters: {},
+			lifespan:1
         }]
 	};
 	var request = app.textRequest(query, options);
