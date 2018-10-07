@@ -23,8 +23,7 @@ var getRes = function(query,sessionId,context)
 			});
 			request.on('response', function(response) {
 				//resolve(response.result.fulfillment.speech);
-				resolve(response.result);
-				console.log("Session id:", sessionId);
+				resolve(response);
 			});
 		});
 	request.end();

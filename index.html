@@ -28,7 +28,6 @@
 			$("#input").keypress(function(event) {
 				if (event.which == 13) {
 					event.preventDefault();
-					//send();
 					var text = $("#input").val();
 					setInput(text,text);
 				}
@@ -36,6 +35,8 @@
 			
 			// Beginning Conversation From Chatbot
 			requestToDialogflow("Begin Chatbot","begin-chatbot");
+			
+			
 		});
 		
 	</script>

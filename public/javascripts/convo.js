@@ -78,7 +78,6 @@ function setInput(disp,text)
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 disp+"</li>");
-	//sendReply();
 	$("#input").val("");
 }
 
@@ -263,40 +262,42 @@ function display(output)
 }
 		
 socket.on('fromServer', function (data) 
-{ // recieveing a reply from server.
+{ 
+	// recieveing a reply from server.
 	console.log(JSON.stringify(data));
 				  
-	var output = data.server.fulfillment.speech;
-	
-	if(output.localeCompare('WHO-End')==0)
+	var output = data.server.result.fulfillment.speech;
+	console.log(JSON.stringify(output));
+	processResponse(data.server.result.fulfillment);
+	/*if(output.localeCompare('WHO-End')==0)
 	{
 		scoreDisplay();
 	}
 	else if(output.localeCompare('button')==0)
 	{
-		buttonDisplay(data.server.fulfillment);
+		buttonDisplay(data.server.result.fulfillment);
 	}
 	else if(output.localeCompare('link')==0 || output.localeCompare('multiple')==0)
 	{
-		processResponse(data.server.fulfillment);
+		processResponse(data.server.result.fulfillment);
 	}
 	else
-		display(output);
+		display(output);*/
 				
 				
-	if(data.server.fulfillment.hasOwnProperty('source') && data.server.fulfillment.source.localeCompare('webhook-dm')==0)
+	if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook-dm')==0)
 	{
-		processWebhook(data.server.fulfillment);
+		processWebhook(data.server.result.fulfillment);
 	}
 })
-				
+
 function setResponse(val) 
 {
 	$("#response").append(val);
 	var chat_scroll=document.getElementById("chat-scroll");
 	chat_scroll.scrollTop=chat_scroll.scrollHeight;
 }
-
+			
 function home()
 {
 	setInput('Home','Hi');
