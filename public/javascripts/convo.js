@@ -80,12 +80,12 @@ function setInput(disp,text)
                                 disp+"</li>");
 	$("#input").val("");
 }
-
+/*
 function buttonDisplay(fulfillment) 
 {
 	$("#input").attr("disabled", true);
 	processResponse(fulfillment);
-}
+}*/
 
 function processResponse(fulfillment)
 {
@@ -143,6 +143,7 @@ function processResponse(fulfillment)
 							return_val = "next";
 			if(fulfillment.messages[i].payload.hasOwnProperty('Option'))
 			{
+				$("#input").attr("disabled", true);
 				responseMessage = responseMessage +	"  </div><div class='row' style='margin-top:4px'>";
 				var width = fulfillment.messages[i].payload.width;
 				for (var key in fulfillment.messages[i].payload.Option) 
