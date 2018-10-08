@@ -9,6 +9,12 @@ function requestToDialogflow(text,context)
 	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context } );
 }
 
+function requestToMailer(email,context)
+{
+	var sessionId = setSessionId();
+	socket.emit('sendMail', { email : email, sessionId : sessionId  , context : context } );
+}
+
 function setSessionId()
 {
 	var random1 = getRandomInt(100000);
@@ -224,8 +230,14 @@ function processWebhook(data)
 socket.on('fromServer', function (data) 
 { 
 	// recieveing a reply from server.
-	console.log(JSON.stringify(data));
-	
+	//console.log(JSON.stringify(data));
+	console.log("SessionId: ", JSON.stringify(data.server.sessionId));
+	console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
+	console.log("action: ", JSON.stringify(data.server.result.action)); 
+	console.log("parameters: ", JSON.stringify(data.server.result.parameters));
+	console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
+	console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
+	console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
 							
 	if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
 	{
