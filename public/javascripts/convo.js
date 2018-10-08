@@ -69,20 +69,20 @@ function scoreDisplay(responseMessage)
 	return responseMessage;
 }
 
-function setScore(disp,score,text) 
+function setScore(text,score) 
 {
 	calcScore(score);
-	setInput(disp,text);
+	setInput(text);
 }
 
-function setInput(disp,text) 
+function setInput(text) 
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
 	requestToDialogflow(text,"");
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
-                                disp+"</li>");
+                                text+"</li>");
 	$("#input").val("");
 }
 
@@ -93,20 +93,15 @@ function processOptions(responseMessage,payload)
 	var type = "";
 	if(payload.hasOwnProperty('type'))
 		type = payload.type;
-	var return_val = "";			
-	if(payload.hasOwnProperty('return'))
-		return_val = "next";
 	responseMessage = responseMessage +	"<div class='row' style='margin-top:4px'>";
 	for (var key in payload.Option) 
 	{
 		if(type.localeCompare('WHO')== 0 )
 		{
-			var buttonClick = 'setScore(this.value,this.id,"'+return_val+'")';
+			var buttonClick = 'setScore(this.value,this.id)';
 		}
-		else if(return_val.localeCompare('next')==0)
-			var buttonClick = 'setInput(this.value,"'+return_val+'")';
 		else
-			var buttonClick = 'setInput(this.value,this.value)';
+			var buttonClick = 'setInput(this.value)';
 		var buttons =	"    <div class='col-sm-"+width+"' style='margin-top:2px'>"+
 						"		<button type='button' value='"+payload.Option[key].title+
 						"		' id='"+payload.Option[key].score+"' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>";
@@ -251,7 +246,7 @@ function setResponse(val)
 			
 function home()
 {
-	setInput('Home','Hi');
+	setInput('Home');
 }
 
 function usefulLinks()
