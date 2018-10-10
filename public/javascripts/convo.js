@@ -5,8 +5,10 @@ var score = 0;
 
 function requestToDialogflow(text,context)
 {
+	var options = { client : text , sessionId : sessionId  , context : context };
 	var sessionId = setSessionId();
-	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context } );
+	//socket.emit('fromClient', options);
+	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
 }
 
 function matchOTP(otp,context)
@@ -272,34 +274,47 @@ function processWebhook(data)
 		
 socket.on('fromServer', function (data) 
 { 
-	// recieveing a reply from server.
-	//console.log(JSON.stringify(data));
-	console.log("SessionId: ", JSON.stringify(data.server.sessionId));
-	console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
-	console.log("action: ", JSON.stringify(data.server.result.action)); 
-	console.log("parameters: ", JSON.stringify(data.server.result.parameters));
-	console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
-	console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
-	console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
-	
-	
-	if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
+
+	if(data.hasOwnProperty('error'))
 	{
-		var email = data.server.result.parameters.email;
-		requestToMailer(email,'');
-	}
-	if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
-	{
-		var otp = data.server.result.parameters.otp;
-		matchOTP(email,'');
-	}						
-	else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
-	{
-		processWebhook(data.server.result.fulfillment.data);
+		setResponse("<li class='p-1 rounded mb-1'>"+
+					"	<div class='receive-msg'>"+
+					"		<div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
+					"			<p class='pl-2 pr-2 rounded' style='color:red'>Something went wrong. Please try later. Sorry for the inconvinience.</p>"+
+					"   	</div>"+
+					"	</div>"+
+					"</li>");
 	}
 	else
 	{
-		processResponse(data.server.result.fulfillment);
+		// recieveing a reply from server.
+		//console.log(JSON.stringify(data));
+		console.log("SessionId: ", JSON.stringify(data.server.sessionId));
+		console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
+		console.log("action: ", JSON.stringify(data.server.result.action)); 
+		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
+		console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
+		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
+		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
+		
+		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
+		{
+			var email = data.server.result.parameters.email;
+			requestToMailer(email,'');
+		}
+		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
+		{
+			var otp = data.server.result.parameters.otp;
+			matchOTP(email,'');
+		}						
+		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
+		{
+			processWebhook(data.server.result.fulfillment.data);
+		}
+		else
+		{
+			processResponse(data.server.result.fulfillment);
+		}
 	}
 })
 

@@ -33,6 +33,10 @@ io.on('connection', (socket) =>
 		{
 			console.log('response', res);
 			socket.emit('fromServer', { server: res });
+		}).catch(function(error)
+		{
+			console.log(error);
+			socket.emit('fromServer', { error: 'ERROR' });
 		});
 	});
 	
@@ -47,6 +51,10 @@ io.on('connection', (socket) =>
 				{
 					console.log('response', res);
 					socket.emit('fromServer', { server: res });
+				}).catch(function(error)
+				{
+					console.log(error);
+					socket.emit('fromServer', { error: 'ERROR' });
 				});
 
 			}
@@ -57,6 +65,10 @@ io.on('connection', (socket) =>
 				{
 					console.log('response', res);
 					socket.emit('fromServer', { server: res });
+				}).catch(function(error)
+				{
+					console.log(error);
+					socket.emit('fromServer', { error: 'ERROR' });
 				});
 			}
 		});
