@@ -26,6 +26,7 @@ const io = socketIO(server);
 io.on('connection', (socket) => 
 {
 	console.log('Client connected');
+	
 	socket.on('fromClient', function (data) 
 	{
 		console.log('req', data.query);
@@ -38,6 +39,23 @@ io.on('connection', (socket) =>
 			console.log(error);
 			socket.emit('fromServer', { error: 'ERROR' });
 		});
+	});
+	
+	socket.on('matchOTP', function (data) 
+	{
+		console.log('req', data.query);
+		if(data.query==123456)
+		{
+			api.getRes("Screener-Start",data.options).then(function(res)
+			{
+				console.log('response', res);
+				socket.emit('fromServer', { server: res });
+			}).catch(function(error)
+			{
+				console.log(error);
+				socket.emit('fromServer', { error: 'ERROR' });
+			});
+		}
 	});
 	
 	socket.on('sendMail', function (data) 

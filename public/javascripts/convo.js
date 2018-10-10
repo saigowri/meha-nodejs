@@ -17,34 +17,6 @@ function requestToDialogflow(req,text,context)
 	socket.emit(req, {query : text , options : options});
 	//socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
 }
-/*
-function matchOTP(otp,context)
-{
-	var sessionId = setSessionId();
-	var options = {
-    sessionId: sessionId,
-    contexts: [{
-            name: context,
-            parameters: {},
-			lifespan:1
-        }]
-	};
-	socket.emit('matchOTP', { otp : otp, sessionId : sessionId  , context : context } );
-}
-
-function requestToMailer(text,context)
-{
-	var sessionId = setSessionId();
-	var options = {
-    sessionId: sessionId,
-    contexts: [{
-            name: context,
-            parameters: {},
-			lifespan:1
-        }]
-	};
-	socket.emit('sendMail', {query : text , options : options} );
-}*/
 
 function setSessionId()
 {
@@ -322,14 +294,14 @@ socket.on('fromServer', function (data)
 		
 		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
 		{
-			var email = data.server.result.parameters.email;
-			requestToDialogflow("sendMail",email,'');
+				var email = data.server.result.parameters.email;
+				requestToDialogflow("sendMail",email,'');
 		}
-		/*if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
+		else if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
 		{
 			var otp = data.server.result.parameters.otp;
-			matchOTP(email,'');
-		}*/						
+			requestToDialogflow("matchOTP",otp,'');
+		}					
 		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
 		{
 			processWebhook(data.server.result.fulfillment.data);
