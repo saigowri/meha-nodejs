@@ -10,7 +10,7 @@ width: 300px;
 position: fixed;
 margin:0 auto;
 bottom: 0;
-right: 10px;
+right: 50px;
 }
 
 /* If in mobile screen with maximum width 479px. The iPhone screen resolution is 320x480 px (except iPhone4, 640x960) */    
