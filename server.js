@@ -22,14 +22,6 @@ const server = app
 
 const io = socketIO(server);
 
-var apiRequestResponse = function(query,sessionId,context)
-{
-	api.getRes(query,sessionId,context).then(function(res)
-	{
-		console.log('response', res);
-		socket.emit('fromServer', { server: res });
-	});
-}
 
 io.on('connection', (socket) => 
 {
@@ -37,7 +29,11 @@ io.on('connection', (socket) =>
 	socket.on('fromClient', function (data) 
 	{
 		console.log('req', data.client);
-		apiRequestResponse(data.client,data.sessionId,data.context);
+		api.getRes(data.client,data.sessionId,data.context).then(function(res)
+		{
+			console.log('response', res);
+			socket.emit('fromServer', { server: res });
+		});
 	});
 	
 	socket.on('sendMail', function (data) 
@@ -47,12 +43,21 @@ io.on('connection', (socket) =>
 			if(error)
 			{
 				console.log(error);
-				apiRequestResponse("OTP error",data.sessionId,data.context);
+				api.getRes("OTP error",data.sessionId,data.context).then(function(res)
+				{
+					console.log('response', res);
+					socket.emit('fromServer', { server: res });
+				});
+
 			}
 			else
 			{
 				console.log(response);
-				apiRequestResponse("OTP sent",data.sessionId,data.context);
+				api.getRes("OTP sent",data.sessionId,data.context).then(function(res)
+				{
+					console.log('response', res);
+					socket.emit('fromServer', { server: res });
+				});
 			}
 		});
 	});
