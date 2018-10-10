@@ -22,37 +22,72 @@ const server = app
 
 const io = socketIO(server);
 
-var apiRequestResponse = function(query,sessionId,context)
-{
-	api.getRes(query,sessionId,context).then(function(res)
-	{
-		console.log('response', res);
-		socket.emit('fromServer', { server: res });
-	});
-}
 
 io.on('connection', (socket) => 
 {
 	console.log('Client connected');
+	
 	socket.on('fromClient', function (data) 
 	{
-		console.log('req', data.client);
-		apiRequestResponse(data.client,data.sessionId,data.context);
+		console.log('req', data.query);
+		api.getRes(data.query,data.options).then(function(res)
+		{
+			console.log('response', res);
+			socket.emit('fromServer', { server: res });
+		}).catch(function(error)
+		{
+			console.log(error);
+			socket.emit('fromServer', { error: 'ERROR' });
+		});
+	});
+	
+	socket.on('matchOTP', function (data) 
+	{
+		console.log('req', data.query);
+		if(data.query==123456)
+		{
+			api.getRes("Screener-Start",data.options).then(function(res)
+			{
+				console.log('response', res);
+				socket.emit('fromServer', { server: res });
+			}).catch(function(error)
+			{
+				console.log(error);
+				socket.emit('fromServer', { error: 'ERROR' });
+			});
+		}
 	});
 	
 	socket.on('sendMail', function (data) 
 	{
-		mailer.sendMail(data.email,getRandomInt(1000000),function(error, response)
+		mailer.sendMail(data.query,getRandomInt(1000000),function(error, response)
 		{
 			if(error)
 			{
 				console.log(error);
-				apiRequestResponse("OTP error",data.sessionId,data.context);
+				api.getRes("OTP error",data.options).then(function(res)
+				{
+					console.log('response', res);
+					socket.emit('fromServer', { server: res });
+				}).catch(function(error)
+				{
+					console.log(error);
+					socket.emit('fromServer', { error: 'ERROR' });
+				});
+
 			}
 			else
 			{
 				console.log(response);
-				apiRequestResponse("OTP sent",data.sessionId,data.context);
+				api.getRes("OTP sent",data.options).then(function(res)
+				{
+					console.log('response', res);
+					socket.emit('fromServer', { server: res });
+				}).catch(function(error)
+				{
+					console.log(error);
+					socket.emit('fromServer', { error: 'ERROR' });
+				});
 			}
 		});
 	});

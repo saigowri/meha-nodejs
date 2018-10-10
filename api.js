@@ -6,16 +6,8 @@ var apiai = require('apiai');
 var app = apiai('4efec7cafaf24ce098001d038606e132');
 
 // Function which returns speech from api.ai
-var getRes = function(query,sessionId,context) 
+var getRes = function(query,options) 
 {
-	var options = {
-    sessionId: sessionId,
-    contexts: [{
-            name: context,
-            parameters: {},
-			lifespan:1
-        }]
-	};
 	var request = app.textRequest(query, options);
 	const responseFromAPI = new Promise(
         function (resolve, reject) {

@@ -3,22 +3,19 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a46
 var score = 0;
 
 
-function requestToDialogflow(text,context)
+function requestToDialogflow(req,text,context)
 {
-	var sessionId = setSessionId();
-	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context } );
-}
-
-function matchOTP(otp,context)
-{
-	var sessionId = setSessionId();
-	socket.emit('matchOTP', { otp : otp, sessionId : sessionId  , context : context } );
-}
-
-function requestToMailer(email,context)
-{
-	var sessionId = setSessionId();
-	socket.emit('sendMail', { email : email, sessionId : sessionId  , context : context } );
+	var sessionId = setSessionId();	
+	var options = {
+    sessionId: sessionId,
+    contexts: [{
+            name: context,
+            parameters: {},
+			lifespan:1
+        }]
+	};
+	socket.emit(req, {query : text , options : options});
+	//socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
 }
 
 function setSessionId()
@@ -68,14 +65,14 @@ function WHOScoreDisplay(responseMessage)
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! You have done well. Your WHO score is "+ score + ". There is no need for you to worry."+
                     "    </div>";
-		requestToDialogflow("WHO-High-Score",""); 	
+		requestToDialogflow("fromClient","WHO-High-Score",""); 	
 	}
 	else
 	{
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Your WHO score is "+ score + ". This is not a very good score. However, don't worry, I am here to help."+
                     "    </div>";
-		requestToDialogflow("WHO-Low-Score",""); 	
+		requestToDialogflow("fromClient","WHO-Low-Score",""); 	
 	}
 	localStorage.setItem("score", 0);
 	return responseMessage;
@@ -88,7 +85,7 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having significant depression symptoms. I stongly"+
 					" recommend you to consult a mental health professional."+
                     "    </div>";
-		requestToDialogflow("Screener-severe-depression",""); 	
+		requestToDialogflow("fromClient","Screener-severe-depression",""); 	
 	}
 	else if(parseInt(score)<=10 && parseInt(score)>5)
 	{
@@ -96,14 +93,14 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having mild depression symptoms. Don't worry"+
 					" I am here to help you. I recommend you to start using the PUSH-D Application. "+
                     "    </div>";
-		requestToDialogflow("Screener-mild-depression",""); 	
+		requestToDialogflow("fromClient","Screener-mild-depression",""); 	
 	}
 	else{
 
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! Your Screener score is "+ score + ". You do not seem to have any depression symptoms."+
 					"    </div>";
-		requestToDialogflow("Screener-no-depression",""); 
+		requestToDialogflow("fromClient","Screener-no-depression",""); 
 
 	}
 	localStorage.setItem("score", 0);
@@ -120,7 +117,7 @@ function setInput(text)
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	requestToDialogflow(text,"");
+	requestToDialogflow("fromClient",text,"");
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
@@ -129,7 +126,8 @@ function setInput(text)
 
 function processOptions(responseMessage,payload) 
 {
-	$("#input").attr("disabled", true);
+	if(!payload.hasOwnProperty('disabled'))
+		$("#input").attr("disabled", true);
 	var width = payload.width;
 	var type = "";
 	if(payload.hasOwnProperty('type'))
@@ -272,34 +270,47 @@ function processWebhook(data)
 		
 socket.on('fromServer', function (data) 
 { 
-	// recieveing a reply from server.
-	//console.log(JSON.stringify(data));
-	console.log("SessionId: ", JSON.stringify(data.server.sessionId));
-	console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
-	console.log("action: ", JSON.stringify(data.server.result.action)); 
-	console.log("parameters: ", JSON.stringify(data.server.result.parameters));
-	console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
-	console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
-	console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
-	
-	
-	if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
+
+	if(data.hasOwnProperty('error'))
 	{
-		var email = data.server.result.parameters.email;
-		requestToMailer(email,'');
-	}
-	if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
-	{
-		var otp = data.server.result.parameters.otp;
-		matchOTP(email,'');
-	}						
-	else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
-	{
-		processWebhook(data.server.result.fulfillment.data);
+		setResponse("<li class='p-1 rounded mb-1'>"+
+					"	<div class='receive-msg'>"+
+					"		<div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
+					"			<p class='pl-2 pr-2 rounded' style='color:red'>Something went wrong. Please try later. Sorry for the inconvinience.</p>"+
+					"   	</div>"+
+					"	</div>"+
+					"</li>");
 	}
 	else
 	{
-		processResponse(data.server.result.fulfillment);
+		// recieveing a reply from server.
+		//console.log(JSON.stringify(data));
+		console.log("SessionId: ", JSON.stringify(data.server.sessionId));
+		console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
+		console.log("action: ", JSON.stringify(data.server.result.action)); 
+		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
+		console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
+		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
+		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
+		
+		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
+		{
+				var email = data.server.result.parameters.email;
+				requestToDialogflow("sendMail",email,'');
+		}
+		else if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
+		{
+			var otp = data.server.result.parameters.otp;
+			requestToDialogflow("matchOTP",otp,'');
+		}					
+		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
+		{
+			processWebhook(data.server.result.fulfillment.data);
+		}
+		else
+		{
+			processResponse(data.server.result.fulfillment);
+		}
 	}
 })
 
@@ -317,5 +328,5 @@ function home()
 
 function usefulLinks()
 {
-	requestToDialogflow("Useful Links","Useful-Links");
+	requestToDialogflow("fromClient","Useful Links","Useful-Links");
 }
