@@ -126,7 +126,8 @@ function setInput(text)
 
 function processOptions(responseMessage,payload) 
 {
-	$("#input").attr("disabled", true);
+	if(!payload.hasOwnProperty('disabled'))
+		$("#input").attr("disabled", true);
 	var width = payload.width;
 	var type = "";
 	if(payload.hasOwnProperty('type'))
