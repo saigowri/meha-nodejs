@@ -3,25 +3,48 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a46
 var score = 0;
 
 
-function requestToDialogflow(text,context)
+function requestToDialogflow(req,text,context)
 {
-	var options = { client : text , sessionId : sessionId  , context : context };
-	var sessionId = setSessionId();
-	//socket.emit('fromClient', options);
-	socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
+	var sessionId = setSessionId();	
+	var options = {
+    sessionId: sessionId,
+    contexts: [{
+            name: context,
+            parameters: {},
+			lifespan:1
+        }]
+	};
+	socket.emit(req, {query : text , options : options});
+	//socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
 }
-
+/*
 function matchOTP(otp,context)
 {
 	var sessionId = setSessionId();
+	var options = {
+    sessionId: sessionId,
+    contexts: [{
+            name: context,
+            parameters: {},
+			lifespan:1
+        }]
+	};
 	socket.emit('matchOTP', { otp : otp, sessionId : sessionId  , context : context } );
 }
 
-function requestToMailer(email,context)
+function requestToMailer(text,context)
 {
 	var sessionId = setSessionId();
-	socket.emit('sendMail', { email : email, sessionId : sessionId  , context : context } );
-}
+	var options = {
+    sessionId: sessionId,
+    contexts: [{
+            name: context,
+            parameters: {},
+			lifespan:1
+        }]
+	};
+	socket.emit('sendMail', {query : text , options : options} );
+}*/
 
 function setSessionId()
 {
@@ -70,14 +93,14 @@ function WHOScoreDisplay(responseMessage)
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! You have done well. Your WHO score is "+ score + ". There is no need for you to worry."+
                     "    </div>";
-		requestToDialogflow("WHO-High-Score",""); 	
+		requestToDialogflow("fromClient","WHO-High-Score",""); 	
 	}
 	else
 	{
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Your WHO score is "+ score + ". This is not a very good score. However, don't worry, I am here to help."+
                     "    </div>";
-		requestToDialogflow("WHO-Low-Score",""); 	
+		requestToDialogflow("fromClient","WHO-Low-Score",""); 	
 	}
 	localStorage.setItem("score", 0);
 	return responseMessage;
@@ -90,7 +113,7 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having significant depression symptoms. I stongly"+
 					" recommend you to consult a mental health professional."+
                     "    </div>";
-		requestToDialogflow("Screener-severe-depression",""); 	
+		requestToDialogflow("fromClient","Screener-severe-depression",""); 	
 	}
 	else if(parseInt(score)<=10 && parseInt(score)>5)
 	{
@@ -98,14 +121,14 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having mild depression symptoms. Don't worry"+
 					" I am here to help you. I recommend you to start using the PUSH-D Application. "+
                     "    </div>";
-		requestToDialogflow("Screener-mild-depression",""); 	
+		requestToDialogflow("fromClient","Screener-mild-depression",""); 	
 	}
 	else{
 
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! Your Screener score is "+ score + ". You do not seem to have any depression symptoms."+
 					"    </div>";
-		requestToDialogflow("Screener-no-depression",""); 
+		requestToDialogflow("fromClient","Screener-no-depression",""); 
 
 	}
 	localStorage.setItem("score", 0);
@@ -122,7 +145,7 @@ function setInput(text)
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	requestToDialogflow(text,"");
+	requestToDialogflow("fromClient",text,"");
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
@@ -300,13 +323,13 @@ socket.on('fromServer', function (data)
 		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
 		{
 			var email = data.server.result.parameters.email;
-			requestToMailer(email,'');
+			requestToDialogflow("sendMail",email,'');
 		}
-		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
+		/*if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
 		{
 			var otp = data.server.result.parameters.otp;
 			matchOTP(email,'');
-		}						
+		}*/						
 		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
 		{
 			processWebhook(data.server.result.fulfillment.data);
@@ -332,5 +355,5 @@ function home()
 
 function usefulLinks()
 {
-	requestToDialogflow("Useful Links","Useful-Links");
+	requestToDialogflow("fromClient","Useful Links","Useful-Links");
 }

@@ -28,8 +28,8 @@ io.on('connection', (socket) =>
 	console.log('Client connected');
 	socket.on('fromClient', function (data) 
 	{
-		console.log('req', data.client);
-		api.getRes(data.client,data.sessionId,data.context).then(function(res)
+		console.log('req', data.query);
+		api.getRes(data.query,data.options).then(function(res)
 		{
 			console.log('response', res);
 			socket.emit('fromServer', { server: res });
@@ -42,12 +42,12 @@ io.on('connection', (socket) =>
 	
 	socket.on('sendMail', function (data) 
 	{
-		mailer.sendMail(data.email,getRandomInt(1000000),function(error, response)
+		mailer.sendMail(data.query,getRandomInt(1000000),function(error, response)
 		{
 			if(error)
 			{
 				console.log(error);
-				api.getRes("OTP error",data.sessionId,data.context).then(function(res)
+				api.getRes("OTP error",data.options).then(function(res)
 				{
 					console.log('response', res);
 					socket.emit('fromServer', { server: res });
@@ -61,7 +61,7 @@ io.on('connection', (socket) =>
 			else
 			{
 				console.log(response);
-				api.getRes("OTP sent",data.sessionId,data.context).then(function(res)
+				api.getRes("OTP sent",data.options).then(function(res)
 				{
 					console.log('response', res);
 					socket.emit('fromServer', { server: res });
