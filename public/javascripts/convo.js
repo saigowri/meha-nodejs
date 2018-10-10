@@ -1,6 +1,6 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
-var whoScore = 0;
+var score = 0;
 
 
 function requestToDialogflow(text,context)
@@ -51,33 +51,62 @@ function getRandomInt(max)
 
 function calcScore(currScore)
 {
-		if(localStorage.getItem("whoScore")==null)
+		if(localStorage.getItem("score")==null)
 		{
-			localStorage.setItem("whoScore", whoScore);
+			localStorage.setItem("score", score);
 		}
-		whoScore = localStorage.getItem("whoScore");
-		whoScore = parseInt(whoScore) + parseInt(currScore);
-		localStorage.setItem("whoScore", whoScore);
-		console.log("Score",whoScore);
+		score = localStorage.getItem("score");
+		score = parseInt(score) + parseInt(currScore);
+		localStorage.setItem("score", score);
+		console.log("Score",score);
 }
 		
-function scoreDisplay(responseMessage)
+function WHOScoreDisplay(responseMessage)
 {
-	if(parseInt(whoScore)>=50)
+	if(parseInt(score)>=50)
 	{
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Great! You have done well. Your WHO score is "+ whoScore + ". There is no need for you to worry."+
+					"Great! You have done well. Your WHO score is "+ score + ". There is no need for you to worry."+
                     "    </div>";
 		requestToDialogflow("WHO-High-Score",""); 	
 	}
 	else
 	{
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Your WHO score is "+ whoScore + ". This is not a very good score. However, don't worry, I am here to help."+
+					"Your WHO score is "+ score + ". This is not a very good score. However, don't worry, I am here to help."+
                     "    </div>";
 		requestToDialogflow("WHO-Low-Score",""); 	
 	}
-	localStorage.setItem("whoScore", 0);
+	localStorage.setItem("score", 0);
+	return responseMessage;
+}
+function ScreenerScoreDisplay(responseMessage)
+{
+	if(parseInt(score)>10)
+	{
+		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+					"Your Screener score is "+ score + ". You seem to be having significant depression symptoms. I stongly"+
+					" recommend you to consult a mental health professional."+
+                    "    </div>";
+		requestToDialogflow("Screener-severe-depression",""); 	
+	}
+	else if(parseInt(score)<=10 && parseInt(score)>5)
+	{
+		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+					"Your Screener score is "+ score + ". You seem to be having mild depression symptoms. Don't worry"+
+					" I am here to help you. I recommend you to start using the PUSH-D Application. "+
+                    "    </div>";
+		requestToDialogflow("Screener-mild-depression",""); 	
+	}
+	else{
+
+		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+					"Great! Your Screener score is "+ score + ". You do not seem to have any depression symptoms."+
+					"    </div>";
+		requestToDialogflow("Screener-no-depression",""); 
+
+	}
+	localStorage.setItem("score", 0);
 	return responseMessage;
 }
 
@@ -109,6 +138,10 @@ function processOptions(responseMessage,payload)
 	for (var key in payload.Option) 
 	{
 		if(type.localeCompare('WHO')== 0 )
+		{
+			var buttonClick = 'setScore(this.value,this.id)';
+		}
+		else if(type.localeCompare('Screener')== 0 )
 		{
 			var buttonClick = 'setScore(this.value,this.id)';
 		}
@@ -165,7 +198,11 @@ function processPayload(responseMessage, payload)
 	{
 		if(payload.type.localeCompare('WHO-End')==0)
 		{
-			responseMessage = scoreDisplay(responseMessage);
+			responseMessage = WHOScoreDisplay(responseMessage);
+		}
+		else if(payload.type.localeCompare('Screener-End')==0)
+		{
+			responseMessage = ScreenerScoreDisplay(responseMessage);
 		}
 	}
 			
@@ -280,5 +317,5 @@ function home()
 
 function usefulLinks()
 {
-	requestToDialogflow("lighten mood","Lighten-mood");
+	requestToDialogflow("Useful Links","Useful-Links");
 }
