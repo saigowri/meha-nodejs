@@ -11,7 +11,6 @@ function requestToDialogflow(req,text,contexts)
     contexts: contexts
 	};
 	socket.emit(req, {query : text , options : options});
-	//socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
 }
 
 function setSessionId()
@@ -44,98 +43,19 @@ function getRandomInt(max)
 
 function calcScore(currScore)
 {
-		if(localStorage.getItem("score")==null)
+		if(localStorage.getItem("score")==null || isNaN(localStorage.getItem("score")))
 		{
 			localStorage.setItem("score", score);
 		}
 		score = localStorage.getItem("score");
 		score = parseInt(score) + parseInt(currScore);
 		localStorage.setItem("score", score);
-		console.log("Score",score);
-}
-		
-function WHOScoreDisplay(responseMessage)
-{
-	if(parseInt(score)>=50)
-	{
-		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Great! You have done well. Your WHO score is "+ score + ". There is no need for you to worry."+
-                    "    </div>";
-		var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }];
-		requestToDialogflow("fromClient","WHO-High-Score",contexts); 	
-	}
-	else
-	{
-		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Your WHO score is "+ score + ". This is not a very good score. However, don't worry, I am here to help."+
-                    "    </div>";
-		var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }]; 	
-		requestToDialogflow("fromClient","WHO-Low-Score",contexts); 	
-	}
-	localStorage.setItem("score", 0);
-	return responseMessage;
-}
-function ScreenerScoreDisplay(responseMessage)
-{
-	if(parseInt(score)>10)
-	{
-		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Your Screener score is "+ score + ". You seem to be having significant depression symptoms. I stongly"+
-					" recommend you to consult a mental health professional."+
-                    "    </div>";
-		var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }]; 	
-		requestToDialogflow("fromClient","Screener-severe-depression",contexts); 
-	}
-	else if(parseInt(score)<=10 && parseInt(score)>5)
-	{
-		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Your Screener score is "+ score + ". You seem to be having mild depression symptoms. Don't worry"+
-					" I am here to help you. I recommend you to start using the PUSH-D Application. "+
-                    "    </div>";
-		var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }]; 	
-		requestToDialogflow("fromClient","Screener-mild-depression",contexts); 	
-	}
-	else{
-
-		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
-					"Great! Your Screener score is "+ score + ". You do not seem to have any depression symptoms."+
-					"    </div>";
-		var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }]; 	
-		requestToDialogflow("fromClient","Screener-no-depression",contexts); 
-
-	}
-	localStorage.setItem("score", 0);
-	return responseMessage;
+		console.log("Score ",score);
 }
 
-function setScore(text,score) 
+function setScore(text,score,contexts) 
 {
 	calcScore(score);
-	var contexts = [{
-            name: "",
-            parameters: {},
-			lifespan:1
-        }]; 
 	setInput(text,contexts);
 }
 
@@ -166,13 +86,9 @@ function processOptions(responseMessage,payload)
 				parameters: {},
 				lifespan:1
 			}];
-		if(type.localeCompare('WHO')== 0 )
+		if(type.localeCompare('WHO')== 0 || type.localeCompare('Screener')== 0)
 		{
-			var buttonClick = 'setScore(this.value,this.id)';
-		}
-		else if(type.localeCompare('Screener')== 0 )
-		{
-			var buttonClick = 'setScore(this.value,this.id)';
+			var buttonClick = 'setScore(this.value,this.id,'+JSON.stringify(contexts)+')';
 		}
 		else
 		{ 
@@ -225,17 +141,6 @@ function processPayload(responseMessage, payload)
 	{
 		responseMessage = processOptions(responseMessage,payload);
 	}
-	if(payload.hasOwnProperty('type'))
-	{
-		if(payload.type.localeCompare('WHO-End')==0)
-		{
-			responseMessage = WHOScoreDisplay(responseMessage);
-		}
-		else if(payload.type.localeCompare('Screener-End')==0)
-		{
-			responseMessage = ScreenerScoreDisplay(responseMessage);
-		}
-	}
 			
 	return responseMessage;
 }
@@ -280,26 +185,54 @@ function processWebhook(data)
 						
 	setResponse(responseMessage);
 }
-		
-			/*
-		function sendReply() 
-		{
-			var text = $("#input").val();
-			$("#input").val("");
 
-		/*		error: function() {
-					setResponse("<li class='p-1 rounded mb-1'>"+
-                                "<div class='receive-msg'>"+
-                                "    <div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
-                                "        <p class='pl-2 pr-2 rounded' style='color:red'>Internal Server Error</p>"+
-                                "    </div>"+
-                                "</div>"+
-                            "</li>");
-				}
-			});
 		
-		}*/
-		
+function whoScoreDisplay()
+{
+	var result = (parseInt(score)>=50)?  "who-high-score" : "who-low-score";
+	var contexts = [{
+            name: result,
+            parameters: { "score":score},
+			lifespan:1
+        }];
+	requestToDialogflow("fromClient",result,contexts); 	
+	localStorage.setItem("score", 0);
+}
+
+function screenerScoreDisplay()
+{
+	var result = (parseInt(score)>10)?  "Screener-severe-depression" : (parseInt(score)>5)?  "Screener-mild-depression" : "Screener-no-depression";
+	var contexts = [{
+            name: result,
+            parameters: { "score":score},
+			lifespan:1
+        }];
+	requestToDialogflow("fromClient",result,contexts); 	
+	localStorage.setItem("score", 0);
+}
+
+function emailDisplay(email)
+{
+	var contexts = [{
+					name: "",
+					parameters: {
+						"email":email
+					},
+					lifespan:1
+			}]; 
+	requestToDialogflow("sendMail",email,contexts);
+}
+
+function otpDisplay(otp)
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]; 
+	requestToDialogflow("matchOTP",otp,contexts);
+}
+
 		
 socket.on('fromServer', function (data) 
 { 
@@ -326,36 +259,18 @@ socket.on('fromServer', function (data)
 		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
 		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
 		
-		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
-		{
-				var email = data.server.result.parameters.email;
-				var contexts = [{
-					name: "",
-					parameters: {
-						"email":email
-					},
-					lifespan:1
-				}]; 
-				requestToDialogflow("sendMail",email,contexts);
-		}
-		else if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
-		{
-			var otp = data.server.result.parameters.otp;
-			var contexts = [{
-					name: "",
-					parameters: {},
-					lifespan:1
-				}]; 
-			requestToDialogflow("matchOTP",otp,contexts);
-		}					
-		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
-		{
-			processWebhook(data.server.result.fulfillment.data);
-		}
-		else
-		{
+		var action = data.server.result.hasOwnProperty('action');
+		var actionVal = (action) ? data.server.result.action : "";
+		var source = data.server.result.fulfillment.hasOwnProperty('source');
+		var sourceVal = (source) ? data.server.result.fulfillment.source : "";
+		
+		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
+		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();		
+		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
+		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
+		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
+		else 
 			processResponse(data.server.result.fulfillment);
-		}
 	}
 })
 
