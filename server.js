@@ -43,10 +43,22 @@ io.on('connection', (socket) =>
 	
 	socket.on('matchOTP', function (data) 
 	{
-		console.log('req', data.query);
+		console.log('Match OTP req: ', data.query);
 		if(data.query==123456)
 		{
 			api.getRes("Screener-Start",data.options).then(function(res)
+			{
+				console.log('response', res);
+				socket.emit('fromServer', { server: res });
+			}).catch(function(error)
+			{
+				console.log(error);
+				socket.emit('fromServer', { error: 'ERROR' });
+			});
+		}
+		else
+		{
+			api.getRes("OTP invalid",data.options).then(function(res)
 			{
 				console.log('response', res);
 				socket.emit('fromServer', { server: res });

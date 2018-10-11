@@ -3,16 +3,12 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a46
 var score = 0;
 
 
-function requestToDialogflow(req,text,context)
+function requestToDialogflow(req,text,contexts)
 {
 	var sessionId = setSessionId();	
 	var options = {
     sessionId: sessionId,
-    contexts: [{
-            name: context,
-            parameters: {},
-			lifespan:1
-        }]
+    contexts: contexts
 	};
 	socket.emit(req, {query : text , options : options});
 	//socket.emit('fromClient', { client : text , sessionId : sessionId  , context : context });
@@ -65,14 +61,24 @@ function WHOScoreDisplay(responseMessage)
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! You have done well. Your WHO score is "+ score + ". There is no need for you to worry."+
                     "    </div>";
-		requestToDialogflow("fromClient","WHO-High-Score",""); 	
+		var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }];
+		requestToDialogflow("fromClient","WHO-High-Score",contexts); 	
 	}
 	else
 	{
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Your WHO score is "+ score + ". This is not a very good score. However, don't worry, I am here to help."+
                     "    </div>";
-		requestToDialogflow("fromClient","WHO-Low-Score",""); 	
+		var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 	
+		requestToDialogflow("fromClient","WHO-Low-Score",contexts); 	
 	}
 	localStorage.setItem("score", 0);
 	return responseMessage;
@@ -85,7 +91,12 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having significant depression symptoms. I stongly"+
 					" recommend you to consult a mental health professional."+
                     "    </div>";
-		requestToDialogflow("fromClient","Screener-severe-depression",""); 	
+		var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 	
+		requestToDialogflow("fromClient","Screener-severe-depression",contexts); 
 	}
 	else if(parseInt(score)<=10 && parseInt(score)>5)
 	{
@@ -93,14 +104,24 @@ function ScreenerScoreDisplay(responseMessage)
 					"Your Screener score is "+ score + ". You seem to be having mild depression symptoms. Don't worry"+
 					" I am here to help you. I recommend you to start using the PUSH-D Application. "+
                     "    </div>";
-		requestToDialogflow("fromClient","Screener-mild-depression",""); 	
+		var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 	
+		requestToDialogflow("fromClient","Screener-mild-depression",contexts); 	
 	}
 	else{
 
 		responseMessage = responseMessage + "    <div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 					"Great! Your Screener score is "+ score + ". You do not seem to have any depression symptoms."+
 					"    </div>";
-		requestToDialogflow("fromClient","Screener-no-depression",""); 
+		var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 	
+		requestToDialogflow("fromClient","Screener-no-depression",contexts); 
 
 	}
 	localStorage.setItem("score", 0);
@@ -110,14 +131,19 @@ function ScreenerScoreDisplay(responseMessage)
 function setScore(text,score) 
 {
 	calcScore(score);
-	setInput(text);
+	var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 
+	setInput(text,contexts);
 }
 
-function setInput(text) 
+function setInput(text,contexts) 
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	requestToDialogflow("fromClient",text,"");
+	requestToDialogflow("fromClient",text,contexts);
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
@@ -126,7 +152,7 @@ function setInput(text)
 
 function processOptions(responseMessage,payload) 
 {
-	if(!payload.hasOwnProperty('disabled'))
+	if(!payload.hasOwnProperty('enabled') || (payload.hasOwnProperty('enabled') && !payload.enabled))
 		$("#input").attr("disabled", true);
 	var width = payload.width;
 	var type = "";
@@ -135,6 +161,11 @@ function processOptions(responseMessage,payload)
 	responseMessage = responseMessage +	"<div class='row' style='margin-top:4px'>";
 	for (var key in payload.Option) 
 	{
+		var contexts = [{
+				name: "",
+				parameters: {},
+				lifespan:1
+			}];
 		if(type.localeCompare('WHO')== 0 )
 		{
 			var buttonClick = 'setScore(this.value,this.id)';
@@ -144,7 +175,9 @@ function processOptions(responseMessage,payload)
 			var buttonClick = 'setScore(this.value,this.id)';
 		}
 		else
-			var buttonClick = 'setInput(this.value)';
+		{ 
+			var buttonClick = 'setInput(this.value,'+JSON.stringify(contexts)+')';
+		}
 		var buttons =	"    <div class='col-sm-"+width+"' style='margin-top:2px'>"+
 						"		<button type='button' value='"+payload.Option[key].title+
 						"		' id='"+payload.Option[key].score+"' onclick='"+buttonClick+"' class='btn btn-xs  btn-block btn-warning'>";
@@ -296,12 +329,24 @@ socket.on('fromServer', function (data)
 		if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('EmailVerify')==0)
 		{
 				var email = data.server.result.parameters.email;
-				requestToDialogflow("sendMail",email,'');
+				var contexts = [{
+					name: "",
+					parameters: {
+						"email":email
+					},
+					lifespan:1
+				}]; 
+				requestToDialogflow("sendMail",email,contexts);
 		}
 		else if(data.server.result.hasOwnProperty('action') && data.server.result.action.localeCompare('OtpVerify')==0)
 		{
 			var otp = data.server.result.parameters.otp;
-			requestToDialogflow("matchOTP",otp,'');
+			var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]; 
+			requestToDialogflow("matchOTP",otp,contexts);
 		}					
 		else if(data.server.result.fulfillment.hasOwnProperty('source') && data.server.result.fulfillment.source.localeCompare('webhook')==0)
 		{
@@ -323,10 +368,20 @@ function setResponse(val)
 			
 function home()
 {
-	setInput('Home');
+	var contexts = [{
+            name: "",
+            parameters: {},
+			lifespan:1
+        }]; 
+	setInput("Home",contexts);
 }
 
 function usefulLinks()
 {
-	requestToDialogflow("fromClient","Useful Links","Useful-Links");
+	var contexts = [{
+					name: "Useful-Links",
+					parameters: {},
+					lifespan:1
+				}]; 
+	setInput("Useful Links",contexts);
 }
