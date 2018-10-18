@@ -34,7 +34,12 @@
 			});
 			
 			// Beginning Conversation From Chatbot
-			requestToDialogflow("fromClient","Begin Chatbot","begin-chatbot");
+			var contexts = [{
+				name: "begin-chatbot",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToDialogflow("fromClient","Begin Chatbot",contexts);
 		});
 		
 	</script>
