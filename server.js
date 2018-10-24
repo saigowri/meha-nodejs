@@ -3,8 +3,11 @@ const socketIO = require('socket.io');
 const path = require('path');
 var api = require('./api');
 var mailer = require('./mailer');
+var db = require('./database');
+
 var app = express();
 app.use(express.static(path.join(__dirname, 'public')));
+db.connectdb;
 
 
 function getRandomInt(max) 
@@ -22,6 +25,19 @@ const server = app
 
 const io = socketIO(server);
 
+var apiGetRes = function (socket,query,options) 
+{
+	console.log('Request', query);
+	api.getRes(query,options).then(function(res)
+	{
+		console.log('Response', res);
+		socket.emit('fromServer', { server: res });
+	}).catch(function(error)
+	{
+		console.log('ErrorResponse', error);
+		socket.emit('fromServer', { error: 'ERROR' });
+	});
+}
 
 io.on('connection', (socket) => 
 {
@@ -29,80 +45,80 @@ io.on('connection', (socket) =>
 	
 	socket.on('fromClient', function (data) 
 	{
-		console.log('req', data.query);
-		api.getRes(data.query,data.options).then(function(res)
-		{
-			console.log('response', res);
-			socket.emit('fromServer', { server: res });
-		}).catch(function(error)
-		{
-			console.log(error);
-			socket.emit('fromServer', { error: 'ERROR' });
-		});
+		apiGetRes(socket,data.query,data.options);
 	});
 	
 	socket.on('matchOTP', function (data) 
 	{
-		console.log('Match OTP req: ', data.query);
-		if(data.query==123456)
+		db.selectWhereQuery("user","sessionid",data.options.sessionId,function(result)
 		{
-			api.getRes("Screener-Start",data.options).then(function(res)
+			console.log(result);
+			if(result[0])
 			{
-				console.log('response', res);
-				socket.emit('fromServer', { server: res });
-			}).catch(function(error)
-			{
-				console.log(error);
-				socket.emit('fromServer', { error: 'ERROR' });
-			});
-		}
-		else
-		{
-			api.getRes("OTP invalid",data.options).then(function(res)
-			{
-				console.log('response', res);
-				socket.emit('fromServer', { server: res });
-			}).catch(function(error)
-			{
-				console.log(error);
-				socket.emit('fromServer', { error: 'ERROR' });
-			});
-		}
+				var date = new Date(result[0].otp_sent_at);
+				var now = new Date();
+				var dateDiff = now.getTime()-date.getTime();
+				dateDiff = dateDiff / (60 * 1000);
+				console.log("Date diff: ", dateDiff);
+				if(data.query==result[0].otp && dateDiff<=10)
+				{
+					apiGetRes(socket,"Screener-Start",data.options);
+					db.updateQuery("user", "verified = 1",
+					"sessionid = '"+data.options.sessionId+"'", function(result){});
+				}
+				else
+					apiGetRes(socket,"OTP invalid",data.options);
+			}
+		});
 	});
 	
 	socket.on('sendMail', function (data) 
 	{
-		mailer.sendMail(data.query,getRandomInt(1000000),function(error, response)
+		var otp = getRandomInt(1000000);
+		mailer.sendMail(data.query,otp,function(error, response)
 		{
 			if(error)
 			{
 				console.log(error);
-				api.getRes("OTP error",data.options).then(function(res)
-				{
-					console.log('response', res);
-					socket.emit('fromServer', { server: res });
-				}).catch(function(error)
-				{
-					console.log(error);
-					socket.emit('fromServer', { error: 'ERROR' });
-				});
-
+				apiGetRes(socket,"OTP error",data.options);
 			}
 			else
 			{
-				console.log(response);
-				api.getRes("OTP sent",data.options).then(function(res)
+				var dt = new Date();
+				var dtString = dt.toString();
+				db.updateQuery("user",
+					"email = '"+data.query+"',otp = "+otp+", otp_sent_at = '"+dtString+"'",
+					"sessionid = '"+data.options.sessionId+"'",
+				function(result)
 				{
-					console.log('response', res);
-					socket.emit('fromServer', { server: res });
-				}).catch(function(error)
-				{
-					console.log(error);
-					socket.emit('fromServer', { error: 'ERROR' });
+					console.log(result);
 				});
+				apiGetRes(socket,"OTP sent",data.options);
 			}
 		});
 	});
+	
+	socket.on('findEmail', function (data) 
+	{
+		console.log("Find Email for session id: ", data.options.sessionId);
+		db.selectWhereQuery("user","sessionid",data.options.sessionId,function(result)
+		{
+			console.log(result);
+			if(result[0])
+			{
+				if((!result[0].email) || (result[0].verified!=13))
+					apiGetRes(socket,"Request Email Id",data.options);
+			}
+			else
+			{
+				db.insertQuery("user","sessionid","'"+data.options.sessionId+"'",function(result)
+				{
+					console.log(result);
+				});
+				apiGetRes(socket,"Request Email Id",data.options);
+			}
+		});
+	});	
 	
 	socket.on('disconnect', () => console.log('Client disconnected'));
 });

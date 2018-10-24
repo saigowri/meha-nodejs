@@ -223,6 +223,18 @@ function emailDisplay(email)
 	requestToDialogflow("sendMail",email,contexts);
 }
 
+
+
+function findEmail()
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+			}]; 
+	requestToDialogflow("findEmail","",contexts);
+}
+
 function otpDisplay(otp)
 {
 	var contexts = [{
@@ -265,7 +277,8 @@ socket.on('fromServer', function (data)
 		var sourceVal = (source) ? data.server.result.fulfillment.source : "";
 		
 		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
-		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();		
+		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
+		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		

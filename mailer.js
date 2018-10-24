@@ -33,7 +33,7 @@ var sendMail = function(toAddress,otp,callback)
 		}
 
     // if you don't want to use this transport object anymore, uncomment following line
-    //smtpTransport.close(); // shut down the connection pool, no more messages
+    smtpTransport.close(); // shut down the connection pool, no more messages
 	});
 };
 
