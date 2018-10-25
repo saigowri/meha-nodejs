@@ -3,7 +3,7 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a46
 var score = 0;
 
 
-function requestToDialogflow(req,text,contexts)
+function requestToServer(req,text,contexts)
 {
 	var sessionId = setSessionId();	
 	var options = {
@@ -13,20 +13,30 @@ function requestToDialogflow(req,text,contexts)
 	socket.emit(req, {query : text , options : options});
 }
 
-function setSessionId()
+function resetSessionId()
 {
-	var random1 = getRandomInt(100000);
-	var random2 = getRandomInt(100000);
-	var timestamp =  "" + parseInt(Date.now()) + random1 + random2;
-	var sessionId ;
 	if (typeof(Storage) !== "undefined") 
 	{
 		// Store
-		if(localStorage.getItem("sessionId")==null)
-		{
-			localStorage.setItem("sessionId", timestamp);
-		}
-		sessionId = localStorage.getItem("sessionId");
+		var random1 = getRandomInt(100000);
+		var random2 = getRandomInt(100000);
+		var timestamp =  "" + parseInt(Date.now()) + random1 + random2;
+		localStorage.setItem("sessionId", timestamp);
+		var sessionId = localStorage.getItem("sessionId");
+		return sessionId;		
+	} 
+	else 
+	{
+		//document.getElementById("response").innerHTML = "Sorry, your browser does not support Web Storage...";
+		return "Dummy Session Id"
+	}
+}
+
+function setSessionId()
+{
+	if (typeof(Storage) !== "undefined") 
+	{
+		sessionId = (localStorage.getItem("sessionId")==null)? resetSessionId() : localStorage.getItem("sessionId");
 		return sessionId;		
 	} 
 	else 
@@ -63,7 +73,7 @@ function setInput(text,contexts)
 {
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
-	requestToDialogflow("fromClient",text,contexts);
+	requestToServer("fromClient",text,contexts);
 	console.log("Input:", text);
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
@@ -195,7 +205,7 @@ function whoScoreDisplay()
             parameters: { "score":score},
 			lifespan:1
         }];
-	requestToDialogflow("fromClient",result,contexts); 	
+	requestToServer("fromClient",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
 
@@ -207,7 +217,7 @@ function screenerScoreDisplay()
             parameters: { "score":score},
 			lifespan:1
         }];
-	requestToDialogflow("fromClient",result,contexts); 	
+	requestToServer("fromClient",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
 
@@ -220,7 +230,7 @@ function emailDisplay(email)
 					},
 					lifespan:1
 			}]; 
-	requestToDialogflow("sendMail",email,contexts);
+	requestToServer("sendMail",email,contexts);
 }
 
 
@@ -232,7 +242,17 @@ function findEmail()
 					parameters: {},
 					lifespan:1
 			}]; 
-	requestToDialogflow("findEmail","",contexts);
+	requestToServer("findEmail","",contexts);
+}
+
+function checkMood()
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+			}]; 
+	requestToServer("checkMood","",contexts);
 }
 
 function otpDisplay(otp)
@@ -242,10 +262,32 @@ function otpDisplay(otp)
 					parameters: {},
 					lifespan:1
 				}]; 
-	requestToDialogflow("matchOTP",otp,contexts);
+	requestToServer("matchOTP",otp,contexts);
 }
 
+
+function welcomeBackFollowup(data)
+{
+	if(data.localeCompare('Continue\t\t')==0)
+		checkMood();
+	else
+	{
+		resetSessionId();
+		var contexts = [{
+			name: "begin-chatbot",
+			parameters: {},
+			lifespan:1
+		}]; 
+		requestToServer("beginChatbot","Begin Chatbot",contexts);
+	}
+}
 		
+socket.on('setServerSessionId', function (data) 
+{
+	if (typeof(Storage) !== "undefined") 
+		localStorage.setItem("sessionId", data);
+});
+
 socket.on('fromServer', function (data) 
 { 
 
@@ -259,6 +301,7 @@ socket.on('fromServer', function (data)
 					"	</div>"+
 					"</li>");
 	}
+	else if(data.hasOwnProperty('home'))	requestToServer("fromClient","home","");
 	else
 	{
 		// recieveing a reply from server.
@@ -279,6 +322,7 @@ socket.on('fromServer', function (data)
 		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
 		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
+		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server.result.resolvedQuery);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
@@ -301,7 +345,7 @@ function home()
             parameters: {},
 			lifespan:1
         }]; 
-	setInput("Home",contexts);
+	setInput("Home","");
 }
 
 function usefulLinks()

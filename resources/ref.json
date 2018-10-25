@@ -1,0 +1,44 @@
+{
+  "instructions": 
+    [{
+		"text": "How are you feeling today?"
+    },{
+		"link":     
+		{
+			"title": "Relaxing Music & Soft Rain",
+			"url": "https://www.youtube.com/watch?v=Lp6XlsBm_Lw"
+		}
+	}],
+  "width": 4,
+  "enabled": false,
+  "Option": [
+    {
+      "title": "Very Happy",
+      "icon": "far fa-laugh-beam"
+    },
+    {
+      "title": "Happy",
+      "icon": "far fa-grin"
+    },
+    {
+      "title": "Not So Bad",
+      "icon": "far fa-smile"
+    },
+    {
+      "title": "Neutral",
+      "icon": "far fa-meh"
+    },
+    {
+      "title": "Not So Good",
+      "icon": "far fa-frown"
+    },
+    {
+      "title": "Sad",
+      "icon": "far fa-tired"
+    },
+    {
+      "title": "Very Sad",
+      "icon": "far fa-sad-cry"
+    }
+  ]
+}

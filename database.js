@@ -76,11 +76,31 @@ var insertQuery = function(table,fields,fieldVals)
 	console.log("Insert Query: ", sql);
 	con.query(sql,fieldVals, function (err, result) 
 	{
-		if (err) throw err;
+		if (err) 
+			throw err;
 		console.log("1 record inserted");
+	});
+};
+
+
+var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
+{ 
+	var sql = "INSERT INTO "+ table+ " SET ";
+	for(var i in fields )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + fields[i]+" = ?";
+	}
+	console.log("Insert Query: ", sql);
+	con.query(sql,fieldVals, function (err, result) 
+	{
+		if (err && err.code == 'ER_DUP_ENTRY') 
+			updateQuery(table,fields,fieldVals,conditions,conditionValues);
+		else
+			console.log("1 record inserted");
 	});
 };
 
 //con.end();
 
-module.exports = {connectdb, selectQuery, selectWhereQuery, insertQuery, updateQuery}
+module.exports = {connectdb, selectQuery, selectWhereQuery, insertQuery, updateQuery, upsertQuery}
