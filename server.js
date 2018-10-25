@@ -50,21 +50,21 @@ io.on('connection', (socket) =>
 	
 	socket.on('matchOTP', function (data) 
 	{
-		db.selectWhereQuery("user","sessionid",data.options.sessionId,function(result)
+		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
 		{
 			console.log(result);
 			if(result[0])
 			{
-				var date = new Date(result[0].otp_sent_at);
+				var date = result[0].otp_sent_at;
 				var now = new Date();
+				console.log("Date: ", date, "Now ", now);
 				var dateDiff = now.getTime()-date.getTime();
 				dateDiff = dateDiff / (60 * 1000);
 				console.log("Date diff: ", dateDiff);
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
 					apiGetRes(socket,"Screener-Start",data.options);
-					db.updateQuery("user", "verified = 1",
-					"sessionid = '"+data.options.sessionId+"'", function(result){});
+					db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -84,15 +84,8 @@ io.on('connection', (socket) =>
 			}
 			else
 			{
-				var dt = new Date();
-				var dtString = dt.toString();
-				db.updateQuery("user",
-					"email = '"+data.query+"',otp = "+otp+", otp_sent_at = '"+dtString+"'",
-					"sessionid = '"+data.options.sessionId+"'",
-				function(result)
-				{
-					console.log(result);
-				});
+				var date = new Date();
+				db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],data.options.sessionId);
 				apiGetRes(socket,"OTP sent",data.options);
 			}
 		});
@@ -101,20 +94,17 @@ io.on('connection', (socket) =>
 	socket.on('findEmail', function (data) 
 	{
 		console.log("Find Email for session id: ", data.options.sessionId);
-		db.selectWhereQuery("user","sessionid",data.options.sessionId,function(result)
+		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
 		{
 			console.log(result);
 			if(result[0])
 			{
-				if((!result[0].email) || (result[0].verified!=13))
+				if((!result[0].email) || (result[0].verified!=1))
 					apiGetRes(socket,"Request Email Id",data.options);
 			}
 			else
 			{
-				db.insertQuery("user","sessionid","'"+data.options.sessionId+"'",function(result)
-				{
-					console.log(result);
-				});
+				db.insertQuery("user",["sessionid","last_visited"],[data.options.sessionId, new Date() ]);
 				apiGetRes(socket,"Request Email Id",data.options);
 			}
 		});

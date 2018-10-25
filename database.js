@@ -15,54 +15,71 @@ var connectdb = con.connect(function(err)
 
 var selectQuery = function(table,callback)
 {
-	con.query("SELECT * FROM " + table , function (err, result, fields) 
-  {
-    if (err) throw err;
-    //console.log(result);
-	callback(result);
-  });
+	var sql = "SELECT * FROM " + table;
+	console.log("SELECT Query: ", sql);
+	con.query(sql , function (err, result, fields) 
+	{
+		if (err) throw err;
+		//console.log(result);
+		callback(result);
+	});
 };
 
-var selectWhereQuery = function(table,field,fieldVal,callback)
+var selectWhereQuery = function(table,fields,fieldVals,callback)
 {
-	con.query("SELECT * FROM " + table +" WHERE "+ field + " = '"+fieldVal+"'", function (err, result, fields) 
-  {
-    if (err) throw err;
-    //console.log(result);
-	callback(result);
-  });
+	var sql = "SELECT * FROM " + table +" WHERE ";
+	for(var i in fields )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + fields[i]+" = ?";
+	}
+	console.log("SELECT Query: ", sql);
+	con.query(sql,fieldVals , function (err, result, fields) 
+	{
+		if (err) throw err;
+		callback(result);
+	});
 };
 
-var updateQuery = function(table,set,conditions,callback)
+var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 {
-	var sql = "UPDATE " + table +" SET "+ set + " WHERE "+ conditions;
+	var sql = "UPDATE " + table +" SET ";
+	for(var i in fields )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + fields[i]+" = ?";
+	}
+	sql = sql + " WHERE ";
+	for(var i in conditions )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + conditions[i]+" = ?";
+	}
 	console.log("Update Query: ", sql);
-	con.query(sql, function (err, result, fields) 
-  {
-    if (err) throw err;
-    console.log(result);
-	callback(result);
-  });
+	var values = fieldVals.concat(conditionValues);
+	con.query(sql, values, function (err, result, fields) 
+	{
+		if (err) throw err;
+		console.log("Successfully updated the row.");
+	});
 };
 
 
-var insertQuery = function(table,fields,fieldVals,callback)
-{
-	con.query("INSERT INTO " + table +" ( "+ fields + " ) VALUES ( "+fieldVals+" ) ", function (err, result) 
-  {
-    if (err) throw err;
-    //console.log(result);
-    console.log("1 record inserted");
-	callback(result);
-  });
+var insertQuery = function(table,fields,fieldVals)
+{ 
+	var sql = "INSERT INTO "+ table+ " SET ";
+	for(var i in fields )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + fields[i]+" = ?";
+	}
+	console.log("Insert Query: ", sql);
+	con.query(sql,fieldVals, function (err, result) 
+	{
+		if (err) throw err;
+		console.log("1 record inserted");
+	});
 };
-/*
-  var sql = "INSERT INTO user ( name, email, sessionid ) VALUES ( 'Name3', 'a@xyz.com', 'Sample data3' );";
-  con.query(sql, function (err, result) 
-  {
-    if (err) throw err;
-    console.log("1 record inserted");
-  });*/
 
 //con.end();
 
