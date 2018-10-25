@@ -4,6 +4,7 @@ const path = require('path');
 var api = require('./api');
 var mailer = require('./mailer');
 var db = require('./database');
+var config = require('./config.json');
 
 var app = express();
 app.use(express.static(path.join(__dirname, 'public')));
@@ -92,7 +93,7 @@ io.on('connection', (socket) =>
 				apiGetRes(socket,"Welcome back "+email,data.options);	
 			else
 			{
-				db.upsertQuery("user",["sessionid","last_visited"],[sessionId,new Date()],["sessionid"],sessionId);
+				db.upsertQuery("user",["sessionid"],[sessionId],["sessionid"],sessionId);
 				apiGetRes(socket,data.query,data.options);	
 			}
 		});
@@ -100,7 +101,6 @@ io.on('connection', (socket) =>
 	
 	socket.on('checkMood', function (data) 
 	{
-		db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
 		var sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
 		{
@@ -109,11 +109,12 @@ io.on('connection', (socket) =>
 			var dateDiff = now.getTime()-date.getTime();
 			dateDiff = dateDiff / (60 * 60 * 1000);
 			console.log("Hour diff: ", dateDiff);
-			if(dateDiff<24)
+			if(dateDiff<config.how_are_you_interval)
 				socket.emit("fromServer",{	home : "home"	});
 			else
 				apiGetRes(socket,"mood of user",data.options);	
 		});
+		db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
 	});
 	
 	socket.on('matchOTP', function (data) 
@@ -176,6 +177,12 @@ io.on('connection', (socket) =>
 				});
 			}
 		});
+	});
+	
+	socket.on('recordFeelings', function (data) 
+	{		
+		if(data.query!="")
+		db.updateQuery("user",["feeling"],[data.query],["sessionid"],data.options.sessionId);
 	});
 	
 	socket.on('findEmail', function (data) 

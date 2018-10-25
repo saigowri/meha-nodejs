@@ -328,6 +328,7 @@ socket.on('fromServer', function (data)
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
+		if(actionVal.localeCompare('input.welcome')==0) requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 	}
 })
 
