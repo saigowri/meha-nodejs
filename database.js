@@ -10,7 +10,7 @@ var con = mysql.createConnection({
 var connectdb = con.connect(function(err) 
 {
   if (err) throw err;
-  console.log("Connected!");
+  console.log("Connected to mehaDB!");
 });
 
 var selectQuery = function(table,callback)
@@ -33,7 +33,7 @@ var selectWhereQuery = function(table,fields,fieldVals,callback)
 		if(i!=0) sql = sql + ", ";
 		sql = sql + fields[i]+" = ?";
 	}
-	console.log("SELECT Query: ", sql);
+	console.log("SELECT Query: ", sql, fieldVals);
 	con.query(sql,fieldVals , function (err, result, fields) 
 	{
 		if (err) throw err;
@@ -55,8 +55,8 @@ var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 		if(i!=0) sql = sql + ", ";
 		sql = sql + conditions[i]+" = ?";
 	}
-	console.log("Update Query: ", sql);
 	var values = fieldVals.concat(conditionValues);
+	console.log("Update Query: ", sql, values);
 	con.query(sql, values, function (err, result, fields) 
 	{
 		if (err) throw err;
@@ -73,7 +73,7 @@ var insertQuery = function(table,fields,fieldVals)
 		if(i!=0) sql = sql + ", ";
 		sql = sql + fields[i]+" = ?";
 	}
-	console.log("Insert Query: ", sql);
+	console.log("Insert Query: ", sql, fieldVals);
 	con.query(sql,fieldVals, function (err, result) 
 	{
 		if (err) 
@@ -84,6 +84,25 @@ var insertQuery = function(table,fields,fieldVals)
 
 
 var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
+{ 
+	var sql = "INSERT INTO "+ table+ " SET ";
+	for(var i in fields )
+	{
+		if(i!=0) sql = sql + ", ";
+		sql = sql + fields[i]+" = ?";
+	}
+	console.log("Insert Query: ", sql, fieldVals);
+	con.query(sql,fieldVals, function (err, result) 
+	{
+		if (err && err.code == 'ER_DUP_ENTRY') 
+			updateQuery(table,fields,fieldVals,conditions,conditionValues);
+		else
+			console.log("1 record inserted");
+	});
+};
+
+
+var saveHistory = function(table,historyTable,conditions,conditionValues)
 { 
 	var sql = "INSERT INTO "+ table+ " SET ";
 	for(var i in fields )
@@ -103,4 +122,5 @@ var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 
 //con.end();
 
-module.exports = {connectdb, selectQuery, selectWhereQuery, insertQuery, updateQuery, upsertQuery}
+module.exports = {connectdb, selectQuery, selectWhereQuery, 
+					insertQuery, updateQuery, upsertQuery, saveHistory}

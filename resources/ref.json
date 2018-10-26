@@ -14,30 +14,37 @@
   "Option": [
     {
       "title": "Very Happy",
+      "response":"Excellent! ",
       "icon": "far fa-laugh-beam"
     },
     {
       "title": "Happy",
+      "response":"Good! ",
       "icon": "far fa-grin"
     },
     {
       "title": "Not So Bad",
+      "response":"Good! ",
       "icon": "far fa-smile"
     },
     {
       "title": "Neutral",
+      "response":"Okay, ",
       "icon": "far fa-meh"
     },
     {
       "title": "Not So Good",
+      "response":"Sorry to hear that, ",
       "icon": "far fa-frown"
     },
     {
       "title": "Sad",
+      "response":"Sorry to hear that, ",
       "icon": "far fa-tired"
     },
     {
       "title": "Very Sad",
+      "response":"Sorry to hear that, ",
       "icon": "far fa-sad-cry"
     }
   ]

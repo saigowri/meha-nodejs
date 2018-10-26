@@ -96,6 +96,12 @@ function processOptions(responseMessage,payload)
 				parameters: {},
 				lifespan:1
 			}];
+		if(payload.Option[key].hasOwnProperty('response'))
+			var contexts = [{
+					name: "welcome",
+					parameters: {"reply":payload.Option[key].response},
+					lifespan:2
+				}];
 		if(type.localeCompare('WHO')== 0 || type.localeCompare('Screener')== 0)
 		{
 			var buttonClick = 'setScore(this.value,this.id,'+JSON.stringify(contexts)+')';
@@ -301,7 +307,15 @@ socket.on('fromServer', function (data)
 					"	</div>"+
 					"</li>");
 	}
-	else if(data.hasOwnProperty('home'))	requestToServer("fromClient","home","");
+	else if(data.hasOwnProperty('home'))
+	{
+		var contexts = [{
+					name: "welcome",
+					parameters: {"reply":""},
+					lifespan:2
+				}];
+		requestToServer("fromClient","home","");
+	}
 	else
 	{
 		// recieveing a reply from server.
@@ -346,7 +360,7 @@ function home()
             parameters: {},
 			lifespan:1
         }]; 
-	setInput("Home","");
+	setInput("Home",contexts);
 }
 
 function usefulLinks()

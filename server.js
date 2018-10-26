@@ -86,11 +86,13 @@ io.on('connection', (socket) =>
 	socket.on('beginChatbot', function (data) 
 	{
 		var sessionId = data.options.sessionId;
-		fetchEmail(sessionId,function(email)
+		fetchUser(sessionId,function(user)
 		{
-			console.log("Email: ",email);
-			if(email)
-				apiGetRes(socket,"Welcome back "+email,data.options);	
+			if(user && user.email && (user.verified==1))
+			{
+				var name = (user.name)?	user.name	:	user.email;
+				apiGetRes(socket,"Welcome "+name+" back "+user.email,data.options);	
+			}
 			else
 			{
 				db.upsertQuery("user",["sessionid"],[sessionId],["sessionid"],sessionId);
@@ -147,6 +149,10 @@ io.on('connection', (socket) =>
 		{
 			if(user && (user.verified==1))
 			{
+				fetchUser(data.options.sessionId, function(new_user_rec)
+				{
+					db.updateQuery("user",["last_visited","feeling"],[new_user_rec.last_visited,new_user_rec.feeling],["sessionid"],user.sessionid);
+				});
 				socket.emit('setServerSessionId',user.sessionid);
 				var options = 
 				{
@@ -182,7 +188,7 @@ io.on('connection', (socket) =>
 	socket.on('recordFeelings', function (data) 
 	{		
 		if(data.query!="")
-		db.updateQuery("user",["feeling"],[data.query],["sessionid"],data.options.sessionId);
+		db.updateQuery("user",["feeling","last_visited"],[data.query, new Date()],["sessionid"],data.options.sessionId);
 	});
 	
 	socket.on('findEmail', function (data) 
