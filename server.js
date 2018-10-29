@@ -17,11 +17,11 @@ function getRandomInt(max)
 }
 			
 const PORT = process.env.PORT || 3000;
-const INDEX = path.join(__dirname, 'index.html');
+const INDEX = path.join(__dirname, 'chatbot.html');
 
 
 const server = app
-  .use('/',(req, res) => res.sendFile(INDEX) )
+  .use('/chatbot',(req, res) => res.sendFile(INDEX) )
   //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
   
