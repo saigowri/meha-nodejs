@@ -1,10 +1,11 @@
 var mysql = require('mysql');
+var config = require('./config.json');
 
 var con = mysql.createConnection({
-  host: "localhost",
-  user: "meha",
-  password: "Password1",
-  database: "mehaDB"
+  host: config.db_host,
+  user: config.user,
+  password: config.password,
+  database: config.database
 });
 
 var connectdb = con.connect(function(err) 
@@ -20,19 +21,14 @@ var selectQuery = function(table,callback)
 	con.query(sql , function (err, result, fields) 
 	{
 		if (err) throw err;
-		//console.log(result);
+		console.log(fields);
 		callback(result);
 	});
 };
 
 var selectWhereQuery = function(table,fields,fieldVals,callback)
 {
-	var sql = "SELECT * FROM " + table +" WHERE ";
-	for(var i in fields )
-	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + fields[i]+" = ?";
-	}
+	var sql = "SELECT * FROM " + table +" WHERE " + fields.join(" = ? and ") + " = ?";
 	console.log("SELECT Query: ", sql, fieldVals);
 	con.query(sql,fieldVals , function (err, result, fields) 
 	{
@@ -43,18 +39,8 @@ var selectWhereQuery = function(table,fields,fieldVals,callback)
 
 var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 {
-	var sql = "UPDATE " + table +" SET ";
-	for(var i in fields )
-	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + fields[i]+" = ?";
-	}
-	sql = sql + " WHERE ";
-	for(var i in conditions )
-	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + conditions[i]+" = ?";
-	}
+	var sql = "UPDATE " + table +" SET "+ fields.join(" = ?, ") + " = ?"+
+			" WHERE "+ conditions.join(" = ? and ") + " = ?";
 	var values = fieldVals.concat(conditionValues);
 	console.log("Update Query: ", sql, values);
 	con.query(sql, values, function (err, result, fields) 
@@ -67,12 +53,7 @@ var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 
 var insertQuery = function(table,fields,fieldVals)
 { 
-	var sql = "INSERT INTO "+ table+ " SET ";
-	for(var i in fields )
-	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + fields[i]+" = ?";
-	}
+	var sql = "INSERT INTO "+ table+ " SET "+ fields.join(" = ?, ") + " = ?";
 	console.log("Insert Query: ", sql, fieldVals);
 	con.query(sql,fieldVals, function (err, result) 
 	{
@@ -85,12 +66,7 @@ var insertQuery = function(table,fields,fieldVals)
 
 var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 { 
-	var sql = "INSERT INTO "+ table+ " SET ";
-	for(var i in fields )
-	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + fields[i]+" = ?";
-	}
+	var sql = "INSERT INTO "+ table+ " SET "+ fields.join(" = ?, ") + " = ?";
 	console.log("Insert Query: ", sql, fieldVals);
 	con.query(sql,fieldVals, function (err, result) 
 	{
@@ -102,21 +78,42 @@ var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 };
 
 
-var saveHistory = function(table,historyTable,conditions,conditionValues)
+var saveHistory = function(table,historyTable,conditions,conditionValues,dateField)
 { 
-	var sql = "INSERT INTO "+ table+ " SET ";
-	for(var i in fields )
+	var tArray = [], htArray = [], fields = [], values = [];
+	var sql = "SELECT * FROM "+table+" WHERE " + conditions.join(" = ? and ") + " = ?";
+	con.query(sql, conditionValues , function (err, t_result, t_fields) 
 	{
-		if(i!=0) sql = sql + ", ";
-		sql = sql + fields[i]+" = ?";
-	}
-	console.log("Insert Query: ", sql);
-	con.query(sql,fieldVals, function (err, result) 
-	{
-		if (err && err.code == 'ER_DUP_ENTRY') 
-			updateQuery(table,fields,fieldVals,conditions,conditionValues);
-		else
-			console.log("1 record inserted");
+		if (err) throw err;
+		else if(!t_result[0])throw "No such record";
+		conditions.push(dateField);
+		conditionValues.push(t_result[0][dateField]);
+		sql = "SELECT * FROM "+historyTable+" WHERE " + conditions.join(" = ? and ") + " = ?";
+		con.query(sql, conditionValues , function (err, ht_result, ht_fields) 
+		{
+			console.log(t_result);
+			if (err) throw err;
+			for(var i in t_fields)
+			{
+				if(t_fields[i].name!="id")
+				tArray.push(t_fields[i].name);
+			}
+			for(var i in ht_fields)
+			{
+				if(ht_fields[i].name!="id")
+				htArray.push(ht_fields[i].name);
+			}
+			fields = tArray.filter(value => -1 !== htArray.indexOf(value));
+			if(fields.length!=tArray.length || fields.length!=htArray.length)
+				console.log("Please make sure that your history table is updated and is matching the table");
+			console.log(fields.join(", "));
+			for(var i in fields)
+				values.push(t_result[0][fields[i]]);
+			if(ht_result[0])
+				updateQuery(historyTable,fields, values, conditions, conditionValues);
+			else 
+				insertQuery(historyTable,fields, values);
+		});
 	});
 };
 

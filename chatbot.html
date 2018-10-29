@@ -3,14 +3,15 @@
   <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	
-	<title>Mental Health Assistant</title>
-	
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="css/custom.css" />
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+	<title>Mental Health Assistant</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="javascripts/convo.js"></script>
 	<script type="text/javascript">
@@ -40,27 +41,23 @@
 			}]; 
 			requestToServer("beginChatbot","Begin Chatbot",contexts);
 		});
+		
 	</script>
-	
   </head>
   
   <body>
-    <div class="container">
-        <div class="row pt-3">
             <div class="chat-main">
                 <div class="col-md-12 chat-header rounded-top bg-primary text-white">
                     <div style="height:25px;padding-top:3px"  class="row">
-                        <div class="col-sm-9 username pl-2">
+                        <div class="col-md-8 username pl-2">
                             <i class="fa fa-circle text-success" aria-hidden="true"></i>
-                            <span>Nimhans Mental Health Assistant</span>
+                            <h6 class="m-0">Mental Health Assistant</h6>
                         </div>
-                        <div class="col-sm-3 options text-right pr-2">
-                            <i style="color:white;font-size:15px;padding-bottom:3px" class="tooltipicon" onclick="home()">
-								<span class="fa-fw select-all fas"></span>
+                        <div class="col-md-4 options text-right pr-2">
+                            <i style="color:white;font-size:20px" class="fa fa-home tooltipicon" onclick="home()">
 								<span class="tooltiptext" style="white-space: nowrap;">Home</span>
 							</i>
-                            <i style="color:white;font-size:15px;padding-bottom:3px" class="tooltipicon" onclick="usefulLinks()">
-								<span class="fa-fw select-all fas"></span>
+                            <i style="color:white;font-size:20px" class="fa fa-link tooltipicon" onclick="usefulLinks()">
 								<span class="tooltiptext" style="white-space: nowrap;">Useful Links</span>
 							</i>
                             <i id="minimize-icon" class="fa fa-window-minimize hide-chat-box" aria-hidden="true"></i>
@@ -78,7 +75,5 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
   </body>
 </html>

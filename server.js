@@ -21,8 +21,12 @@ const INDEX = path.join(__dirname, 'index.html');
 
 
 const server = app
-  .use('/chatbot',(req, res) => res.sendFile(INDEX) )
+  .use('/',(req, res) => res.sendFile(INDEX) )
+  //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+  
+  
+  
 
 const io = socketIO(server);
 
@@ -116,6 +120,7 @@ io.on('connection', (socket) =>
 			else
 				apiGetRes(socket,"mood of user",data.options);	
 		});
+		db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
 		db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
 	});
 	
@@ -151,7 +156,8 @@ io.on('connection', (socket) =>
 			{
 				fetchUser(data.options.sessionId, function(new_user_rec)
 				{
-					db.updateQuery("user",["last_visited","feeling"],[new_user_rec.last_visited,new_user_rec.feeling],["sessionid"],user.sessionid);
+					db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"last_visited");
+					db.updateQuery("user",["last_visited","feeling"],[new_user_rec.last_visited,new_user_rec.feeling],["sessionid"],[user.sessionid]);
 				});
 				socket.emit('setServerSessionId',user.sessionid);
 				var options = 
@@ -177,7 +183,7 @@ io.on('connection', (socket) =>
 					else
 					{
 						var date = new Date();
-						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],data.options.sessionId);
+						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
 						apiGetRes(socket,"OTP sent",data.options);
 					}
 				});
@@ -188,7 +194,10 @@ io.on('connection', (socket) =>
 	socket.on('recordFeelings', function (data) 
 	{		
 		if(data.query!="")
-		db.updateQuery("user",["feeling","last_visited"],[data.query, new Date()],["sessionid"],data.options.sessionId);
+		{
+			db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
+			db.updateQuery("user",["feeling","last_visited"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
+		}
 	});
 	
 	socket.on('findEmail', function (data) 
