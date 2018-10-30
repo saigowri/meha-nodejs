@@ -13,6 +13,7 @@
 	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
     <script src="/socket.io/socket.io.js"></script>
+	<script src="javascripts/jquery.cookie.js"></script>
     <script src="javascripts/convo.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() 
@@ -22,7 +23,7 @@
             $('#chatbot-iframe', window.parent.document).remove();
 
              });
-			$('.hide-chat-box').click(function()
+			$('.hide-chatbox').click(function()
 			{
 					$('.chat-content').slideToggle();
 					$('#minimize-icon').toggle();
@@ -65,8 +66,8 @@
 								<span class="fa-fw select-all fas"></span>
 								<span class="tooltiptext" style="white-space: nowrap;">Useful Links</span>
 							</i>
-                            <i id="minimize-icon" class="fa fa-window-minimize" aria-hidden="true"></i>
-                            <i id="maximize-icon" style="display: none;" class="fa fa-window-maximize" aria-hidden="true"></i>
+                            <i id="minimize-icon hide-chatbox" class="fa fa-window-minimize" aria-hidden="true"></i>
+                            <i id="maximize-icon hide-chatbox" style="display: none;" class="fa fa-window-maximize" aria-hidden="true"></i>
                           </div>
                     </div>
                 </div>

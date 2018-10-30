@@ -97,7 +97,7 @@ function processOptions(responseMessage,payload)
 				lifespan:1
 			}];
 		if(payload.Option[key].hasOwnProperty('response'))
-			var contexts = [{
+			contexts = [{
 					name: "welcome",
 					parameters: {"reply":payload.Option[key].response},
 					lifespan:2
@@ -352,9 +352,22 @@ function setResponse(val)
 	var chat_scroll=document.getElementById("chat-scroll");
 	chat_scroll.scrollTop=chat_scroll.scrollHeight;
 }
+
+var getCookies = function(){
+  var pairs = document.cookie.split(";");
+  var cookies = {};
+  for (var i=0; i<pairs.length; i++){
+    var pair = pairs[i].split("=");
+    cookies[(pair[0]+'').trim()] = unescape(pair[1]);
+  }
+  return cookies;
+}
 			
 function home()
-{
+{	
+	var myCookies = getCookies();
+	//alert(myCookies.userId); // "do not tell you"
+	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
             name: "",
             parameters: {},

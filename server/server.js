@@ -21,7 +21,7 @@ const INDEX = path.join(__dirname, 'chatbot.html');
 
 
 const server = app
-  .use('/chatbot',(req, res) => res.sendFile(INDEX) )
+  .use('/',(req, res) => res.sendFile(INDEX) )
   //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
   

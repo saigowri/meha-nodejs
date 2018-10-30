@@ -7,6 +7,10 @@
 -- Server version: 10.1.13-MariaDB
 -- PHP Version: 5.6.20
 
+GRANT ALL PRIVILEGES ON *.* TO 'meha'@'localhost' IDENTIFIED BY 'Password1';
+CREATE DATABASE pushd_db;
+USE pushd_db;
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
