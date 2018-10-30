@@ -7,8 +7,8 @@ db.connectdb;
 {
 	console.log(result);
 });*/
-/*db.selectQuery("user",function(result)
+db.selectQuery("user",function(result)
 {
 	console.log(result);
-});*/
-db.saveHistory("user","history_user",["sessionid"],["15405358294681413562583"],"last_visited");
+});
+//db.saveHistory("user","history_user",["sessionid"],["15405358294681413562583"],"last_visited");
