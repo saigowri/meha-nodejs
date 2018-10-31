@@ -5,11 +5,11 @@ var api = require('./api');
 var mailer = require('./mailer');
 var db = require('./database');
 var config = require('./config.json');
+var log = require('./logger/logger')(module);
 
 var app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 db.connectdb;
-
 
 function getRandomInt(max) 
 {
@@ -23,7 +23,7 @@ const INDEX = path.join(__dirname, 'chatbot.html');
 const server = app
   .use('/',(req, res) => res.sendFile(INDEX) )
   //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+  .listen(PORT, () => log.info(`Listening on ${ PORT }`));
   
   
   
@@ -35,11 +35,11 @@ var apiGetRes = function (socket,query,options)
 	console.log('Request', query);
 	api.getRes(query,options).then(function(res)
 	{
-		console.log('Response', res);
+		log.debug('Response', res);
 		socket.emit('fromServer', { server: res });
 	}).catch(function(error)
 	{
-		console.log('ErrorResponse', error);
+		log.error('ErrorResponse', error);
 		socket.emit('fromServer', { error: 'ERROR' });
 	});
 }
@@ -80,7 +80,7 @@ var fetchEmail = function(sessionId,callback)
 
 io.on('connection', (socket) => 
 {
-	console.log('Client connected');
+	log.info('Client connected');
 	
 	socket.on('fromClient', function (data) 
 	{

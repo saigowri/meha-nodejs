@@ -1,3 +1,4 @@
+var log = require('./logger/logger')(module);
 var mysql = require('mysql');
 var config = require('./config.json');
 
@@ -11,17 +12,16 @@ var con = mysql.createConnection({
 var connectdb = con.connect(function(err) 
 {
   if (err) throw err;
-  console.log("Connected to mehaDB!");
+  log.info("Connected to mehaDB!");
 });
 
 var selectQuery = function(table,callback)
 {
 	var sql = "SELECT * FROM " + table;
-	console.log("SELECT Query: ", sql);
+	log.debug("SELECT Query: ", sql);
 	con.query(sql , function (err, result, fields) 
 	{
 		if (err) throw err;
-		console.log(fields);
 		callback(result);
 	});
 };
@@ -29,7 +29,7 @@ var selectQuery = function(table,callback)
 var selectWhereQuery = function(table,fields,fieldVals,callback)
 {
 	var sql = "SELECT * FROM " + table +" WHERE " + fields.join(" = ? and ") + " = ?";
-	console.log("SELECT Query: ", sql, fieldVals);
+	log.debug("SELECT Query: " + sql, fieldVals);
 	con.query(sql,fieldVals , function (err, result, fields) 
 	{
 		if (err) throw err;
