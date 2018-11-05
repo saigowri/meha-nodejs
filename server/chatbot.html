@@ -14,6 +14,15 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
     <script src="/socket.io/socket.io.js"></script>
 	<script src="javascripts/jquery.cookie.js"></script>
+	<script type="text/javascript">
+			function getLocation() {
+			    if (navigator.geolocation) {
+			        navigator.geolocation.getCurrentPosition(showPosition);
+			    } else { 
+			        
+			    }
+			}
+	</script>
     <script src="javascripts/convo.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() 

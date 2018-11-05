@@ -15,6 +15,22 @@ function getRandomInt(max)
 {
 	return Math.floor(Math.random() * Math.floor(max));
 }
+
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
 			
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'chatbot.html');
@@ -105,6 +121,7 @@ io.on('connection', (socket) =>
 		});
 	});
 	
+	
 	socket.on('checkMood', function (data) 
 	{
 		var sessionId = data.options.sessionId;
@@ -189,6 +206,99 @@ io.on('connection', (socket) =>
 				});
 			}
 		});
+	});
+socket.on('hospitalFinder', function (data) 
+	{	
+		console.log('latitude in server', data.query[0]);
+		console.log('longitude in server', data.query[1]);
+		var a = data.query[0];
+		var b = data.query[1];
+		a = 11.1273;
+		b = 75.8957;
+		var hos = " ";
+		var st = " ";
+		var d = 99999999999999.9999999999999;
+		db.selectQuery("Hospitals",function(result)
+		{	
+			console.log(result);
+			for (i in result) {
+
+                var x = result[i].lat;
+                var y = result[i].longi;
+                var dist = getDistanceFromLatLonInKm(a,b,x,y);
+              
+               	if (d >= dist){
+	                d = dist;
+	                hos = result[i].hospital;
+	                st = result[i].state;
+                }
+            }
+
+            d = d.toFixed(2);
+
+	        console.log('hospital in server', hos);
+			console.log('distance in server', d ,); 
+			apiGetRes(socket,"hospital "+hos ,data.options);
+
+		});
+		
+
+	});
+	socket.on('matchOTP2', function (data) 
+	{
+		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
+		{
+			console.log(result);
+			if(result[0])
+			{
+				var date = result[0].otp_sent_at;
+				var now = new Date();
+				console.log("Date: ", date, "Now ", now);
+				var dateDiff = now.getTime()-date.getTime();
+				dateDiff = dateDiff / (60 * 1000);
+				console.log("Minute diff: ", dateDiff);
+				if(data.query==result[0].otp && dateDiff<=10)
+				{
+					var sessionId = data.options.sessionId;
+					fetchUser(sessionId,function(user)
+					{
+						var date = user.last_visited;
+						var now = new Date();
+						var dateDiff = now.getTime()-date.getTime();
+						dateDiff = dateDiff / (60 * 60 * 1000);
+						console.log("Hour diff: ", dateDiff);
+						if(dateDiff<config.how_are_you_interval)
+							apiGetRes(socket,"Def intent",data.options);
+						else
+							apiGetRes(socket,"mood of user",data.options);	
+					});
+					db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
+					db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
+					db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
+				}
+				else
+					apiGetRes(socket,"OTP invalid",data.options);
+			}
+		});
+	});
+	socket.on('sendMail2', function (data) 
+	{
+		var otp = getRandomInt(1000000);
+				mailer.sendMail(data.query,otp,function(error, response)
+				{
+					if(error)
+					{
+						console.log(error);
+						apiGetRes(socket,"OTP error",data.options);
+					}
+					else
+					{
+						var date = new Date();
+						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
+						apiGetRes(socket,"OTP sent2",data.options);
+					}
+				});
+			
 	});
 	
 	socket.on('recordFeelings', function (data) 

@@ -272,6 +272,35 @@ function otpDisplay(otp)
 }
 
 
+function otpDisplay2(otp)
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]; 
+	requestToServer("matchOTP2",otp,contexts);
+}
+
+function hospitalFinder()
+{
+	 getLocation();
+}
+
+function showPosition(position) {
+	var contexts = [{
+					name: "hospital-data",
+					parameters: {},
+					lifespan:1
+			}]; 
+	console.log('latitude inside convo.js',position.coords.latitude);
+	console.log('longitude inside convo.js',position.coords.longitude);
+	var arr = [position.coords.latitude, position.coords.longitude];
+	requestToServer("hospitalFinder",arr,contexts);
+}
+
+
+
 function welcomeBackFollowup(data)
 {
 	if(data.localeCompare('Continue\t\t')==0)
@@ -339,6 +368,8 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server.result.resolvedQuery);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
