@@ -213,8 +213,8 @@ socket.on('hospitalFinder', function (data)
 		console.log('longitude in server', data.query[1]);
 		var a = data.query[0];
 		var b = data.query[1];
-		a = 11.1273;
-		b = 75.8957;
+		// a = 11.1273;
+		// b = 75.8957;
 		var hos = " ";
 		var st = " ";
 		var d = 99999999999999.9999999999999;
@@ -237,8 +237,8 @@ socket.on('hospitalFinder', function (data)
             d = d.toFixed(2);
 
 	        console.log('hospital in server', hos);
-			console.log('distance in server', d ,); 
-			apiGetRes(socket,"hospital "+hos ,data.options);
+			console.log('distance in server', d ); 
+			apiGetRes(socket,"hospital " + hos ,data.options);
 
 		});
 		

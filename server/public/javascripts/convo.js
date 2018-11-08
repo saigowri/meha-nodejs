@@ -400,8 +400,8 @@ function home()
 	//alert(myCookies.userId); // "do not tell you"
 	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
-            name: "",
-            parameters: {},
+            name: "welcome",
+            parameters: {"reply":" "},
 			lifespan:1
         }]; 
 	setInput("Home",contexts);
