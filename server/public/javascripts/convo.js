@@ -239,6 +239,19 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
+function emailDisplay2(email)
+{
+	var contexts = [{
+					name: "",
+					parameters: {
+						"email":email
+					},
+					lifespan:1
+			}]; 
+	requestToServer("sendMail2",email,contexts);
+}
+
+
 
 
 function findEmail()
@@ -302,9 +315,12 @@ function showPosition(position) {
 
 
 function welcomeBackFollowup(data)
-{
-	if(data.localeCompare('Continue\t\t')==0)
-		checkMood();
+
+{	console.log('EMAIL :', data);
+	if(data.result.resolvedQuery.includes('Continue')== true)
+	{
+		emailDisplay2(data.result.parameters.email);
+	}
 	else
 	{
 		resetSessionId();
@@ -365,7 +381,7 @@ socket.on('fromServer', function (data)
 		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
 		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
-		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
 		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
