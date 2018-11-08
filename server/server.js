@@ -244,6 +244,15 @@ socket.on('hospitalFinder', function (data)
 		
 
 	});
+
+	socket.on('LocationDenied', function (data) 
+	{	console.log(data);
+		apiGetRes(socket,"nolocation",data.options);
+	});
+
+
+
+
 	socket.on('matchOTP2', function (data) 
 	{
 		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
@@ -281,6 +290,7 @@ socket.on('hospitalFinder', function (data)
 			}
 		});
 	});
+
 	socket.on('sendMail2', function (data) 
 	{
 		var otp = getRandomInt(1000000);
@@ -295,13 +305,13 @@ socket.on('hospitalFinder', function (data)
 					{
 						var date = new Date();
 						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
-						apiGetRes(socket,"OTP sent2",data.options);
+						apiGetRes(socket,"OTP sent",data.options);
 					}
 				});
 			
 	});
 	
-	socket.on('recordFeelings', function (data) 
+	socket.on(' ', function (data) 
 	{		
 		if(data.query!="")
 		{
