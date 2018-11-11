@@ -14,6 +14,16 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
     <script src="/socket.io/socket.io.js"></script>
 	<script src="javascripts/jquery.cookie.js"></script>
+	<script type="text/javascript">
+			function getLocation() {
+			    if (navigator.geolocation) {
+			        navigator.geolocation.getCurrentPosition(showPosition, showError);
+			    } else { 
+
+			        // To be done !!!
+			    }
+			}
+	</script>
     <script src="javascripts/convo.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() 
@@ -76,8 +86,8 @@
                         <ul id="response" class="p-0">
                         </ul>
                     </div>
-                    <div class="col-md-12 message-box border pl-2 pr-2 border-top-0">
-                        <input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
+                    <div class="col-md-12 message-box border pl-2 pr-2 border-top-0"> 	
+                    	<input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
                     </div>
                 </div>
   </body>
