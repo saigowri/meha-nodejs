@@ -239,6 +239,19 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
+function emailDisplay2(email)
+{
+	var contexts = [{
+					name: "otp-sent",
+					parameters: {
+						"email":email
+					},
+					lifespan:1
+			}]; 
+	requestToServer("sendMail2",email,contexts);
+}
+
+
 
 
 function findEmail()
@@ -271,11 +284,66 @@ function otpDisplay(otp)
 	requestToServer("matchOTP",otp,contexts);
 }
 
+function otpDisplay2(otp)
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]; 
+	requestToServer("matchOTP2",otp,contexts);
+}
+
+function hospitalFinder()
+{
+	 getLocation();
+}
+
+function showPosition(position) {
+	var contexts = [{
+					name: "hospital-data",
+					parameters: {},
+					lifespan:1
+			}]; 
+	console.log('latitude inside convo.js',position.coords.latitude);
+	console.log('longitude inside convo.js',position.coords.longitude);
+	var arr = [position.coords.latitude, position.coords.longitude];
+	requestToServer("hospitalFinder",arr,contexts);
+}
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:{
+        	var contexts = [{
+					name: "hospitals-followup",
+					parameters: {},
+					lifespan:1
+			}]; 
+        	requestToServer("LocationDenied","",contexts);
+            console.log("User denied the request for Geolocation.");
+            break;
+        }
+        	
+        case error.POSITION_UNAVAILABLE:
+            console.log("Location information is unavailable.");
+            break;
+        case error.TIMEOUT:
+            console.log("The request to get user location timed out.");
+            break;
+        case error.UNKNOWN_ERROR:
+            console.log("An unknown error occurred.");
+            break;
+    }
+}
+
+
 
 function welcomeBackFollowup(data)
-{
-	if(data.localeCompare('Continue\t\t')==0)
-		checkMood();
+
+{	console.log('EMAIL :', data);
+	if(data.result.resolvedQuery.includes('Continue')== true)
+	{
+		emailDisplay2(data.result.parameters.email);
+	}
 	else
 	{
 		resetSessionId();
@@ -336,9 +404,11 @@ socket.on('fromServer', function (data)
 		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
 		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
-		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
@@ -369,8 +439,8 @@ function home()
 	//alert(myCookies.userId); // "do not tell you"
 	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
-            name: "",
-            parameters: {},
+            name: "welcome",
+            parameters: {"reply":" "},
 			lifespan:1
         }]; 
 	setInput("Home",contexts);
