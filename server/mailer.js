@@ -11,15 +11,15 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
 
 
 // send mail with defined transport object
-var sendMail = function(toAddress,otp,callback)
+var sendMail = function(toAddress,subject,text,html,callback)
 {
 	// setup e-mail data with unicode symbols
 	var mailOptions = {
     from: "Mental Health Assistant <meha.nimhans@gmail.com>", // sender address
 	to: toAddress,
-    subject: "Thank you for registering with MeHA", // Subject line
-    text: "Your OTP is "+otp, // plaintext body
-    html: "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>" // html body
+    subject: subject, // Subject line
+    text: text, // plaintext body
+    html: html // html body
 	}
 	smtpTransport.sendMail(mailOptions, function(error, response)
 	{

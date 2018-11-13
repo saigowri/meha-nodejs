@@ -37,7 +37,7 @@ const INDEX = path.join(__dirname, 'chatbot.html');
 
 
 const server = app
-  .use('/',(req, res) => res.sendFile(INDEX) )
+  .use('/:userid',(req, res) => res.sendFile(INDEX) )
   //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
   .listen(PORT, () => log.info(`Listening on ${ PORT }`));
   
@@ -190,20 +190,23 @@ io.on('connection', (socket) =>
 			else
 			{
 				var otp = getRandomInt(1000000);
-				mailer.sendMail(data.query,otp,function(error, response)
-				{
-					if(error)
+				
+				mailer.sendMail(data.query,"Thank you for registering with MeHA",
+					"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
+					function(error, response)
 					{
-						console.log(error);
-						apiGetRes(socket,"OTP error",data.options);
-					}
-					else
-					{
-						var date = new Date();
-						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
-						apiGetRes(socket,"OTP sent",data.options);
-					}
-				});
+						if(error)
+						{
+							console.log(error);
+							apiGetRes(socket,"OTP error",data.options);
+						}
+						else
+						{
+							var date = new Date();
+							db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
+							apiGetRes(socket,"OTP sent",data.options);
+						}
+					});
 			}
 		});
 	});
@@ -293,8 +296,10 @@ socket.on('hospitalFinder', function (data)
 
 	socket.on('sendMail2', function (data) 
 	{
-		var otp = getRandomInt(1000000);
-				mailer.sendMail(data.query,otp,function(error, response)
+		var otp = getRandomInt(1000000);				
+		mailer.sendMail(data.query,"Thank you for registering with MeHA",
+					"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
+			function(error, response)
 				{
 					if(error)
 					{
