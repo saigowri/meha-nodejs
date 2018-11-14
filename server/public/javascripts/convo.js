@@ -1,7 +1,25 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
 var score = 0;
+var start_chat=null;
+var last_reply=null;
+var minutes = 5, the_interval = minutes * 60 * 1000;
 
+setInterval(function() 
+{
+	var now = new Date();
+	console.log("I am doing my 5 minutes check at", now);
+	if(!start_chat) 
+		console.log("Convo has not stared");
+	else
+	{
+		var dateDiff = last_reply.getTime()-now.getTime();
+		dateDiff = dateDiff / (60 * 1000);
+		console.log("Diff in min",dateDiff);
+		if(dateDiff<=0)
+			console.log("Time out");
+	}
+}, the_interval);
 
 function requestToServer(req,text,contexts)
 {
@@ -71,6 +89,18 @@ function setScore(text,score,contexts)
 
 function setInput(text,contexts) 
 {
+	last_reply = new Date();
+	if(localStorage.getItem("start_chat")==null)
+	{
+		start_chat = last_reply;
+		console.log("Record Start time");
+	}
+	else
+		start_chat = localStorage.getItem("start_chat");
+	localStorage.setItem("start_chat", start_chat);
+	localStorage.setItem("last_reply", last_reply);
+	console.log("start chat", start_chat);
+	console.log("last reply", last_reply);
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
 	requestToServer("fromClient",text,contexts);
@@ -364,7 +394,6 @@ socket.on('setServerSessionId', function (data)
 
 socket.on('fromServer', function (data) 
 { 
-
 	if(data.hasOwnProperty('error'))
 	{
 		setResponse("<li class='p-1 rounded mb-1'>"+
