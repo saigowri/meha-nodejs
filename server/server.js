@@ -3,7 +3,7 @@ const socketIO = require('socket.io');
 const path = require('path');
 var api = require('./api');
 var mailer = require('./mailer');
-//var sentiment = require('./sentiment_analysis');
+var sentiment = require('./sentimentAnalysis');
 var db = require('./database');
 var config = require('./config.json');
 var log = require('./logger/logger')(module);
@@ -236,7 +236,36 @@ io.on('connection', (socket) =>
 		});
 	});
 	
-	socket.on('hospitalFinder', function (data) 
+socket.on('sentimentAnalysis', function(data)
+	{
+		log.debug(data.query);
+		var emoticonScore = data.options.contexts[0].parameters.sentiScore;
+		var freeTextScore = sentiment.sentimentAnalysis(data.query);
+		var totalScore = parseInt(emoticonScore) + parseInt(freeTextScore);
+		log.debug("total senti score "+ totalScore);
+		if(parseInt(totalScore) < 0)
+		{
+			apiGetRes(socket,"Request Email Id", data.options);
+		}
+		else if(parseInt(totalScore) > 0)
+		{
+			apiGetRes(socket,"home",data.options);
+		}
+		else
+		{
+			var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "Lighten-mood",
+					parameters: {},
+					lifespan:1
+				}]};
+			apiGetRes(socket,"lighten mood", options);
+		}
+	});	
+
+socket.on('hospitalFinder', function (data) 
 	{	
 		console.log('latitude in server', data.query[0]);
 		console.log('longitude in server', data.query[1]);
@@ -289,18 +318,6 @@ io.on('connection', (socket) =>
 			//db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
 		}
 	});
-
-	socket.on('sentimentAnalysis', function (data) 
-	{
-		console.log("Find Email for session id: ", data.options.sessionId);
-		fetchEmail(data.options.sessionId,function(email)
-		{
-			if(email)
-				apiGetRes(socket,"Existing email"+ email,data.options);
-			else
-				apiGetRes(socket,"Request Email Id",data.options);
-		});
-	});	
 	
 	socket.on('findEmail', function (data) 
 	{
