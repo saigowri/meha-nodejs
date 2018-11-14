@@ -127,7 +127,7 @@ io.on('connection', (socket) =>
 		var sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
 		{
-			var date = user.last_visited;
+			var date = user.chat_start;
 			var now = new Date();
 			var dateDiff = now.getTime()-date.getTime();
 			dateDiff = dateDiff / (60 * 60 * 1000);
@@ -137,8 +137,8 @@ io.on('connection', (socket) =>
 			else
 				apiGetRes(socket,"mood of user",data.options);	
 		});
-		db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
-		db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
+		db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+		db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
 	});
 	
 	socket.on('matchOTP', function (data) 
@@ -173,8 +173,8 @@ io.on('connection', (socket) =>
 			{
 				fetchUser(data.options.sessionId, function(new_user_rec)
 				{
-					db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"last_visited");
-					db.updateQuery("user",["last_visited","feeling"],[new_user_rec.last_visited,new_user_rec.feeling],["sessionid"],[user.sessionid]);
+					db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"chat_start");
+					db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["sessionid"],[user.sessionid]);
 				});
 				socket.emit('setServerSessionId',user.sessionid);
 				var options = 
@@ -274,7 +274,7 @@ socket.on('hospitalFinder', function (data)
 					var sessionId = data.options.sessionId;
 					fetchUser(sessionId,function(user)
 					{
-						var date = user.last_visited;
+						var date = user.chat_start;
 						var now = new Date();
 						var dateDiff = now.getTime()-date.getTime();
 						dateDiff = dateDiff / (60 * 60 * 1000);
@@ -284,8 +284,8 @@ socket.on('hospitalFinder', function (data)
 						else
 							apiGetRes(socket,"mood of user",data.options);	
 					});
-					db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
-					db.updateQuery("user",["last_visited"],[new Date()],["sessionid"],data.options.sessionId);
+					db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+					db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
 					db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
 				}
 				else
@@ -320,8 +320,8 @@ socket.on('hospitalFinder', function (data)
 	{		
 		if(data.query!="")
 		{
-			db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"last_visited");
-			db.updateQuery("user",["feeling","last_visited"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
+			db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+			db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
 		}
 	});
 	
