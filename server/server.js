@@ -96,6 +96,7 @@ var fetchEmail = function(sessionId,callback)
 
 io.on('connection', (socket) => 
 {
+	var sessionId;
 	log.info('Client connected');
 	
 	socket.on('fromClient', function (data) 
@@ -103,9 +104,33 @@ io.on('connection', (socket) =>
 		apiGetRes(socket,data.query,data.options);
 	});
 	
+	socket.on('logChatStart', function (data) 
+	{
+		sessionId = data.sessionId;
+		db.upsertQuery("user",["chat_start","sessionid"],
+			[new Date(data.chat_start),sessionId],["sessionid"],sessionId);
+	});	
+	
+	socket.on('logChatEnd', function (data) 
+	{
+		sessionId = data.sessionId;
+		db.upsertQuery("user",["chat_start","chat_end","sessionid"],
+			[new Date(data.chat_start),new Date(data.chat_end),sessionId],["sessionid"],[sessionId]);
+		db.deleteQuery("user",["sessionid"],[sessionId]);
+	});	
+	
+	socket.on('recordFeelings', function (data) 
+	{		
+		if(data.query!="")
+		{
+			//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+			//db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
+		}
+	});
+	
 	socket.on('beginChatbot', function (data) 
 	{
-		var sessionId = data.options.sessionId;
+		sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
 		{
 			if(user && user.email && (user.verified==1))
@@ -115,7 +140,7 @@ io.on('connection', (socket) =>
 			}
 			else
 			{
-				db.upsertQuery("user",["sessionid"],[sessionId],["sessionid"],sessionId);
+				//db.upsertQuery("user",["sessionid"],[sessionId],["sessionid"],sessionId);
 				apiGetRes(socket,data.query,data.options);	
 			}
 		});
@@ -124,7 +149,7 @@ io.on('connection', (socket) =>
 	
 	socket.on('checkMood', function (data) 
 	{
-		var sessionId = data.options.sessionId;
+		sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
 		{
 			var date = user.chat_start;
@@ -137,8 +162,8 @@ io.on('connection', (socket) =>
 			else
 				apiGetRes(socket,"mood of user",data.options);	
 		});
-		db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-		db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
+		//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+		//db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
 	});
 	
 	socket.on('matchOTP', function (data) 
@@ -157,7 +182,7 @@ io.on('connection', (socket) =>
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
 					apiGetRes(socket,"Screener-Start",data.options);
-					db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
+					//db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -173,8 +198,8 @@ io.on('connection', (socket) =>
 			{
 				fetchUser(data.options.sessionId, function(new_user_rec)
 				{
-					db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"chat_start");
-					db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["sessionid"],[user.sessionid]);
+					//db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"chat_start");
+					//db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["sessionid"],[user.sessionid]);
 				});
 				socket.emit('setServerSessionId',user.sessionid);
 				var options = 
@@ -203,14 +228,15 @@ io.on('connection', (socket) =>
 						else
 						{
 							var date = new Date();
-							db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
+							//db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
 							apiGetRes(socket,"OTP sent",data.options);
 						}
 					});
 			}
 		});
 	});
-socket.on('hospitalFinder', function (data) 
+	
+	socket.on('hospitalFinder', function (data) 
 	{	
 		console.log('latitude in server', data.query[0]);
 		console.log('longitude in server', data.query[1]);
@@ -254,74 +280,13 @@ socket.on('hospitalFinder', function (data)
 	});
 
 
-
-
-	socket.on('matchOTP2', function (data) 
-	{
-		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
-		{
-			console.log(result);
-			if(result[0])
-			{
-				var date = result[0].otp_sent_at;
-				var now = new Date();
-				console.log("Date: ", date, "Now ", now);
-				var dateDiff = now.getTime()-date.getTime();
-				dateDiff = dateDiff / (60 * 1000);
-				console.log("Minute diff: ", dateDiff);
-				if(data.query==result[0].otp && dateDiff<=10)
-				{
-					var sessionId = data.options.sessionId;
-					fetchUser(sessionId,function(user)
-					{
-						var date = user.chat_start;
-						var now = new Date();
-						var dateDiff = now.getTime()-date.getTime();
-						dateDiff = dateDiff / (60 * 60 * 1000);
-						console.log("Hour diff: ", dateDiff);
-						if(dateDiff<config.how_are_you_interval)
-							apiGetRes(socket,"Def intent",data.options);
-						else
-							apiGetRes(socket,"mood of user",data.options);	
-					});
-					db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-					db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
-					db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
-				}
-				else
-					apiGetRes(socket,"OTP invalid",data.options);
-			}
-		});
-	});
-
-	socket.on('sendMail2', function (data) 
-	{
-		var otp = getRandomInt(1000000);				
-		mailer.sendMail(data.query,"Thank you for registering with MeHA",
-					"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
-			function(error, response)
-				{
-					if(error)
-					{
-						console.log(error);
-						apiGetRes(socket,"OTP error",data.options);
-					}
-					else
-					{
-						var date = new Date();
-						db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
-						apiGetRes(socket,"OTP sent",data.options);
-					}
-				});
-			
-	});
 	
 	socket.on(' ', function (data) 
 	{		
 		if(data.query!="")
 		{
-			db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-			db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
+			//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
+			//db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
 		}
 	});
 
@@ -349,7 +314,12 @@ socket.on('hospitalFinder', function (data)
 		});
 	});	
 	
-	socket.on('disconnect', () => console.log('Client disconnected'));
+	socket.on('disconnect', () => 
+	{
+		log.info("Disconnecting session "+ sessionId);
+		db.updateQuery("user",["chat_end"],[new Date()],["sessionid"],[sessionId]);
+		db.deleteQuery("user",["sessionid"],[sessionId]);
+	});
 });
 
 //setInterval(() => io.emit('time', new Date().toTimeString()), 1000);

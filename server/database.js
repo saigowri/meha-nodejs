@@ -42,11 +42,24 @@ var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 	var sql = "UPDATE " + table +" SET "+ fields.join(" = ?, ") + " = ?"+
 			" WHERE "+ conditions.join(" = ? and ") + " = ?";
 	var values = fieldVals.concat(conditionValues);
-	console.log("Update Query: ", sql, values);
+	log.debug("Update Query: " + sql + " "+ values);
 	con.query(sql, values, function (err, result, fields) 
 	{
-		if (err) throw err;
-		console.log("Successfully updated the row.");
+		if (err) log.error("Error: "+err);
+		log.debug("Successfully updated the row.");
+	});
+};
+
+var deleteQuery = function(table,conditions,conditionValues)
+{
+	var sql = "DELETE from " + table +
+			" WHERE "+ conditions.join(" = ? and ") + " = ?";
+	var values = conditionValues;
+	log.debug("Delete Query: " + sql + values);
+	con.query(sql, values, function (err, result) 
+	{
+		if (err) log.error("Error: "+err);
+		log.debug("Successfully deleted "+result.affectedRows + " rows.");
 	});
 };
 
@@ -120,4 +133,4 @@ var saveHistory = function(table,historyTable,conditions,conditionValues,dateFie
 //con.end();
 
 module.exports = {connectdb, selectQuery, selectWhereQuery, 
-					insertQuery, updateQuery, upsertQuery, saveHistory}
+					insertQuery, updateQuery, upsertQuery, saveHistory, deleteQuery}

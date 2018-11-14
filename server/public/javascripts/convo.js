@@ -1,25 +1,30 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
 var score = 0;
-var start_chat=null;
+var chat_start=null;
 var last_reply=null;
-var minutes = 5, the_interval = minutes * 60 * 1000;
+var minutes = 1, the_interval = minutes * 60 * 1000;
 
 setInterval(function() 
 {
 	var now = new Date();
 	console.log("I am doing my 5 minutes check at", now);
-	if(!start_chat) 
-		console.log("Convo has not stared");
+	if(!chat_start) 
+		console.log("Convo has not started");
 	else
 	{
-		var dateDiff = last_reply.getTime()-now.getTime();
-		dateDiff = dateDiff / (60 * 1000);
-		console.log("Diff in min",dateDiff);
-		if(dateDiff<=0)
-			console.log("Time out");
+		var idleTime = now.getTime()-last_reply.getTime();
+		idleTime = idleTime / (60 * 1000);
+		console.log("Diff in min",idleTime);
+		if(idleTime>minutes)
+		{
+			console.log("Time out, after ",last_reply);
+			socket.emit("logChatEnd", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() , chat_end : last_reply.toISOString()});
+			chat_start = null;
+		}
 	}
 }, the_interval);
+
 
 function requestToServer(req,text,contexts)
 {
@@ -90,16 +95,13 @@ function setScore(text,score,contexts)
 function setInput(text,contexts) 
 {
 	last_reply = new Date();
-	if(localStorage.getItem("start_chat")==null)
+	if(!chat_start)
 	{
-		start_chat = last_reply;
-		console.log("Record Start time");
+		chat_start = last_reply;
+		console.log("Record Start time");		
+		socket.emit("logChatStart", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() });
 	}
-	else
-		start_chat = localStorage.getItem("start_chat");
-	localStorage.setItem("start_chat", start_chat);
-	localStorage.setItem("last_reply", last_reply);
-	console.log("start chat", start_chat);
+	console.log("start chat", chat_start);
 	console.log("last reply", last_reply);
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
@@ -321,16 +323,6 @@ function otpDisplay(otp)
 	requestToServer("matchOTP",otp,contexts);
 }
 
-function otpDisplay2(otp)
-{
-	var contexts = [{
-					name: "",
-					parameters: {},
-					lifespan:1
-				}]; 
-	requestToServer("matchOTP2",otp,contexts);
-}
-
 function hospitalFinder()
 {
 	 getLocation();
@@ -442,8 +434,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
 		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
-		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
-		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);				
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
