@@ -1,14 +1,22 @@
 var socket = io();
 var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
 var score = 0;
-
+var hashMap = {};
+// add items
+hashMap["very sad"] = -3;
+hashMap["sad"] = -2;
+hashMap["not so good"] = -1;
+hashMap["neutral"] = 0;
+hashMap["not so bad"] = 1;
+hashMap["happy"] = 2;
+hashMap["very happy"] = 3;
 
 function requestToServer(req,text,contexts)
 {
 	var sessionId = setSessionId();	
 	var options = {
-    sessionId: sessionId,
-    contexts: contexts
+	    sessionId: sessionId,
+	    contexts: contexts
 	};
 	socket.emit(req, {query : text , options : options});
 }
@@ -251,14 +259,21 @@ function emailDisplay2(email)
 	requestToServer("sendMail2",email,contexts);
 }
 
-function sentimentAnalysis() 
+function sentimentAnalysis(freeTextMsg) 
 {
+	console.log("Message is "+freeTextMsg);
+	var score = localStorage.getItem("sentiScore");
+	console.log("Score is " + score);
 	var contexts = [{
 					name: "",
-					parameters: {},
-					lifespan:1
-			}]; 
-	requestToServer("sentimentAnalysis","",contexts);
+					parameters: 
+					{
+						"freeTextMsg" : freeTextMsg,
+						"sentiScore" : score
+					},
+					lifespan : 1
+	}]; 
+	requestToServer("sentimentAnalysis",freeTextMsg,contexts);
 }
 
 function findEmail()
@@ -317,6 +332,7 @@ function showPosition(position) {
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
+
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:{
@@ -415,13 +431,20 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
 		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
-		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
+		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();	
+		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
-		if(actionVal.localeCompare('MoodofUserFollowup')==0) requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
+		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
+		{
+			var sentiScore = hashMap[data.server.result.parameters.Feelings];
+			localStorage.setItem("sentiScore",sentiScore);
+			console.log(sentiScore);
+			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
+		}
 	}
-})
+});
 
 function setResponse(val) 
 {
