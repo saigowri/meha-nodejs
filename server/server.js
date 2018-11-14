@@ -3,6 +3,7 @@ const socketIO = require('socket.io');
 const path = require('path');
 var api = require('./api');
 var mailer = require('./mailer');
+//var sentiment = require('./sentiment_analysis');
 var db = require('./database');
 var config = require('./config.json');
 var log = require('./logger/logger')(module);
@@ -41,8 +42,7 @@ const server = app
   //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
   .listen(PORT, () => log.info(`Listening on ${ PORT }`));
   
-  
-  
+
 
 const io = socketIO(server);
 
@@ -324,6 +324,18 @@ socket.on('hospitalFinder', function (data)
 			db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
 		}
 	});
+
+	socket.on('sentimentAnalysis', function (data) 
+	{
+		console.log("Find Email for session id: ", data.options.sessionId);
+		fetchEmail(data.options.sessionId,function(email)
+		{
+			if(email)
+				apiGetRes(socket,"Existing email"+ email,data.options);
+			else
+				apiGetRes(socket,"Request Email Id",data.options);
+		});
+	});	
 	
 	socket.on('findEmail', function (data) 
 	{
