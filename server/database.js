@@ -55,7 +55,7 @@ var deleteQuery = function(table,conditions,conditionValues)
 	var sql = "DELETE from " + table +
 			" WHERE "+ conditions.join(" = ? and ") + " = ?";
 	var values = conditionValues;
-	log.debug("Delete Query: " + sql + values);
+	log.debug("Delete Query: " + sql +" "+ values);
 	con.query(sql, values, function (err, result) 
 	{
 		if (err) log.error("Error: "+err);

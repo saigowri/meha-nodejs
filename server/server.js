@@ -107,24 +107,22 @@ io.on('connection', (socket) =>
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		db.upsertQuery("user",["chat_start","sessionid"],
-			[new Date(data.chat_start),sessionId],["sessionid"],sessionId);
+		db.upsertQuery("user",["chat_start","chat_end","who_score","screener_score","sessionid"],
+			[new Date(data.chat_start),new Date("1970-01-01"),-999,-999,sessionId],["sessionid"],sessionId);
 	});	
 	
 	socket.on('logChatEnd', function (data) 
 	{
 		sessionId = data.sessionId;
-		db.upsertQuery("user",["chat_start","chat_end","sessionid"],
-			[new Date(data.chat_start),new Date(data.chat_end),sessionId],["sessionid"],[sessionId]);
-		db.deleteQuery("user",["sessionid"],[sessionId]);
+		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["sessionid"],[sessionId]);
+		db.saveHistory("user","history_user",["sessionid"],[sessionId],"chat_start");
 	});	
 	
 	socket.on('recordFeelings', function (data) 
 	{		
 		if(data.query!="")
 		{
-			//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-			//db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
+			db.upsertQuery("user",["feeling","sessionid"],[data.query,data.options.sessionId],["sessionid"],[data.options.sessionId]);
 		}
 	});
 	
@@ -140,7 +138,6 @@ io.on('connection', (socket) =>
 			}
 			else
 			{
-				//db.upsertQuery("user",["sessionid"],[sessionId],["sessionid"],sessionId);
 				apiGetRes(socket,data.query,data.options);	
 			}
 		});
@@ -236,7 +233,7 @@ io.on('connection', (socket) =>
 		});
 	});
 	
-socket.on('sentimentAnalysis', function(data)
+	socket.on('sentimentAnalysis', function(data)
 	{
 		log.debug(data.query);
 		var emoticonScore = data.options.contexts[0].parameters.sentiScore;
@@ -265,7 +262,7 @@ socket.on('sentimentAnalysis', function(data)
 		}
 	});	
 
-socket.on('hospitalFinder', function (data) 
+	socket.on('hospitalFinder', function (data) 
 	{	
 		console.log('latitude in server', data.query[0]);
 		console.log('longitude in server', data.query[1]);
@@ -307,17 +304,6 @@ socket.on('hospitalFinder', function (data)
 	{	console.log(data);
 		apiGetRes(socket,"nolocation",data.options);
 	});
-
-
-	
-	socket.on(' ', function (data) 
-	{		
-		if(data.query!="")
-		{
-			//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-			//db.updateQuery("user",["feeling","chat_start"],[data.query, new Date()],["sessionid"],[data.options.sessionId]);
-		}
-	});
 	
 	socket.on('findEmail', function (data) 
 	{
@@ -334,8 +320,15 @@ socket.on('hospitalFinder', function (data)
 	socket.on('disconnect', () => 
 	{
 		log.info("Disconnecting session "+ sessionId);
-		db.updateQuery("user",["chat_end"],[new Date()],["sessionid"],[sessionId]);
-		db.deleteQuery("user",["sessionid"],[sessionId]);
+		db.selectWhereQuery("user",["sessionid"],[sessionId],function(result)
+		{
+			console.log(result);
+			if(result[0] && result[0].chat_end.getTime()===0)
+			{
+				db.updateQuery("user",["chat_end"],[new Date()],["sessionid"],[sessionId]);
+				db.saveHistory("user","history_user",["sessionid"],[sessionId],"chat_start");
+			}
+		});
 	});
 });
 
