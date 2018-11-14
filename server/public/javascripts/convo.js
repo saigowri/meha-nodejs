@@ -98,7 +98,7 @@ function processOptions(responseMessage,payload)
 			}];
 		if(payload.Option[key].hasOwnProperty('response'))
 			contexts = [{
-					name: "welcome",
+					name: "followup",
 					parameters: {"reply":payload.Option[key].response},
 					lifespan:2
 				}];
@@ -251,8 +251,15 @@ function emailDisplay2(email)
 	requestToServer("sendMail2",email,contexts);
 }
 
-
-
+function sentimentAnalysis() 
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+			}]; 
+	requestToServer("sentimentAnalysis","",contexts);
+}
 
 function findEmail()
 {
@@ -412,7 +419,7 @@ socket.on('fromServer', function (data)
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
-		if(actionVal.localeCompare('input.welcome')==0) requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
+		if(actionVal.localeCompare('MoodofUserFollowup')==0) requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 	}
 })
 
