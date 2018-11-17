@@ -1,14 +1,14 @@
 var socket = io();
-var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
+var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b719-6e24ed54dac4_l.png';
 var score = 0;
 var chat_start=null;
 var last_reply=null;
-var minutes = 1, the_interval = minutes * 60 * 1000;
+var minutes = 15, the_interval = minutes * 60 * 1000;
 
 setInterval(function() 
 {
 	var now = new Date();
-	console.log("I am doing my 5 minutes check at", now);
+	console.log("15 minutes check at", now);
 	if(!chat_start) 
 		console.log("Convo has not started");
 	else
