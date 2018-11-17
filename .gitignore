@@ -84,3 +84,7 @@ typings/
 hs_err_pid*
 /~$Setup.docx
 /~WRL4069.tmp
+
+# Maven
+log/
+target/
