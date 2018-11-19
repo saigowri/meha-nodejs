@@ -1,5 +1,5 @@
 var cron = require('node-schedule');
-var config = require('./config.json');
+var config = require('./webapp/conf/config.json');
 
 
 cron.scheduleJob(config.reporting_time, function()
