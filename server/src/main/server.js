@@ -48,7 +48,7 @@ const io = socketIO(server);
 
 var apiGetRes = function (socket,query,options) 
 {
-	console.log('Request', query);
+	log.debug('Request: '+query);
 	api.getRes(query,options).then(function(res)
 	{
 		log.debug('Response', res);
@@ -64,7 +64,7 @@ var fetchUser = function(sessionId,callback)
 {
 		db.selectWhereQuery("user",["sessionid"],[sessionId],function(result)
 		{
-			console.log(result);
+			log.debug(result);
 			callback(result[0]); 
 		});
 }
@@ -73,7 +73,7 @@ var fetchUserByEmail = function(email,callback)
 {
 		db.selectWhereQuery("user",["email"],[email],function(result)
 		{
-			console.log(result);
+			log.debug(result);
 			callback(result[0]); 
 		});
 }
@@ -153,7 +153,7 @@ io.on('connection', (socket) =>
 			var now = new Date();
 			var dateDiff = now.getTime()-date.getTime();
 			dateDiff = dateDiff / (60 * 60 * 1000);
-			console.log("Hour diff: ", dateDiff);
+			log.debug("Hour diff: "+dateDiff);
 			if(dateDiff<config.how_are_you_interval)
 				socket.emit("fromServer",{	home : "home"	});
 			else
@@ -167,15 +167,15 @@ io.on('connection', (socket) =>
 	{
 		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
 		{
-			console.log(result);
+			log.debug(result);
 			if(result[0])
 			{
 				var date = result[0].otp_sent_at;
 				var now = new Date();
-				console.log("Date: ", date, "Now ", now);
+				log.debug("Date: "+date+" \tNow: ", now);
 				var dateDiff = now.getTime()-date.getTime();
 				dateDiff = dateDiff / (60 * 1000);
-				console.log("Minute diff: ", dateDiff);
+				log.debug("Minute diff: "+ dateDiff);
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
 					apiGetRes(socket,"Screener-Start",data.options);
@@ -219,7 +219,7 @@ io.on('connection', (socket) =>
 					{
 						if(error)
 						{
-							console.log(error);
+							log.error(error);
 							apiGetRes(socket,"OTP error",data.options);
 						}
 						else
@@ -264,8 +264,8 @@ io.on('connection', (socket) =>
 
 	socket.on('hospitalFinder', function (data) 
 	{	
-		console.log('latitude in server', data.query[0]);
-		console.log('longitude in server', data.query[1]);
+		log.debug('latitude in server '+ data.query[0]);
+		log.debug('longitude in server '+ data.query[1]);
 		var a = data.query[0];
 		var b = data.query[1];
 		// a = 11.1273;
@@ -275,7 +275,7 @@ io.on('connection', (socket) =>
 		var d = 99999999999999.9999999999999;
 		db.selectQuery("Hospitals",function(result)
 		{	
-			console.log(result);
+			log.debug(result);
 			for (i in result) {
 
                 var x = result[i].lat;
@@ -291,8 +291,8 @@ io.on('connection', (socket) =>
 
             d = d.toFixed(2);
 
-	        console.log('hospital in server', hos);
-			console.log('distance in server', d ); 
+	        log.debug('hospital in server '+ hos);
+			log.debug('distance in server '+ d ); 
 			apiGetRes(socket,"hospital " + hos ,data.options);
 
 		});
@@ -301,7 +301,8 @@ io.on('connection', (socket) =>
 	});
 
 	socket.on('LocationDenied', function (data) 
-	{	console.log(data);
+	{	
+		log.debug(data);
 		apiGetRes(socket,"nolocation",data.options);
 	});
 	

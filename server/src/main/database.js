@@ -1,6 +1,6 @@
 var log = require('./logger/logger')(module);
 var mysql = require('mysql');
-var config = require('./config.json');
+var config = require('./webapp/conf/config.json');
 
 var con = mysql.createConnection({
   host: config.db_host,
