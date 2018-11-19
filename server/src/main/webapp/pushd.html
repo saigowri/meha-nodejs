@@ -5,6 +5,7 @@
     <link rel="stylesheet" type="text/css" href="css/chatbox.css" />
 	<script>
 		var currUserId = null;
+		var config = null;
 		function readTextFile(file, callback) {
 		    var rawFile = new XMLHttpRequest();
 		    rawFile.overrideMimeType("application/json");
@@ -19,9 +20,12 @@
 
 		$(document).ready(function() 
 		{
-			readTextFile("./conf/config.json", function(text){
-			    var data = JSON.parse(text);
-			    console.log(data);
+			readTextFile("./conf/config.json", function(text)
+			{
+			    config = JSON.parse(text);
+			    alert(text);
+				currUserId = document.getElementById('pushd-iframe').contentWindow.userId;
+				$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid='+currUserId);
 			});
 			$('#chatbot-maximize').hide();
 			  
@@ -37,8 +41,6 @@
 			  $('#chatbot-minimize').show();
 			  $('#chatbot-maximize').hide();
 			});
-			currUserId = document.getElementById('pushd-iframe').contentWindow.userId;
-			$('#chatbot-iframe').attr('src','http://localhost:3000?userid='+currUserId);
 		});
 		function pushdReload(pushd)
 		{
@@ -47,7 +49,7 @@
 	  		if(currUserId != nextUserId)
 	  		{
 	  			currUserId = nextUserId; 
-	  			$('#chatbot-iframe').attr('src','http://localhost:3000?userid='+currUserId);
+	  			$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid='+currUserId);
 	  		}
 		}
 		
