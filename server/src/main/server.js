@@ -9,7 +9,7 @@ var config = require('./config.json');
 var log = require('./logger/logger')(module);
 
 var app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'webapp')));
 db.connectdb;
 
 function getRandomInt(max) 
