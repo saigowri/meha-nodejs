@@ -1,22 +1,12 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<%@ page import="properties.AccessProperties"%>	
-<%@ page import="properties.CreateProperties"%>	
-<%
-	CreateProperties cp = new CreateProperties();
-	AccessProperties ap = new AccessProperties();
-%>
 <!DOCTYPE html>
 <html>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
     <link rel="stylesheet" type="text/css" href="css/chatbox.css" />
 	<script>
-    	var test = "<%=ap.getImageServerURL()%>";
 		var currUserId = null;
 		$(document).ready(function() 
 		{
-			alert(test);
 			$('#chatbot-maximize').hide();
 			  
 			$('#chatbot-minimize').click(function() 
