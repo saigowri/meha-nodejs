@@ -93,7 +93,8 @@ var fetchEmail = function(sessionId,callback)
 io.on('connection', (socket) => 
 {
 	var sessionId;
-	log.info('Client connected');
+	var userid = router.userid;
+	log.info('Client '+userid+' connected');
 	
 	socket.on('fromClient', function (data) 
 	{

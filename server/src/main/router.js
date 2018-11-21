@@ -1,6 +1,7 @@
 var express = require('express')
 const path = require('path');
 var router = express.Router();
+var userid = null;
 
 const INDEX = path.join(__dirname, 'chatbot.html');
 
@@ -10,8 +11,10 @@ router.use(express.static(path.join(__dirname, 'webapp')))
 // define the home page route
 router.get('/', function (req, res) 
 {
-	console.log('Userid: '+req.query.userid);
-	res.sendFile(INDEX)
+	userid = req.query.userid;
+console.log('Userid: '+userid);
+	res.sendFile(INDEX);
 })
 
+console.log('Userid: '+userid);
 module.exports = router
