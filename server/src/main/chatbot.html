@@ -43,7 +43,12 @@
 				if (event.which == 13) {
 					event.preventDefault();
 					var text = $("#input").val();
-					setInput(text,text);
+					var contexts = [{
+							name: "followup",
+							parameters: {"reply":" "},
+							lifespan:1
+						}]; 
+					setInput(text,contexts);
 				}
 			});
 			
