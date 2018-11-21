@@ -1,0 +1,16 @@
+{
+	"chatbot_url":"http://localhost:3000/",
+	"pushd_url":"http://localhost:8080/pushd/",
+	"pushd_api":"webapi/external",
+	"pushd_api_userinfo":"webapi/external/userInfo/tytuh6",
+	"db_host": "localhost",
+	"database": "mehadb",
+	"user": "meha",
+	"password": "Password1",
+	"how_are_you_interval" : 12,
+	"reporting_time": 
+		{
+			"hour":23,
+			"minute":40
+		}
+}

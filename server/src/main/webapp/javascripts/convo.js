@@ -1,14 +1,46 @@
 var socket = io();
-var img = 'https://storage.googleapis.com/cloudprod-apiai/68e117a8-bb38-48c1-a461-59297f9af6c0_l.png';
+var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b719-6e24ed54dac4_l.png';
 var score = 0;
+var chat_start=null;
+var last_reply=null;
+var minutes = 15, the_interval = minutes * 60 * 1000;
 
+setInterval(function() 
+{
+	var now = new Date();
+	console.log("15 minutes check at", now);
+	if(!chat_start) 
+		console.log("Convo has not started");
+	else
+	{
+		var idleTime = now.getTime()-last_reply.getTime();
+		idleTime = idleTime / (60 * 1000);
+		console.log("Diff in min",idleTime);
+		if(idleTime>minutes)
+		{
+			console.log("Time out, after ",last_reply);
+			socket.emit("logChatEnd", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() , chat_end : last_reply.toISOString()});
+			chat_start = null;
+		}
+	}
+}, the_interval);
+
+var hashMap = {};
+// add items
+hashMap["very sad"] = -3;
+hashMap["sad"] = -2;
+hashMap["not so good"] = -1;
+hashMap["neutral"] = 0;
+hashMap["not so bad"] = 1;
+hashMap["happy"] = 2;
+hashMap["very happy"] = 3;
 
 function requestToServer(req,text,contexts)
 {
 	var sessionId = setSessionId();	
 	var options = {
-    sessionId: sessionId,
-    contexts: contexts
+	    sessionId: sessionId,
+	    contexts: contexts
 	};
 	socket.emit(req, {query : text , options : options});
 }
@@ -71,6 +103,15 @@ function setScore(text,score,contexts)
 
 function setInput(text,contexts) 
 {
+	last_reply = new Date();
+	if(!chat_start)
+	{
+		chat_start = last_reply;
+		console.log("Record Start time");		
+		socket.emit("logChatStart", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() });
+	}
+	console.log("start chat", chat_start);
+	console.log("last reply", last_reply);
 	$("#input").attr("disabled", false);
 	$(".btn-xs").attr("disabled", true);
 	requestToServer("fromClient",text,contexts);
@@ -98,7 +139,7 @@ function processOptions(responseMessage,payload)
 			}];
 		if(payload.Option[key].hasOwnProperty('response'))
 			contexts = [{
-					name: "welcome",
+					name: "followup",
 					parameters: {"reply":payload.Option[key].response},
 					lifespan:2
 				}];
@@ -251,8 +292,22 @@ function emailDisplay2(email)
 	requestToServer("sendMail2",email,contexts);
 }
 
-
-
+function sentimentAnalysis(freeTextMsg) 
+{
+	console.log("Message is "+freeTextMsg);
+	var score = localStorage.getItem("sentiScore");
+	console.log("Score is " + score);
+	var contexts = [{
+					name: "",
+					parameters: 
+					{
+						"freeTextMsg" : freeTextMsg,
+						"sentiScore" : score
+					},
+					lifespan : 1
+	}]; 
+	requestToServer("sentimentAnalysis",freeTextMsg,contexts);
+}
 
 function findEmail()
 {
@@ -284,16 +339,6 @@ function otpDisplay(otp)
 	requestToServer("matchOTP",otp,contexts);
 }
 
-function otpDisplay2(otp)
-{
-	var contexts = [{
-					name: "",
-					parameters: {},
-					lifespan:1
-				}]; 
-	requestToServer("matchOTP2",otp,contexts);
-}
-
 function hospitalFinder()
 {
 	 getLocation();
@@ -310,6 +355,7 @@ function showPosition(position) {
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
+
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:{
@@ -364,7 +410,6 @@ socket.on('setServerSessionId', function (data)
 
 socket.on('fromServer', function (data) 
 { 
-
 	if(data.hasOwnProperty('error'))
 	{
 		setResponse("<li class='p-1 rounded mb-1'>"+
@@ -406,15 +451,21 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
 		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
-		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);			
-		else if(actionVal.localeCompare('OtpVerify2')==0) otpDisplay2(data.server.result.parameters.otp);			
+		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);				
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
+		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else 
 			processResponse(data.server.result.fulfillment);
-		if(actionVal.localeCompare('input.welcome')==0) requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
+		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
+		{
+			var sentiScore = hashMap[data.server.result.parameters.Feelings];
+			localStorage.setItem("sentiScore",sentiScore);
+			console.log(sentiScore);
+			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
+		}
 	}
-})
+});
 
 function setResponse(val) 
 {
