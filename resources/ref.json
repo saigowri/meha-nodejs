@@ -3,6 +3,9 @@
     [{
 		"text": "How are you feeling today?"
     },{
+		"text": "Next text",
+		"response":"Cool"
+    },{
 		"link":     
 		{
 			"title": "Relaxing Music & Soft Rain",
