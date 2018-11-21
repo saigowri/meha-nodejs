@@ -141,7 +141,7 @@ function processOptions(responseMessage,payload)
 			contexts = [{
 					name: "followup",
 					parameters: {"reply":payload.Option[key].response},
-					lifespan:2
+					lifespan:1
 				}];
 		if(type.localeCompare('WHO')== 0 || type.localeCompare('Screener')== 0)
 		{
@@ -175,6 +175,13 @@ function processInstructions(responseMessage, instructions)
 		if(instructions[key].hasOwnProperty('text'))
 			responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								instructions[key].text+"</div>";
+		
+		if(instructions[key].hasOwnProperty('response'))
+			contexts = [{
+					name: "followup",
+					parameters: {"reply":payload.Option[key].response},
+					lifespan:1
+				}];
 			// Link URLs
 		if(instructions[key].hasOwnProperty('link'))
 		responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+

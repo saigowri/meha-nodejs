@@ -12,9 +12,9 @@ router.use(express.static(path.join(__dirname, 'webapp')))
 router.get('/', function (req, res) 
 {
 	userid = req.query.userid;
-console.log('Userid: '+userid);
+	res.cookie("userid", userid); 
 	res.sendFile(INDEX);
 })
 
-console.log('Userid: '+userid);
+//console.log('Userid: '+userid);
 module.exports = router
