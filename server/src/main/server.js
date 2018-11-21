@@ -1,6 +1,6 @@
 const express = require('express');
+var router = require('./router');
 const socketIO = require('socket.io');
-const path = require('path');
 var api = require('./api');
 var mailer = require('./mailer');
 var sentiment = require('./sentimentAnalysis');
@@ -8,8 +8,12 @@ var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 
+
 var app = express();
-app.use(express.static(path.join(__dirname, 'webapp')));
+app.use('/chatbot', router);
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
+
 db.connectdb;
 
 function getRandomInt(max) 
@@ -33,14 +37,6 @@ function deg2rad(deg) {
   return deg * (Math.PI/180)
 }
 			
-const PORT = process.env.PORT || 3000;
-const INDEX = path.join(__dirname, 'chatbot.html');
-
-
-const server = app
-  .use('/:userid',(req, res) => res.sendFile(INDEX) )
-  //.use('/test',(req, res) => res.sendFile(path.join(__dirname, 'test.html')) )
-  .listen(PORT, () => log.info(`Listening on ${ PORT }`));
   
 
 
@@ -97,7 +93,8 @@ var fetchEmail = function(sessionId,callback)
 io.on('connection', (socket) => 
 {
 	var sessionId;
-	log.info('Client connected');
+	var userid = router.userid;
+	log.info('Client '+userid+' connected');
 	
 	socket.on('fromClient', function (data) 
 	{
