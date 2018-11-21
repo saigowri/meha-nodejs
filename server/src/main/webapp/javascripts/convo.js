@@ -175,13 +175,14 @@ function processInstructions(responseMessage, instructions)
 		if(instructions[key].hasOwnProperty('text'))
 			responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								instructions[key].text+"</div>";
-		
+		/*
 		if(instructions[key].hasOwnProperty('response'))
 			contexts = [{
 					name: "followup",
-					parameters: {"reply":payload.Option[key].response},
+					parameters: {"reply":instructions[key].response},
 					lifespan:1
-				}];
+				}];*/
+				
 			// Link URLs
 		if(instructions[key].hasOwnProperty('link'))
 		responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
@@ -287,18 +288,6 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
-function emailDisplay2(email)
-{
-	var contexts = [{
-					name: "otp-sent",
-					parameters: {
-						"email":email
-					},
-					lifespan:1
-			}]; 
-	requestToServer("sendMail2",email,contexts);
-}
-
 function sentimentAnalysis(freeTextMsg) 
 {
 	console.log("Message is "+freeTextMsg);
@@ -391,14 +380,7 @@ function showError(error) {
 
 
 function welcomeBackFollowup(data)
-
-{	console.log('EMAIL :', data);
-	if(data.result.resolvedQuery.includes('Continue')== true)
-	{
-		emailDisplay2(data.result.parameters.email);
-	}
-	else
-	{
+{	
 		resetSessionId();
 		var contexts = [{
 			name: "begin-chatbot",
@@ -406,7 +388,6 @@ function welcomeBackFollowup(data)
 			lifespan:1
 		}]; 
 		requestToServer("beginChatbot","Begin Chatbot",contexts);
-	}
 }
 		
 socket.on('setServerSessionId', function (data) 
@@ -432,7 +413,7 @@ socket.on('fromServer', function (data)
 		var contexts = [{
 					name: "welcome",
 					parameters: {"reply":""},
-					lifespan:2
+					lifespan:1
 				}];
 		requestToServer("fromClient","home","");
 	}
@@ -494,7 +475,7 @@ var getCookies = function(){
 function home()
 {	
 	var myCookies = getCookies();
-	//alert(myCookies.userId); // "do not tell you"
+	alert(myCookies.userid); 
 	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
             name: "welcome",

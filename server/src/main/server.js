@@ -242,7 +242,19 @@ io.on('connection', (socket) =>
 		}
 		else if(parseInt(totalScore) > 0)
 		{
-			apiGetRes(socket,"home",data.options);
+			var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "followup",
+					parameters: {"reply":"Glad to hear that! "},
+					lifespan:1
+				},{
+					name: "customWelcomeIntent",
+					parameters: {},
+					lifespan:1
+				}]};
+			apiGetRes(socket,"Custom welcome intent",options);
 		}
 		else
 		{

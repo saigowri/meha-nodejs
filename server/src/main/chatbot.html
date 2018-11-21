@@ -25,13 +25,6 @@
 	</script>
     <script src="javascripts/convo.js"></script>
 	<script type="text/javascript">
-		var theCookies = document.cookie.split(';');
-		var aString = '';
-		for (var i = 0 ; i < theCookies.length; i++) 
-		{
-			aString += i + ' ' + theCookies[i] + "\n";
-		}
-		console.log("All cookies",aString);
 		$(document).ready(function() 
 		{
 			
@@ -50,7 +43,12 @@
 				if (event.which == 13) {
 					event.preventDefault();
 					var text = $("#input").val();
-					setInput(text,text);
+					var contexts = [{
+							name: "followup",
+							parameters: {"reply":" "},
+							lifespan:1
+						}]; 
+					setInput(text,contexts);
 				}
 			});
 			
