@@ -27,8 +27,6 @@
 			{
 			    config = JSON.parse(text);
 				$('#pushd-iframe').attr('src',config.pushd_url);
-				currUserId = document.getElementById('pushd-iframe').contentWindow.userId;
-				$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid='+currUserId);
 			});
 			$('#chatbot-maximize').hide();
 			  

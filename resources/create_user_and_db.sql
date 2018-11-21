@@ -1,0 +1,3 @@
+GRANT ALL PRIVILEGES ON *.* TO 'meha'@'localhost' IDENTIFIED BY 'Password1';
+CREATE DATABASE mehaDB;
+USE mehaDB;
