@@ -1,6 +1,6 @@
 var http = require('http');
 
-function parseCookies (request) {
+/*function parseCookies (request) {
     var list = {},
         rc = request.headers.cookie;
 
@@ -23,9 +23,12 @@ http.createServer(function (request, response) {
   });
   response.end('Hello World\n');
 }).listen(8124);
-
-console.log('Server running at http://127.0.0.1:8124/');
-var db = require('./database');
+*/
+//console.log('Server running at http://127.0.0.1:8124/');
+//var db = require('./database');
+var sentiment = require('./sentimentAnalysis');
+var freeTextScore = sentiment.sentimentAnalysis('I dont know');
+console.log(freeTextScore);
 //db.connectdb;
 //db.insertQuery("user",["sessionid","last_visited"],["test2", new Date() ]);
 ///db.updateQuery("user",["email","last_visited"],["kkp", new Date() ],["sessionid"],["test2"]);
