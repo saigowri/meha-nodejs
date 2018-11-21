@@ -133,8 +133,8 @@ function processOptions(responseMessage,payload)
 	for (var key in payload.Option) 
 	{
 		var contexts = [{
-				name: "",
-				parameters: {},
+				name: "followup",
+				parameters: {"reply":" "},
 				lifespan:1
 			}];
 		if(payload.Option[key].hasOwnProperty('response'))
@@ -475,7 +475,7 @@ var getCookies = function(){
 function home()
 {	
 	var myCookies = getCookies();
-	alert(myCookies.userid); 
+	alert(myCookies.email); 
 	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
             name: "welcome",
