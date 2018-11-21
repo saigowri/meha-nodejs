@@ -13,8 +13,8 @@ var path = require('path');
 const logDir = 'logs';
 
 // Create the log directory if it does not exist
-if (!fs.existsSync('../'+logDir)) {
-  fs.mkdirSync('../'+logDir);
+if (!fs.existsSync('./'+logDir)) {
+  fs.mkdirSync('./'+logDir);
 }
 
 const myFormat = printf(info => {
@@ -43,12 +43,12 @@ var getLogger = function(module) {
       // - Write all logs error (and below) to `error.log`.
       //
       new transports.File({ 
-          filename: '../logs/error.log', 
+          filename: './logs/error.log', 
           level: 'error', 
           handleExceptions: true
         }),
       new transports.File({ 
-          filename: '../logs/combined.log', 
+          filename: './logs/combined.log', 
           handleExceptions: true
         }),
       new transports.Console()     
