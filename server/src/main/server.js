@@ -235,10 +235,28 @@ io.on('connection', (socket) =>
 		var emoticonScore = data.options.contexts[0].parameters.sentiScore;
 		var freeTextScore = sentiment.sentimentAnalysis(data.query);
 		var totalScore = parseInt(emoticonScore) + parseInt(freeTextScore);
+		log.debug("emoticon score "+ emoticonScore);
+		log.debug("free text score "+ freeTextScore);
 		log.debug("total senti score "+ totalScore);
 		if(parseInt(totalScore) < 0)
 		{
 			apiGetRes(socket,"Request Email Id", data.options);
+		}
+		else if(parseInt(totalScore) > 0 && parseInt(freeTextScore) > 0)
+		{
+			var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "followup",
+					parameters: {"reply":"Glad to hear that! "},
+					lifespan:1
+				},{
+					name: "customWelcomeIntent",
+					parameters: {},
+					lifespan:1
+				}]};
+			apiGetRes(socket,"Custom welcome intent",options);
 		}
 		else if(parseInt(totalScore) > 0)
 		{
@@ -247,7 +265,7 @@ io.on('connection', (socket) =>
 					sessionId: data.options.sessionId,
 					contexts: [{
 					name: "followup",
-					parameters: {"reply":"Glad to hear that! "},
+					parameters: {"reply":"Hmm okay.."},
 					lifespan:1
 				},{
 					name: "customWelcomeIntent",
