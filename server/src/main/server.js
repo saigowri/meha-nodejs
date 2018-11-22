@@ -21,7 +21,8 @@ function getRandomInt(max)
 	return Math.floor(Math.random() * Math.floor(max));
 }
 
-function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) 
+{
   var R = 6371; // Radius of the earth in km
   var dLat = deg2rad(lat2-lat1);  // deg2rad below
   var dLon = deg2rad(lon2-lon1); 
@@ -33,7 +34,8 @@ function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
   return d;
 }
 
-function deg2rad(deg) {
+function deg2rad(deg) 
+{
   return deg * (Math.PI/180)
 }
 			
@@ -127,11 +129,30 @@ io.on('connection', (socket) =>
 		sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
 		{
-			if(user && user.email && (user.verified==1))
+			var email = data.options.contexts[0].parameters.email;
+			// If it is a pushd user. 
+			if(user && email.localeCompare('no-email'))
 			{
-				var name = (user.name)?	user.name	:	user.email;
-				apiGetRes(socket,"Welcome "+name+" back "+user.email,data.options);	
+				var name = data.options.contexts[0].parameters.name;
+				// Reply with email, if name is not present
+				var reply = 'Hi ';
+				var address = (name.localeCompare('no-name'))? name:email;
+				reply = reply + address + ', welcome back! ';
+				var options = 
+					{
+						sessionId: data.options.sessionId,
+						contexts: [{
+						name: "followup",
+						parameters: {"reply":reply},
+						lifespan:1
+					},{
+						name: "customWelcomeIntent",
+						parameters: {},
+						lifespan:1
+					}]};
+				apiGetRes(socket,"Custom welcome intent",options);
 			}
+			// If it is a new user, give the default resonse of asking for mood. And no need to record it in the database. 
 			else
 			{
 				apiGetRes(socket,data.query,data.options);	
