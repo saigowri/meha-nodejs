@@ -67,15 +67,6 @@ var fetchUser = function(sessionId,callback)
 		});
 }
 
-var fetchUserByEmail = function(email,callback)
-{
-		db.selectWhereQuery("user",["email"],[email],function(result)
-		{
-			log.debug(result);
-			callback(result[0]); 
-		});
-}
-
 var fetchEmail = function(sessionId,callback)
 {
 		fetchUser(sessionId,function(result)
@@ -215,7 +206,7 @@ io.on('connection', (socket) =>
 			db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 			{
 				// if so assign a new browserid (reset browserid)
-				if(result[0] && result[0].email && result[0].verified.localeCompare("1")==0)
+				if(result[0] && result[0].email && result[0].verified===1)
 				{
 					var random1 = getRandomInt(100000);
 					var random2 = getRandomInt(100000);
@@ -275,30 +266,6 @@ io.on('connection', (socket) =>
 					apiGetRes(socket,"OTP sent",data.options);
 				}
 			});
-		/*fetchUserByEmail(data.query,function(user)
-		{
-			if(user && (user.verified==1))
-			{
-				fetchUser(data.options.sessionId, function(new_user_rec)
-				{
-					//db.saveHistory("user","history_user",["browserid"],[user.browserid],"chat_start");
-					//db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["browserid"],[user.browserid]);
-				});
-				socket.emit('setServerSessionId',user.browserid);
-				var options = 
-				{
-					sessionId: user.browserid,
-					contexts: [{
-					name: "screener-start",
-					parameters: {},
-					lifespan:1
-				}]};
-				apiGetRes(socket,"Screener-Start",options);
-			}
-			else
-			{
-			}
-		});*/
 	});
 	
 	socket.on('sentimentAnalysis', function(data)
