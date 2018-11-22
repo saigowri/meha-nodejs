@@ -3,6 +3,7 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b71
 var score = 0;
 var chat_start=null;
 var last_reply=null;
+var convo="";
 var minutes = 15, the_interval = minutes * 60 * 1000;
 
 
@@ -522,3 +523,32 @@ function usefulLinks()
 				}]; 
 	setInput("Useful Links",contexts);
 }
+
+
+$(document).ready(function() 
+{
+    $('.hide-chat-box').click(function(){
+    $('#chatbot-iframe', window.parent.document).remove();
+	});
+	$('.hide-chatbox').click(function()
+	{
+		$('.chat-content').slideToggle();
+		$('#minimize-icon').toggle();
+		$('#maximize-icon').toggle();
+	});
+			
+	$("#input").keypress(function(event) 
+	{
+		if (event.which == 13) 
+		{
+			event.preventDefault();
+			var text = $("#input").val();
+			var contexts = [{
+							name: "followup",
+							parameters: {"reply":" "},
+							lifespan:1
+						}]; 
+			setInput(text,contexts);
+		}
+	});
+});

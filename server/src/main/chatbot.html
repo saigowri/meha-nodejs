@@ -24,35 +24,6 @@
 			}
 	</script>
     <script src="javascripts/convo.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function() 
-		{
-			
-        $('.hide-chat-box').click(function(){
-            $('#chatbot-iframe', window.parent.document).remove();
-
-             });
-			$('.hide-chatbox').click(function()
-			{
-					$('.chat-content').slideToggle();
-					$('#minimize-icon').toggle();
-					$('#maximize-icon').toggle();
-			});
-			
-			$("#input").keypress(function(event) {
-				if (event.which == 13) {
-					event.preventDefault();
-					var text = $("#input").val();
-					var contexts = [{
-							name: "followup",
-							parameters: {"reply":" "},
-							lifespan:1
-						}]; 
-					setInput(text,contexts);
-				}
-			});
-		});
-	</script>
 	
   </head>
   
