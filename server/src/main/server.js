@@ -21,7 +21,8 @@ function getRandomInt(max)
 	return Math.floor(Math.random() * Math.floor(max));
 }
 
-function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) 
+{
   var R = 6371; // Radius of the earth in km
   var dLat = deg2rad(lat2-lat1);  // deg2rad below
   var dLon = deg2rad(lon2-lon1); 
@@ -33,7 +34,8 @@ function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
   return d;
 }
 
-function deg2rad(deg) {
+function deg2rad(deg) 
+{
   return deg * (Math.PI/180)
 }
 			
@@ -58,7 +60,7 @@ var apiGetRes = function (socket,query,options)
 
 var fetchUser = function(sessionId,callback)
 {
-		db.selectWhereQuery("user",["sessionid"],[sessionId],function(result)
+		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
 			log.debug(result);
 			callback(result[0]); 
@@ -103,40 +105,104 @@ io.on('connection', (socket) =>
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		db.upsertQuery("user",["chat_start","chat_end","who_score","screener_score","sessionid"],
-			[new Date(data.chat_start),new Date("1970-01-01"),-999,-999,sessionId],["sessionid"],sessionId);
+		db.upsertQuery("user",["chat_start","chat_end","browserid"],
+			[new Date(data.chat_start),new Date("1970-01-01"),sessionId],["browserid"],sessionId);
 	});	
 	
 	socket.on('logChatEnd', function (data) 
 	{
 		sessionId = data.sessionId;
-		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["sessionid"],[sessionId]);
-		db.saveHistory("user","history_user",["sessionid"],[sessionId],"chat_start");
+		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
+		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 	});	
 	
 	socket.on('recordFeelings', function (data) 
 	{		
 		if(data.query!="")
 		{
-			db.upsertQuery("user",["feeling","sessionid"],[data.query,data.options.sessionId],["sessionid"],[data.options.sessionId]);
+			db.upsertQuery("user",["feeling","browserid"],[data.query,data.options.sessionId],["browserid"],[data.options.sessionId]);
 		}
 	});
 	
 	socket.on('beginChatbot', function (data) 
 	{
 		sessionId = data.options.sessionId;
-		fetchUser(sessionId,function(user)
+		var context;
+		var query;
+		var reply;
+		
+
+		var makeRequest = function(query,reply,context)
 		{
-			if(user && user.email && (user.verified==1))
+			var options = {
+							sessionId: sessionId,
+							contexts: [{
+							name: "followup",
+							parameters: {"reply":reply},
+							lifespan:1
+						},{
+							name: context,
+							parameters: {},
+							lifespan:1
+						}]};				
+			apiGetRes(socket,query,options);
+		}
+		var email = data.options.contexts[0].parameters.email;
+		var name = data.options.contexts[0].parameters.name;
+		// If it is a pushd user. 
+		if(email.localeCompare('no-email'))
+		{
+			// Reply with email, if name is not present
+			reply = 'Hi ';
+			var address = (name.localeCompare('no-name'))? name:email;
+			reply = reply + address + ', welcome back! ';
+			
+			// Check if user already exists
+			db.selectWhereQuery("user",["email"],[email],function(result)
 			{
-				var name = (user.name)?	user.name	:	user.email;
-				apiGetRes(socket,"Welcome "+name+" back "+user.email,data.options);	
-			}
-			else
+				log.debug(JSON.stringify(result));
+				// if user already has browserid replace the current browserid with the previously recorded browserid
+				if(result[0])
+				{
+					var user = result[0];
+					sessionId = user.browserid;
+					socket.emit('setServerSessionId',user.browserid);
+					// update db
+					
+					// Check if the user has been already asked for mood before
+					var date = user.chat_start;
+					var now = new Date();
+					var dateDiff = now.getTime()-date.getTime();
+					dateDiff = dateDiff / (60 * 60 * 1000);
+					log.debug("Hour diff between this chat and previous chat: "+dateDiff);
+					if(dateDiff<config.how_are_you_interval)
+					{
+						// If the user has been already asked for mood before
+						context = "customWelcomeIntent";
+						query = "Custom welcome intent";
+						makeRequest(query,reply,context);
+					}
+					else
+					{
+						// If the user has been already asked for mood before
+						context = "begin-chatbot";
+						query = "mood of user";
+						makeRequest(query,reply,context);
+					}
+				}
+			});
+			/*fetchUserByEmail(email,function(user)
 			{
-				apiGetRes(socket,data.query,data.options);	
-			}
-		});
+			});*/
+		}
+		// If it is a new user, give the default resonse of asking for mood. And no need to record it in the database. 
+		else
+		{
+			reply = "Hello, I am MeHA, your mental health assistant!";
+			query = data.query;
+			context = "begin-chatbot";
+			makeRequest(query,reply,context);
+		}	
 	});
 	
 	
@@ -155,13 +221,13 @@ io.on('connection', (socket) =>
 			else
 				apiGetRes(socket,"mood of user",data.options);	
 		});
-		//db.saveHistory("user","history_user",["sessionid"],[data.options.sessionId],"chat_start");
-		//db.updateQuery("user",["chat_start"],[new Date()],["sessionid"],data.options.sessionId);
+		//db.saveHistory("user","history_user",["browserid"],[data.options.sessionId],"chat_start");
+		//db.updateQuery("user",["chat_start"],[new Date()],["browserid"],data.options.sessionId);
 	});
 	
 	socket.on('matchOTP', function (data) 
 	{
-		db.selectWhereQuery("user",["sessionid"],[data.options.sessionId],function(result)
+		db.selectWhereQuery("user",["browserid"],[data.options.sessionId],function(result)
 		{
 			log.debug(result);
 			if(result[0])
@@ -175,7 +241,7 @@ io.on('connection', (socket) =>
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
 					apiGetRes(socket,"Screener-Start",data.options);
-					//db.updateQuery("user",["verified"],[1],["sessionid"],data.options.sessionId);
+					//db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -191,13 +257,13 @@ io.on('connection', (socket) =>
 			{
 				fetchUser(data.options.sessionId, function(new_user_rec)
 				{
-					//db.saveHistory("user","history_user",["sessionid"],[user.sessionid],"chat_start");
-					//db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["sessionid"],[user.sessionid]);
+					//db.saveHistory("user","history_user",["browserid"],[user.browserid],"chat_start");
+					//db.updateQuery("user",["chat_start","feeling"],[new_user_rec.chat_start,new_user_rec.feeling],["browserid"],[user.browserid]);
 				});
-				socket.emit('setServerSessionId',user.sessionid);
+				socket.emit('setServerSessionId',user.browserid);
 				var options = 
 				{
-					sessionId: user.sessionid,
+					sessionId: user.browserid,
 					contexts: [{
 					name: "screener-start",
 					parameters: {},
@@ -221,7 +287,7 @@ io.on('connection', (socket) =>
 						else
 						{
 							var date = new Date();
-							//db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["sessionid"],[data.options.sessionId]);
+							//db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
 							apiGetRes(socket,"OTP sent",data.options);
 						}
 					});
@@ -347,13 +413,13 @@ io.on('connection', (socket) =>
 	socket.on('disconnect', () => 
 	{
 		log.info("Disconnecting session "+ sessionId);
-		db.selectWhereQuery("user",["sessionid"],[sessionId],function(result)
+		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
 			console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
-				db.updateQuery("user",["chat_end"],[new Date()],["sessionid"],[sessionId]);
-				db.saveHistory("user","history_user",["sessionid"],[sessionId],"chat_start");
+				db.updateQuery("user",["chat_end"],[new Date()],["browserid"],[sessionId]);
+				db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 			}
 		});
 	});

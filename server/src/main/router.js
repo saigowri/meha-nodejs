@@ -21,13 +21,17 @@ router.get('/', function (req, res)
 	var userid = req.query.userid;
 	for (var key in userInfo)
 	{
-		console.log(userInfo[key].mailId);
+		res.cookie("mehaEmail", "no-email");
+		res.cookie("mehaName", "no-name");
+		//console.log(userInfo[key].mailId);
 		if(userid==userInfo[key].id)
 		{
-			res.cookie("email", userInfo[key].mailId);
+			res.cookie("mehaEmail", userInfo[key].mailId);
+			if(userInfo[key].hasOwnProperty('name'))
+				res.cookie("mehaName", userInfo[key].name);
 			break;		
 		}
-	}
+	}	
 	res.sendFile(INDEX);
 })
 
