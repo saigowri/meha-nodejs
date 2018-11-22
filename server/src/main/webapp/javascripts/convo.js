@@ -6,7 +6,8 @@ var last_reply=null;
 var minutes = 15, the_interval = minutes * 60 * 1000;
 
 
-var getCookies = function(){
+var getCookies = function()
+{
   var pairs = document.cookie.split(";");
   var cookies = {};
   for (var i=0; i<pairs.length; i++){
