@@ -347,16 +347,6 @@ function findEmail()
 			}]; 
 	requestToServer("findEmail","",contexts);
 }
-/*
-function checkMood()
-{
-	var contexts = [{
-					name: "",
-					parameters: {},
-					lifespan:1
-			}]; 
-	requestToServer("checkMood","",contexts);
-}*/
 
 function otpDisplay(otp)
 {

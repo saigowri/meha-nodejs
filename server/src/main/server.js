@@ -158,6 +158,7 @@ io.on('connection', (socket) =>
 		// If it is a pushd user. 
 		if(email.localeCompare('no-email')!=0)
 		{			
+			log.debug("Begin chat with a pushd user. (email: "+email+"+, browserid: "+sessionId+")");
 			// Check if user already exists
 			db.selectWhereQuery("user",["email"],[email],function(result)
 			{
@@ -206,6 +207,7 @@ io.on('connection', (socket) =>
 		//And no need to record it in the database. 
 		else
 		{
+			log.debug("Begin chat with a new user. (browserid: "+sessionId+")");
 			reply = "Hello, I am MeHA, your mental health assistant!";
 			query = data.query;
 			context = "begin-chatbot";
@@ -213,11 +215,12 @@ io.on('connection', (socket) =>
 			db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 			{
 				// if so assign a new browserid (reset browserid)
-				if(result[0] && result[0].email)
+				if(result[0] && result[0].email && result[0].verified.localeCompare("1")==0)
 				{
 					var random1 = getRandomInt(100000);
 					var random2 = getRandomInt(100000);
 					sessionId =  "" + parseInt(Date.now()) + random1 + random2;
+					log.debug("Changing browserid: "+sessionId);
 					socket.emit('setServerSessionId',sessionId);
 					makeRequest(query,reply,context);
 				}
@@ -227,26 +230,7 @@ io.on('connection', (socket) =>
 		}	
 	});
 	
-	
-/*	socket.on('checkMood', function (data) 
-	{
-		sessionId = data.options.sessionId;
-		fetchUser(sessionId,function(user)
-		{
-			var date = user.chat_start;
-			var now = new Date();
-			var dateDiff = now.getTime()-date.getTime();
-			dateDiff = dateDiff / (60 * 60 * 1000);
-			log.debug("Hour diff: "+dateDiff);
-			if(dateDiff<config.how_are_you_interval)
-				socket.emit("fromServer",{	home : "home"	});
-			else
-				apiGetRes(socket,"mood of user",data.options);	
-		});
-		//db.saveHistory("user","history_user",["browserid"],[data.options.sessionId],"chat_start");
-		//db.updateQuery("user",["chat_start"],[new Date()],["browserid"],data.options.sessionId);
-	});*/
-	
+		
 	socket.on('matchOTP', function (data) 
 	{
 		db.selectWhereQuery("user",["browserid"],[data.options.sessionId],function(result)
@@ -263,7 +247,7 @@ io.on('connection', (socket) =>
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
 					apiGetRes(socket,"Screener-Start",data.options);
-					//db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
+					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -273,7 +257,25 @@ io.on('connection', (socket) =>
 	
 	socket.on('sendMail', function (data) 
 	{
-		fetchUserByEmail(data.query,function(user)
+		var otp = getRandomInt(1000000);
+				
+		mailer.sendMail(data.query,"Thank you for registering with MeHA",
+			"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
+			function(error, response)
+			{
+				if(error)
+				{
+					log.error(error);
+					apiGetRes(socket,"OTP error",data.options);
+				}
+				else
+				{
+					var date = new Date();
+					db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					apiGetRes(socket,"OTP sent",data.options);
+				}
+			});
+		/*fetchUserByEmail(data.query,function(user)
 		{
 			if(user && (user.verified==1))
 			{
@@ -295,26 +297,8 @@ io.on('connection', (socket) =>
 			}
 			else
 			{
-				var otp = getRandomInt(1000000);
-				
-				mailer.sendMail(data.query,"Thank you for registering with MeHA",
-					"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
-					function(error, response)
-					{
-						if(error)
-						{
-							log.error(error);
-							apiGetRes(socket,"OTP error",data.options);
-						}
-						else
-						{
-							var date = new Date();
-							//db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
-							apiGetRes(socket,"OTP sent",data.options);
-						}
-					});
 			}
-		});
+		});*/
 	});
 	
 	socket.on('sentimentAnalysis', function(data)
