@@ -5,6 +5,34 @@ var chat_start=null;
 var last_reply=null;
 var minutes = 15, the_interval = minutes * 60 * 1000;
 
+
+var getCookies = function()
+{
+  var pairs = document.cookie.split(";");
+  var cookies = {};
+  for (var i=0; i<pairs.length; i++){
+    var pair = pairs[i].split("=");
+    cookies[(pair[0]+'').trim()] = unescape(pair[1]);
+  }
+  return cookies;
+}
+var myCookies = getCookies();
+var mehaEmail = myCookies.mehaEmail;
+var mehaName = myCookies.mehaName;
+var email = mehaEmail.localeCompare("no-email")? mehaEmail : null;
+var name = mehaName.localeCompare("no-name")? mehaName : null;
+console.log("Email: ",mehaEmail);
+console.log("Name: ",mehaName);
+
+			
+// Beginning Conversation From Chatbot
+var contexts = [{
+				name: "begin-chatbot",
+				parameters: {"email":mehaEmail,"name":mehaName},
+				lifespan:1
+			}]; 
+requestToServer("beginChatbot","Begin Chatbot",contexts);
+
 setInterval(function() 
 {
 	var now = new Date();
@@ -108,7 +136,12 @@ function setInput(text,contexts)
 	{
 		chat_start = last_reply;
 		console.log("Record Start time");		
-		socket.emit("logChatStart", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() });
+		socket.emit("logChatStart", 
+			{
+				sessionId: setSessionId() ,
+				chat_start : chat_start.toISOString(), 
+				email : mehaEmail 
+			});
 	}
 	console.log("start chat", chat_start);
 	console.log("last reply", last_reply);
@@ -307,22 +340,30 @@ function sentimentAnalysis(freeTextMsg)
 
 function findEmail()
 {
-	var contexts = [{
+	console.log("Registered email",email);
+	if(!email)
+	{
+		var contexts = [{
 					name: "",
 					parameters: {},
 					lifespan:1
-			}]; 
-	requestToServer("findEmail","",contexts);
-}
-
-function checkMood()
-{
-	var contexts = [{
-					name: "",
+			}];
+		requestToServer("fromClient","Request Email Id",contexts);
+	}
+	else
+	{
+		var contexts = [{
+					name: "followup",
+					parameters: {"reply":email},
+					lifespan:1
+			},{
+					name: "screener-start",
 					parameters: {},
 					lifespan:1
-			}]; 
-	requestToServer("checkMood","",contexts);
+			}];
+		requestToServer("fromClient","Screener-restart",contexts);
+	}
+		
 }
 
 function otpDisplay(otp)
@@ -384,7 +425,7 @@ function welcomeBackFollowup(data)
 		resetSessionId();
 		var contexts = [{
 			name: "begin-chatbot",
-			parameters: {},
+			parameters: {"email":mehaEmail,"name":mehaName},
 			lifespan:1
 		}]; 
 		requestToServer("beginChatbot","Begin Chatbot",contexts);
@@ -461,22 +502,9 @@ function setResponse(val)
 	var chat_scroll=document.getElementById("chat-scroll");
 	chat_scroll.scrollTop=chat_scroll.scrollHeight;
 }
-
-var getCookies = function(){
-  var pairs = document.cookie.split(";");
-  var cookies = {};
-  for (var i=0; i<pairs.length; i++){
-    var pair = pairs[i].split("=");
-    cookies[(pair[0]+'').trim()] = unescape(pair[1]);
-  }
-  return cookies;
-}
 			
 function home()
 {	
-	var myCookies = getCookies();
-	alert(myCookies.email); 
-	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
             name: "welcome",
             parameters: {"reply":" "},
