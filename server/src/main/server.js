@@ -105,8 +105,16 @@ io.on('connection', (socket) =>
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		db.upsertQuery("user",["chat_start","chat_end","browserid"],
-			[new Date(data.chat_start),new Date("1970-01-01"),sessionId],["browserid"],sessionId);
+		var fields = ["chat_start","chat_end","browserid"];
+		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId];
+		if(data.email.localeCompare('no-email')!=0)
+		{
+			fields.push("email");
+			values.push(data.email);
+			fields.push("verified");
+			values.push(1);
+		}
+		db.upsertQuery("user",fields,values,["browserid"],sessionId);
 	});	
 	
 	socket.on('logChatEnd', function (data) 
@@ -130,8 +138,6 @@ io.on('connection', (socket) =>
 		var context;
 		var query;
 		var reply;
-		
-
 		var makeRequest = function(query,reply,context)
 		{
 			var options = {
@@ -150,25 +156,23 @@ io.on('connection', (socket) =>
 		var email = data.options.contexts[0].parameters.email;
 		var name = data.options.contexts[0].parameters.name;
 		// If it is a pushd user. 
-		if(email.localeCompare('no-email'))
-		{
-			// Reply with email, if name is not present
-			reply = 'Hi ';
-			var address = (name.localeCompare('no-name'))? name:email;
-			reply = reply + address + ', welcome back! ';
-			
+		if(email.localeCompare('no-email')!=0)
+		{			
 			// Check if user already exists
 			db.selectWhereQuery("user",["email"],[email],function(result)
 			{
+				// Reply with email, if name is not present
+				reply = 'Hi ';
+				var address = (name.localeCompare('no-name'))? name:email;
+				reply = reply + address + ', Welcome ';
 				log.debug(JSON.stringify(result));
 				// if user already has browserid replace the current browserid with the previously recorded browserid
 				if(result[0])
 				{
 					var user = result[0];
+					reply = reply + 'back! ';
 					sessionId = user.browserid;
 					socket.emit('setServerSessionId',user.browserid);
-					// update db
-					
 					// Check if the user has been already asked for mood before
 					var date = user.chat_start;
 					var now = new Date();
@@ -184,29 +188,47 @@ io.on('connection', (socket) =>
 					}
 					else
 					{
-						// If the user has been already asked for mood before
 						context = "begin-chatbot";
-						query = "mood of user";
+						query = "Begin Chatbot";
 						makeRequest(query,reply,context);
 					}
 				}
+				else
+				{
+					reply = reply + 'to MeHA, your mental health assistant!';
+					context = "begin-chatbot";
+					query = "Begin Chatbot";
+					makeRequest(query,reply,context);
+				}
 			});
-			/*fetchUserByEmail(email,function(user)
-			{
-			});*/
 		}
-		// If it is a new user, give the default resonse of asking for mood. And no need to record it in the database. 
+		// If it is a new user, give the default response of asking for mood. 
+		//And no need to record it in the database. 
 		else
 		{
 			reply = "Hello, I am MeHA, your mental health assistant!";
 			query = data.query;
 			context = "begin-chatbot";
-			makeRequest(query,reply,context);
+			// Check if the browserid has already been taken by a pushd user
+			db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
+			{
+				// if so assign a new browserid (reset browserid)
+				if(result[0] && result[0].email)
+				{
+					var random1 = getRandomInt(100000);
+					var random2 = getRandomInt(100000);
+					sessionId =  "" + parseInt(Date.now()) + random1 + random2;
+					socket.emit('setServerSessionId',sessionId);
+					makeRequest(query,reply,context);
+				}
+				else
+					makeRequest(query,reply,context);
+			});
 		}	
 	});
 	
 	
-	socket.on('checkMood', function (data) 
+/*	socket.on('checkMood', function (data) 
 	{
 		sessionId = data.options.sessionId;
 		fetchUser(sessionId,function(user)
@@ -223,7 +245,7 @@ io.on('connection', (socket) =>
 		});
 		//db.saveHistory("user","history_user",["browserid"],[data.options.sessionId],"chat_start");
 		//db.updateQuery("user",["chat_start"],[new Date()],["browserid"],data.options.sessionId);
-	});
+	});*/
 	
 	socket.on('matchOTP', function (data) 
 	{

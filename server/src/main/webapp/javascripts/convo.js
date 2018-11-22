@@ -136,7 +136,12 @@ function setInput(text,contexts)
 	{
 		chat_start = last_reply;
 		console.log("Record Start time");		
-		socket.emit("logChatStart", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() });
+		socket.emit("logChatStart", 
+			{
+				sessionId: setSessionId() ,
+				chat_start : chat_start.toISOString(), 
+				email : mehaEmail 
+			});
 	}
 	console.log("start chat", chat_start);
 	console.log("last reply", last_reply);
@@ -342,7 +347,7 @@ function findEmail()
 			}]; 
 	requestToServer("findEmail","",contexts);
 }
-
+/*
 function checkMood()
 {
 	var contexts = [{
@@ -351,7 +356,7 @@ function checkMood()
 					lifespan:1
 			}]; 
 	requestToServer("checkMood","",contexts);
-}
+}*/
 
 function otpDisplay(otp)
 {
