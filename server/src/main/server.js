@@ -58,31 +58,6 @@ var apiGetRes = function (socket,query,options)
 	});
 }
 
-var fetchUser = function(sessionId,callback)
-{
-		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
-		{
-			log.debug(result);
-			callback(result[0]); 
-		});
-}
-
-var fetchEmail = function(sessionId,callback)
-{
-		fetchUser(sessionId,function(result)
-		{
-			if(result)
-			{
-				if((!result.email) || (result.verified!=1))
-					callback(null);
-				else
-					callback(result.email); 
-			}
-			else
-				callback(null);
-		});
-}
-
 io.on('connection', (socket) => 
 {
 	var sessionId;
@@ -369,18 +344,6 @@ io.on('connection', (socket) =>
 	{	
 		log.debug(data);
 		apiGetRes(socket,"nolocation",data.options);
-	});
-	
-	socket.on('findEmail', function (data) 
-	{
-		console.log("Find Email for session id: ", data.options.sessionId);
-		fetchEmail(data.options.sessionId,function(email)
-		{
-			if(email)
-				apiGetRes(socket,"Existing email"+ email,data.options);
-			else
-				apiGetRes(socket,"Request Email Id",data.options);
-		});
 	});	
 	
 	socket.on('disconnect', () => 

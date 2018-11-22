@@ -340,12 +340,30 @@ function sentimentAnalysis(freeTextMsg)
 
 function findEmail()
 {
-	var contexts = [{
+	console.log("Registered email",email);
+	if(!email)
+	{
+		var contexts = [{
 					name: "",
 					parameters: {},
 					lifespan:1
-			}]; 
-	requestToServer("findEmail","",contexts);
+			}];
+		requestToServer("fromClient","Request Email Id",contexts);
+	}
+	else
+	{
+		var contexts = [{
+					name: "followup",
+					parameters: {"reply":email},
+					lifespan:1
+			},{
+					name: "screener-start",
+					parameters: {},
+					lifespan:1
+			}];
+		requestToServer("fromClient","Screener-restart",contexts);
+	}
+		
 }
 
 function otpDisplay(otp)
