@@ -3,7 +3,7 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b71
 var score = 0;
 var chat_start=null;
 var last_reply=null;
-var minutes = 15, the_interval = minutes * 60 * 1000;
+var minutes = 1, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
 var convo="";
 
