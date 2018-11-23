@@ -3,9 +3,9 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b71
 var score = 0;
 var chat_start=null;
 var last_reply=null;
+var minutes = 15, the_interval = minutes * 60 * 1000;
+var wellnessRating = 0;
 var convo="";
-var minutes = 1, the_interval = minutes * 60 * 1000;
-
 
 var getCookies = function()
 {
@@ -444,7 +444,22 @@ function showError(error) {
     }
 }
 
+function storeWellnessRating(data){
+    console.log("convo.js " , data.resolvedQuery);
+    wellnessRating = data.resolvedQuery;
+}
 
+function storeWellnessFeedback(data){
+    console.log("convo.js feedback " , data.resolvedQuery);
+    console.log("convo.js in feedback" , wellnessRating);
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	var arr = [wellnessRating, data.resolvedQuery];
+	requestToServer("storeWellnessRatingAndFeedback",arr,contexts);
+}
 
 function welcomeBackFollowup(data)
 {	
@@ -513,6 +528,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
+		
 		else 
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -522,6 +538,9 @@ socket.on('fromServer', function (data)
 			console.log(sentiScore);
 			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 		}
+		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
+		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
+		
 	}
 });
 
