@@ -63,10 +63,12 @@ var apiGetRes = function (socket,query,options)
 io.on('connection', (socket) => 
 {
 	var sessionId;
+	var convo = "";
 	log.info('Client connected');
 	
 	socket.on('fromClient', function (data) 
 	{
+		convo = convo + data.convo;
 		apiGetRes(socket,data.query,data.options);
 	});
 	
@@ -88,8 +90,11 @@ io.on('connection', (socket) =>
 	socket.on('logChatEnd', function (data) 
 	{
 		sessionId = data.sessionId;
+		log.info("Disconnecting session for the browserid: "+ sessionId);
+		log.info("Conversation was as follows: \n"+ convo);
 		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
 		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
+		
 	});	
 	
 	socket.on('recordFeelings', function (data) 
@@ -141,7 +146,7 @@ io.on('connection', (socket) =>
 					var user = result[0];
 					reply = reply + 'back! ';
 					sessionId = user.browserid;
-					socket.emit('setServerSessionId',user.browserid);
+					socket.emit('setServerBrowserId',user.browserid);
 					// Check if the user has been already asked for mood before
 					var date = user.chat_start;
 					var now = new Date();
@@ -189,7 +194,7 @@ io.on('connection', (socket) =>
 					var random2 = getRandomInt(100000);
 					sessionId =  "" + parseInt(Date.now()) + random1 + random2;
 					log.debug("Changing browserid: "+sessionId);
-					socket.emit('setServerSessionId',sessionId);
+					socket.emit('setServerBrowserId',sessionId);
 					makeRequest(query,reply,context);
 				}
 				else
@@ -350,12 +355,13 @@ io.on('connection', (socket) =>
 	
 	socket.on('disconnect', () => 
 	{
-		log.info("Disconnecting session "+ sessionId);
 		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
 			console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
+				log.info("Disconnecting session for the browserid: "+ sessionId);
+				log.info("Conversation was as follows: \n"+ convo);
 				db.updateQuery("user",["chat_end"],[new Date()],["browserid"],[sessionId]);
 				db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 			}
