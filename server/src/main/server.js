@@ -344,7 +344,16 @@ io.on('connection', (socket) =>
 	{	
 		log.debug(data);
 		apiGetRes(socket,"nolocation",data.options);
+	});
+
+	socket.on('storeWellnessRatingAndFeedback', function (data) 
+	{	
+		log.debug('a------- '+ data.query[0]);
+		log.debug('l-------'+ data.query[1]);
+		db.insertQuery("wellness_app_details",["rating", "feedback"],[data.query[0], data.query[1]]);
 	});	
+
+
 	
 	socket.on('disconnect', () => 
 	{
