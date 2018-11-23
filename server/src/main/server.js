@@ -1,5 +1,6 @@
 const express = require('express');
 var router = require('./router');
+var report = require('./report');
 const socketIO = require('socket.io');
 var api = require('./api');
 var mailer = require('./mailer');
@@ -14,6 +15,7 @@ app.use('/chatbot', router);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
 
+report.schedule;
 db.connectdb;
 
 function getRandomInt(max) 
@@ -61,18 +63,20 @@ var apiGetRes = function (socket,query,options)
 io.on('connection', (socket) => 
 {
 	var sessionId;
+	var convo = "";
 	log.info('Client connected');
 	
 	socket.on('fromClient', function (data) 
 	{
+		convo = convo + data.convo;
 		apiGetRes(socket,data.query,data.options);
 	});
 	
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		var fields = ["chat_start","chat_end","browserid"];
-		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId];
+		var fields = ["chat_start","chat_end","browserid","reported"];
+		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId,0];
 		if(data.email.localeCompare('no-email')!=0)
 		{
 			fields.push("email");
@@ -86,8 +90,11 @@ io.on('connection', (socket) =>
 	socket.on('logChatEnd', function (data) 
 	{
 		sessionId = data.sessionId;
+		log.info("Disconnecting session for the browserid: "+ sessionId);
+		log.info("Conversation was as follows: \n"+ convo);
 		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
 		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
+		
 	});	
 	
 	socket.on('recordFeelings', function (data) 
@@ -126,7 +133,7 @@ io.on('connection', (socket) =>
 		{			
 			log.debug("Begin chat with a pushd user. (email: "+email+"+, browserid: "+sessionId+")");
 			// Check if user already exists
-			db.selectWhereQuery("user",["email"],[email],function(result)
+			db.selectWhereQuery("user",["email","verified"],[email,1],function(result)
 			{
 				// Reply with email, if name is not present
 				reply = 'Hi ';
@@ -139,7 +146,7 @@ io.on('connection', (socket) =>
 					var user = result[0];
 					reply = reply + 'back! ';
 					sessionId = user.browserid;
-					socket.emit('setServerSessionId',user.browserid);
+					socket.emit('setServerBrowserId',user.browserid);
 					// Check if the user has been already asked for mood before
 					var date = user.chat_start;
 					var now = new Date();
@@ -187,7 +194,7 @@ io.on('connection', (socket) =>
 					var random2 = getRandomInt(100000);
 					sessionId =  "" + parseInt(Date.now()) + random1 + random2;
 					log.debug("Changing browserid: "+sessionId);
-					socket.emit('setServerSessionId',sessionId);
+					socket.emit('setServerBrowserId',sessionId);
 					makeRequest(query,reply,context);
 				}
 				else
@@ -357,12 +364,13 @@ io.on('connection', (socket) =>
 	
 	socket.on('disconnect', () => 
 	{
-		log.info("Disconnecting session "+ sessionId);
 		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
 			console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
+				log.info("Disconnecting session for the browserid: "+ sessionId);
+				log.info("Conversation was as follows: \n"+ convo);
 				db.updateQuery("user",["chat_end"],[new Date()],["browserid"],[sessionId]);
 				db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 			}
