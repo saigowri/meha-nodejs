@@ -94,7 +94,7 @@ io.on('connection', (socket) =>
 		log.info("Disconnecting session for the browserid: "+ sessionId);
 		log.info("Conversation was as follows: \n"+ convo);
 		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
-		if(mehaEmail.localeCompare('no-email')==0)
+		if(mehaEmail.localeCompare('no-email')!=0)
 			chat_snapshot.logChat(mehaEmail+".log",convo);
 		else
 			chat_snapshot.logChat(sessionId+".log",convo);
