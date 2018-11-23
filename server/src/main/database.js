@@ -29,7 +29,7 @@ var selectQuery = function(table,callback)
 var selectWhereQuery = function(table,fields,fieldVals,callback)
 {
 	var sql = "SELECT * FROM " + table +" WHERE " + fields.join(" = ? and ") + " = ?";
-	log.debug("SELECT Query: " + sql, fieldVals);
+	log.debug("SELECT Query: " + sql +" "+fieldVals);
 	con.query(sql,fieldVals , function (err, result, fields) 
 	{
 		if (err) throw err;

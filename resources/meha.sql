@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.41, for Win32 (AMD64)
+-- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: mehadb
+-- Host: localhost    Database: mehadb
 -- ------------------------------------------------------
--- Server version	5.6.41
+-- Server version	5.7.21-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,20 +26,21 @@ CREATE TABLE `history_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `sessionid` varchar(30) NOT NULL,
+  `browserid` varchar(30) DEFAULT NULL,
   `chat_start` datetime DEFAULT NULL,
   `otp` int(11) DEFAULT NULL,
   `otp_sent_at` datetime DEFAULT NULL,
-  `who_score` int(11) DEFAULT NULL,
-  `screener_score` int(11) DEFAULT NULL,
   `verified` int(11) DEFAULT NULL,
   `feeling` enum('Very Happy','Happy','Not So Bad','Neutral','Not So Good','Sad','Very Sad') DEFAULT NULL,
   `chat_end` datetime DEFAULT NULL,
   `reported` decimal(1,0) DEFAULT NULL,
+  `who_score` int(11) DEFAULT '-999',
+  `screener_score` int(11) DEFAULT '-999',
+  `senti_score` int(11) DEFAULT '-999',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE_SESSION_HISTORY` (`sessionid`,`chat_start`),
-  CONSTRAINT `history_user_ibfk_1` FOREIGN KEY (`sessionid`) REFERENCES `user` (`sessionid`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+  UNIQUE KEY `UNIQUE_SESSION_HISTORY` (`browserid`,`chat_start`),
+  CONSTRAINT `history_user_ibfk_1` FOREIGN KEY (`browserid`) REFERENCES `user` (`browserid`)
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -48,7 +49,7 @@ CREATE TABLE `history_user` (
 
 LOCK TABLES `history_user` WRITE;
 /*!40000 ALTER TABLE `history_user` DISABLE KEYS */;
-INSERT INTO `history_user` VALUES (6,NULL,NULL,'15422159571897988677032','2018-11-15 03:40:28',NULL,NULL,-999,-999,NULL,NULL,'2018-11-15 03:41:48',NULL),(7,NULL,NULL,'15422159571897988677032','2018-11-15 03:41:50',NULL,NULL,-999,-999,NULL,'Happy','2018-11-15 03:42:05',NULL),(8,NULL,NULL,'15422159571897988677032','2018-11-15 03:42:07',NULL,NULL,-999,-999,NULL,'Happy','2018-11-15 03:42:07',NULL),(9,NULL,NULL,'15422159571897988677032','2018-11-15 03:44:53',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 03:45:07',NULL),(10,NULL,NULL,'15422159571897988677032','2018-11-15 03:45:09',NULL,NULL,-999,-999,NULL,'Sad','2018-11-15 03:45:09',NULL),(11,NULL,NULL,'15422159571897988677032','2018-11-15 11:44:54',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 11:45:10',NULL),(12,NULL,NULL,'15422159571897988677032','2018-11-15 11:57:45',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 11:59:29',NULL),(13,NULL,NULL,'15422159571897988677032','2018-11-15 12:00:46',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 12:08:04',NULL),(14,NULL,NULL,'15422159571897988677032','2018-11-15 12:10:16',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 12:10:28',NULL),(15,NULL,NULL,'15422159571897988677032','2018-11-15 12:13:27',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 12:14:09',NULL),(16,NULL,NULL,'15422159571897988677032','2018-11-15 12:18:40',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-15 12:18:40',NULL),(17,NULL,NULL,'15422159571897988677032','2018-11-21 15:03:59',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-21 15:12:44',NULL);
+INSERT INTO `history_user` VALUES (44,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 00:23:14',NULL,NULL,1,'Happy','2018-11-23 00:26:10',NULL,-999,-999,-999),(45,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999);
 /*!40000 ALTER TABLE `history_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -92,19 +93,20 @@ CREATE TABLE `user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `sessionid` varchar(30) NOT NULL,
+  `browserid` varchar(30) DEFAULT NULL,
   `chat_start` datetime DEFAULT NULL,
   `otp` int(11) DEFAULT NULL,
   `otp_sent_at` datetime DEFAULT NULL,
-  `who_score` int(11) DEFAULT NULL,
-  `screener_score` int(11) DEFAULT NULL,
   `verified` int(11) DEFAULT NULL,
   `feeling` enum('Very Happy','Happy','Not So Bad','Neutral','Not So Good','Sad','Very Sad') DEFAULT NULL,
   `chat_end` datetime DEFAULT NULL,
   `reported` decimal(1,0) DEFAULT NULL,
+  `who_score` int(11) DEFAULT '-999',
+  `screener_score` int(11) DEFAULT '-999',
+  `senti_score` int(11) DEFAULT '-999',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `sessionid` (`sessionid`)
-) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=latin1;
+  UNIQUE KEY `sessionid` (`browserid`)
+) ENGINE=InnoDB AUTO_INCREMENT=227 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,8 +115,32 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (203,NULL,NULL,'15422159571897988677032','2018-11-21 15:03:59',NULL,NULL,-999,-999,NULL,'Neutral','2018-11-21 15:12:44',NULL);
+INSERT INTO `user` VALUES (222,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 00:27:09',NULL,NULL,1,'Happy','1970-01-01 05:30:00',NULL,-999,-999,-999),(224,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `wellness_app_details`
+--
+
+DROP TABLE IF EXISTS `wellness_app_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `wellness_app_details` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `feedback` varchar(3000) DEFAULT NULL,
+  `rating` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `wellness_app_details`
+--
+
+LOCK TABLES `wellness_app_details` WRITE;
+/*!40000 ALTER TABLE `wellness_app_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `wellness_app_details` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -126,4 +152,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-21 15:18:09
+-- Dump completed on 2018-11-23 12:14:11

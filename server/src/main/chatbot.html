@@ -24,43 +24,6 @@
 			}
 	</script>
     <script src="javascripts/convo.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function() 
-		{
-			
-        $('.hide-chat-box').click(function(){
-            $('#chatbot-iframe', window.parent.document).remove();
-
-             });
-			$('.hide-chatbox').click(function()
-			{
-					$('.chat-content').slideToggle();
-					$('#minimize-icon').toggle();
-					$('#maximize-icon').toggle();
-			});
-			
-			$("#input").keypress(function(event) {
-				if (event.which == 13) {
-					event.preventDefault();
-					var text = $("#input").val();
-					var contexts = [{
-							name: "followup",
-							parameters: {"reply":" "},
-							lifespan:1
-						}]; 
-					setInput(text,contexts);
-				}
-			});
-			
-			// Beginning Conversation From Chatbot
-			var contexts = [{
-				name: "begin-chatbot",
-				parameters: {},
-				lifespan:1
-			}]; 
-			requestToServer("beginChatbot","Begin Chatbot",contexts);
-		});
-	</script>
 	
   </head>
   
@@ -91,7 +54,7 @@
                         </ul>
                     </div>
                     <div class="col-md-12 message-box border pl-2 pr-2 border-top-0"> 	
-                    	<input id="input" type="text" class="pl-0 pr-0 w-100" placeholder="Type a message..." />
+                    	<input id="input" style="margin:0px;width:310px" type="text" class="row" placeholder="Type a message..." />
                     </div>
                 </div>
   </body>

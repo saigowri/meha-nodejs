@@ -4,14 +4,41 @@ var score = 0;
 var chat_start=null;
 var last_reply=null;
 var minutes = 15, the_interval = minutes * 60 * 1000;
+var wellnessRating = 0;
+var convo="";
+
+var getCookies = function()
+{
+  var pairs = document.cookie.split(";");
+  var cookies = {};
+  for (var i=0; i<pairs.length; i++){
+    var pair = pairs[i].split("=");
+    cookies[(pair[0]+'').trim()] = unescape(pair[1]);
+  }
+  return cookies;
+}
+var myCookies = getCookies();
+var mehaEmail = myCookies.mehaEmail;
+var mehaName = myCookies.mehaName;
+var email = mehaEmail.localeCompare("no-email")? mehaEmail : null;
+var name = mehaName.localeCompare("no-name")? mehaName : null;
+console.log("Email: ",mehaEmail);
+console.log("Name: ",mehaName);
+
+			
+// Beginning Conversation From Chatbot
+var contexts = [{
+				name: "begin-chatbot",
+				parameters: {"email":mehaEmail,"name":mehaName},
+				lifespan:1
+			}]; 
+requestToServer("beginChatbot","Begin Chatbot",contexts);
 
 setInterval(function() 
 {
 	var now = new Date();
 	console.log("15 minutes check at", now);
-	if(!chat_start) 
-		console.log("Convo has not started");
-	else
+	if(chat_start) 
 	{
 		var idleTime = now.getTime()-last_reply.getTime();
 		idleTime = idleTime / (60 * 1000);
@@ -19,10 +46,17 @@ setInterval(function()
 		if(idleTime>minutes)
 		{
 			console.log("Time out, after ",last_reply);
-			socket.emit("logChatEnd", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() , chat_end : last_reply.toISOString()});
+			socket.emit("logChatEnd", 
+			{
+				sessionId: setBrowserId(),
+				chat_start : chat_start.toISOString(), 
+				chat_end : last_reply.toISOString()
+			});
 			chat_start = null;
 		}
 	}
+	else
+		console.log("Convo has not started");
 }, the_interval);
 
 var hashMap = {};
@@ -37,15 +71,21 @@ hashMap["very happy"] = 3;
 
 function requestToServer(req,text,contexts)
 {
-	var sessionId = setSessionId();	
+	var sessionId = setBrowserId();	
 	var options = {
 	    sessionId: sessionId,
 	    contexts: contexts
 	};
-	socket.emit(req, {query : text , options : options});
+	if(req.localeCompare('fromClient')==0)
+	{
+		socket.emit(req, {query : text , options : options, convo : convo});
+		convo = "";
+	}
+	else
+		socket.emit(req, {query : text , options : options});
 }
 
-function resetSessionId()
+function resetBrowserId()
 {
 	if (typeof(Storage) !== "undefined") 
 	{
@@ -64,11 +104,11 @@ function resetSessionId()
 	}
 }
 
-function setSessionId()
+function setBrowserId()
 {
 	if (typeof(Storage) !== "undefined") 
 	{
-		sessionId = (localStorage.getItem("sessionId")==null)? resetSessionId() : localStorage.getItem("sessionId");
+		sessionId = (localStorage.getItem("sessionId")==null)? resetBrowserId() : localStorage.getItem("sessionId");
 		return sessionId;		
 	} 
 	else 
@@ -108,7 +148,12 @@ function setInput(text,contexts)
 	{
 		chat_start = last_reply;
 		console.log("Record Start time");		
-		socket.emit("logChatStart", {sessionId: setSessionId() ,chat_start : chat_start.toISOString() });
+		socket.emit("logChatStart", 
+			{
+				sessionId: setBrowserId() ,
+				chat_start : chat_start.toISOString(), 
+				email : mehaEmail 
+			});
 	}
 	console.log("start chat", chat_start);
 	console.log("last reply", last_reply);
@@ -116,6 +161,8 @@ function setInput(text,contexts)
 	$(".btn-xs").attr("disabled", true);
 	requestToServer("fromClient",text,contexts);
 	console.log("Input:", text);
+	var logText = ""+new Date()+"\t[User]\t"+text+"\n";
+	convo = convo + logText;
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
 	$("#input").val("");
@@ -129,6 +176,8 @@ function processOptions(responseMessage,payload)
 	var type = "";
 	if(payload.hasOwnProperty('type'))
 		type = payload.type;
+	
+	var logText = "";
 	responseMessage = responseMessage +	"<div class='row' style='margin-top:4px'>";
 	for (var key in payload.Option) 
 	{
@@ -161,20 +210,26 @@ function processOptions(responseMessage,payload)
 					
 		buttons = buttons +"		</button></div>";
 		responseMessage = responseMessage + buttons;
+		logText = logText +"(Button "+(parseInt(key)+1)+")\t"+ payload.Option[key].title + "\n";
 	}
+	convo = convo + logText;
 	responseMessage =	responseMessage + "  </div>";
 	return responseMessage;
 }
 
 function processInstructions(responseMessage, instructions)
 {	
+	var logText = ""+new Date()+"\t[Chatbot]\t";
 	responseMessage = responseMessage +	"<div class='row' style='margin-top:4px;margin-bottom:4px'>";
 	for (var key in instructions) 
 	{
 		// Text bubbles
 		if(instructions[key].hasOwnProperty('text'))
+		{
 			responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 								instructions[key].text+"</div>";
+			logText = logText + instructions[key].text + "\n";
+		}
 		/*
 		if(instructions[key].hasOwnProperty('response'))
 			contexts = [{
@@ -185,17 +240,21 @@ function processInstructions(responseMessage, instructions)
 				
 			// Link URLs
 		if(instructions[key].hasOwnProperty('link'))
-		responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
+		{
+			responseMessage = responseMessage +	"<div class='col-sm-12 rcorners' style='margin-top:4px'>"+
 											"<a href='"+instructions[key].link.url+"'"+
 											" rel='noopener noreferrer' target='_blank'>"+
-											instructions[key].link.title+"</a></div>";
+											instructions[key].link.title+"</a></div>";			
+			logText = logText + instructions[key].link.title +" (" +instructions[key].link.url+ ")\n";
+		}
 	}
 	responseMessage =	responseMessage + "</div>";
+	convo = convo + logText;
 	return responseMessage;
 }
 
 function processPayload(responseMessage, payload)
-{						
+{				
 	// For multiple texts and links
 	if(payload.hasOwnProperty('instructions'))
 	{
@@ -206,7 +265,7 @@ function processPayload(responseMessage, payload)
 	{
 		responseMessage = processOptions(responseMessage,payload);
 	}
-			
+		
 	return responseMessage;
 }
 
@@ -307,22 +366,30 @@ function sentimentAnalysis(freeTextMsg)
 
 function findEmail()
 {
-	var contexts = [{
+	console.log("Registered email",email);
+	if(!email)
+	{
+		var contexts = [{
 					name: "",
 					parameters: {},
 					lifespan:1
-			}]; 
-	requestToServer("findEmail","",contexts);
-}
-
-function checkMood()
-{
-	var contexts = [{
-					name: "",
+			}];
+		requestToServer("fromClient","Request Email Id",contexts);
+	}
+	else
+	{
+		var contexts = [{
+					name: "followup",
+					parameters: {"reply":email},
+					lifespan:1
+			},{
+					name: "screener-start",
 					parameters: {},
 					lifespan:1
-			}]; 
-	requestToServer("checkMood","",contexts);
+			}];
+		requestToServer("fromClient","Screener-restart",contexts);
+	}
+		
 }
 
 function otpDisplay(otp)
@@ -377,20 +444,35 @@ function showError(error) {
     }
 }
 
+function storeWellnessRating(data){
+    console.log("convo.js " , data.resolvedQuery);
+    wellnessRating = data.resolvedQuery;
+}
 
+function storeWellnessFeedback(data){
+    console.log("convo.js feedback " , data.resolvedQuery);
+    console.log("convo.js in feedback" , wellnessRating);
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	var arr = [wellnessRating, data.resolvedQuery];
+	requestToServer("storeWellnessRatingAndFeedback",arr,contexts);
+}
 
 function welcomeBackFollowup(data)
 {	
-		resetSessionId();
+		resetBrowserId();
 		var contexts = [{
 			name: "begin-chatbot",
-			parameters: {},
+			parameters: {"email":mehaEmail,"name":mehaName},
 			lifespan:1
 		}]; 
 		requestToServer("beginChatbot","Begin Chatbot",contexts);
 }
 		
-socket.on('setServerSessionId', function (data) 
+socket.on('setServerBrowserId', function (data) 
 {
 	if (typeof(Storage) !== "undefined") 
 		localStorage.setItem("sessionId", data);
@@ -400,10 +482,13 @@ socket.on('fromServer', function (data)
 { 
 	if(data.hasOwnProperty('error'))
 	{
+		var text = "Something went wrong. Please try later. Sorry for the inconvinience.";
+		var logText = ""+new Date()+"\t[Chatbot]\t"+text;
+		convo = convo + logText;
 		setResponse("<li class='p-1 rounded mb-1'>"+
 					"	<div class='receive-msg'>"+
 					"		<div class='receive-msg-desc  text-center mt-1 ml-1 pl-2 pr-2'>"+
-					"			<p class='pl-2 pr-2 rounded' style='color:red'>Something went wrong. Please try later. Sorry for the inconvinience.</p>"+
+					"			<p class='pl-2 pr-2 rounded' style='color:red'>"+text+"</p>"+
 					"   	</div>"+
 					"	</div>"+
 					"</li>");
@@ -421,7 +506,7 @@ socket.on('fromServer', function (data)
 	{
 		// recieveing a reply from server.
 		//console.log(JSON.stringify(data));
-		console.log("SessionId: ", JSON.stringify(data.server.sessionId));
+		console.log("BrowserId: ", JSON.stringify(data.server.sessionId));
 		console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
 		console.log("action: ", JSON.stringify(data.server.result.action)); 
 		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
@@ -443,6 +528,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
+		
 		else 
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -452,6 +538,9 @@ socket.on('fromServer', function (data)
 			console.log(sentiScore);
 			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 		}
+		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
+		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
+		
 	}
 });
 
@@ -461,22 +550,9 @@ function setResponse(val)
 	var chat_scroll=document.getElementById("chat-scroll");
 	chat_scroll.scrollTop=chat_scroll.scrollHeight;
 }
-
-var getCookies = function(){
-  var pairs = document.cookie.split(";");
-  var cookies = {};
-  for (var i=0; i<pairs.length; i++){
-    var pair = pairs[i].split("=");
-    cookies[(pair[0]+'').trim()] = unescape(pair[1]);
-  }
-  return cookies;
-}
 			
 function home()
 {	
-	var myCookies = getCookies();
-	alert(myCookies.email); 
-	console.log("All cookies",JSON.stringify(myCookies));
 	var contexts = [{
             name: "welcome",
             parameters: {"reply":" "},
@@ -494,3 +570,32 @@ function usefulLinks()
 				}]; 
 	setInput("Useful Links",contexts);
 }
+
+
+$(document).ready(function() 
+{
+    $('.hide-chat-box').click(function(){
+    $('#chatbot-iframe', window.parent.document).remove();
+	});
+	$('.hide-chatbox').click(function()
+	{
+		$('.chat-content').slideToggle();
+		$('#minimize-icon').toggle();
+		$('#maximize-icon').toggle();
+	});
+			
+	$("#input").keypress(function(event) 
+	{
+		if (event.which == 13) 
+		{
+			event.preventDefault();
+			var text = $("#input").val();
+			var contexts = [{
+							name: "followup",
+							parameters: {"reply":" "},
+							lifespan:1
+						}]; 
+			setInput(text,contexts);
+		}
+	});
+});
