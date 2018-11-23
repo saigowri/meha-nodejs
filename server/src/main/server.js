@@ -1,5 +1,6 @@
 const express = require('express');
 var router = require('./router');
+var report = require('./report');
 const socketIO = require('socket.io');
 var api = require('./api');
 var mailer = require('./mailer');
@@ -14,6 +15,7 @@ app.use('/chatbot', router);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
 
+report.schedule;
 db.connectdb;
 
 function getRandomInt(max) 
@@ -71,8 +73,8 @@ io.on('connection', (socket) =>
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		var fields = ["chat_start","chat_end","browserid"];
-		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId];
+		var fields = ["chat_start","chat_end","browserid","reported"];
+		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId,0];
 		if(data.email.localeCompare('no-email')!=0)
 		{
 			fields.push("email");
@@ -126,7 +128,7 @@ io.on('connection', (socket) =>
 		{			
 			log.debug("Begin chat with a pushd user. (email: "+email+"+, browserid: "+sessionId+")");
 			// Check if user already exists
-			db.selectWhereQuery("user",["email"],[email],function(result)
+			db.selectWhereQuery("user",["email","verified"],[email,1],function(result)
 			{
 				// Reply with email, if name is not present
 				reply = 'Hi ';
