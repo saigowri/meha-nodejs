@@ -5,6 +5,7 @@ var chat_start=null;
 var last_reply=null;
 var minutes = 15, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
+var chatbotRating = 0;
 var convo="";
 
 var getCookies = function()
@@ -445,13 +446,13 @@ function showError(error) {
 }
 
 function storeWellnessRating(data){
-    console.log("convo.js " , data.resolvedQuery);
+    // console.log("convo.js " , data.resolvedQuery);
     wellnessRating = data.resolvedQuery;
 }
 
 function storeWellnessFeedback(data){
-    console.log("convo.js feedback " , data.resolvedQuery);
-    console.log("convo.js in feedback" , wellnessRating);
+    // console.log("convo.js feedback " , data.resolvedQuery);
+    // console.log("convo.js in feedback" , wellnessRating);
 	var contexts = [{
 					name: "",
 					parameters: {},
@@ -459,6 +460,23 @@ function storeWellnessFeedback(data){
 				}]
 	var arr = [wellnessRating, data.resolvedQuery];
 	requestToServer("storeWellnessRatingAndFeedback",arr,contexts);
+}
+
+function storeChatbotRating(data){
+    console.log("chatbot rating " , data.resolvedQuery);
+    wellnessRating = data.resolvedQuery;
+}
+
+function storeChatbotFeedback(data){
+    // console.log("convo.js feedback " , data.resolvedQuery);
+    // console.log("convo.js in feedback" , wellnessRating);
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	var arr = [chatbotRating, data.resolvedQuery];
+	requestToServer("storeChatbotRatingAndFeedback",arr,contexts);
 }
 
 function welcomeBackFollowup(data)
@@ -540,6 +558,8 @@ socket.on('fromServer', function (data)
 		}
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
+		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
+		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeChatbotFeedback(data.server.result);		
 		
 	}
 });
