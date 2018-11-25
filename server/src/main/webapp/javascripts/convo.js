@@ -348,6 +348,72 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
+function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+function validateMobile(phone) {
+  var re = /^((?:\s+|)((0|(?:(\+|)91))(?:\s|-)*(?:(?:\d(?:\s|-)*\d{9})|(?:\d{2}(?:\s|-)*\d{8})|(?:\d{3}(?:\s|-)*\d{7}))|\d{10})(?:\s+|))$/;
+  return re.test(phone);
+}
+
+function emergencyEmailVerify(data)
+{   
+	console.log("data" , data);
+	var emergencyEmail = "null"
+	var emdata ;
+	var phone = 0;
+	var correctFlag = 0;
+	if(data.parameters.email != "")
+	{
+		emergencyEmail = data.parameters.email;
+		console.log("email" , emergencyEmail);
+		if (validateEmail(emergencyEmail)) {
+		    console.log("email true");
+		    emdata = emergencyEmail;
+		    correctFlag = 1;
+		} 
+		else {
+		    console.log("email false");
+		}
+	}
+	else if(emergencyEmail == "null")
+	{
+		phone  = data.resolvedQuery;
+		console.log("phone no" , phone);
+		if (validateMobile(phone)) {
+		    console.log("mobile true");
+		    emdata = phone;
+		    correctFlag = 1;
+		} 
+		else {
+		    console.log("mobile false");
+		}
+	}	
+
+	if (correctFlag == 1){
+		var contexts = [{
+						name: "calm-down",
+						parameters: {},
+						lifespan:1
+				}]; 
+		requestToServer("EmergencySendMail", emdata, contexts);
+	}
+	
+	// else {
+
+	// 	var contexts = [{
+	// 					name: "",
+	// 					parameters: {
+	// 					},
+	// 					lifespan:1
+	// 			}]; 
+	// 	requestToServer("sendMail",email,contexts);
+
+	// }
+}
+
 function sentimentAnalysis(freeTextMsg) 
 {
 	console.log("Message is "+freeTextMsg);
@@ -433,7 +499,16 @@ function showPositionEmergency(position) {
 	console.log('latitude inside convo.js',position.coords.latitude);
 	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
+
 	requestToServer("hospitalFinderEmergency",arr,contexts);
+
+	var contexts2 = [{
+						name: "calm-down",
+						parameters: {},
+						lifespan:1
+				}]; 
+	requestToServer("EmergencySendMailLocation", arr, contexts2);
+
 }
 function showError(error) {
     switch(error.code) {
@@ -561,6 +636,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
+		else if(actionVal.localeCompare('EmergencyEmailVerify')==0) emergencyEmailVerify(data.server.result);
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
 		else 
 			processResponse(data.server.result.fulfillment);

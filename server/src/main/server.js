@@ -9,12 +9,13 @@ var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var chat_snapshot = require('./logger/snapshot_logger');
-
 var app = express();
 app.use('/chatbot', router);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
-
+var hos = " ";
+var pin = 0;
+var state = " ";
 report.schedule;
 db.connectdb;
 
@@ -238,7 +239,11 @@ io.on('connection', (socket) =>
 	socket.on('sendMail', function (data) 
 	{
 		var otp = getRandomInt(1000000);
-				
+		// if(mehaEmail.localeCompare('no-email')!=0)
+		// 	//
+		// else
+		// 	//
+
 		mailer.sendMail(data.query,"Thank you for registering with MeHA",
 			"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
 			function(error, response)
@@ -257,6 +262,59 @@ io.on('connection', (socket) =>
 			});
 	});
 	
+	socket.on('EmergencySendMail', function (data) 
+	{
+		contactData = data.query;
+		var date = new Date();
+		var receiver = "minnuann5@gmail.com";
+
+		mailer.sendMail(receiver,"Emergency! A Life is under danger.",
+			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>A person is showing some suicidal / murder tendencies."+
+			" The details of the person is sharing with you below<br><b> Contact Detail : "+contactData+"<br>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+			"<br>Please take appropriate actions immediately.</b></div>",
+			function(error, response)
+			{
+				if(error)
+				{
+					log.error(error);
+					 // apiGetRes(socket,"Emergency email error",data.options);
+				}
+				else
+				{
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					apiGetRes(socket,"help",data.options);
+				}
+			});
+		
+	});
+
+	socket.on('EmergencySendMailLocation', function (data) 
+	{
+		var latitude = data.query[0];
+		var longitude = data.query[1];
+		var date = new Date();
+		var receiver = "minnuann5@gmail.com";
+
+		mailer.sendMail(receiver,"Emergency! A Life is under danger.",
+			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>A person is showing some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+			" </b> in " +state+" state .<br> We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
+			"This message is sent at "+date +". <br>Please take appropriate actions immediately.</b></div>",
+			function(error, response)
+			{
+				if(error)
+				{
+					log.error(error);
+					 // apiGetRes(socket,"Emergency email error",data.options);
+				}
+				else
+				{
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					//apiGetRes(socket,"help",data.options);
+				}
+			});
+		
+	});
+
 	socket.on('sentimentAnalysis', function(data)
 	{
 		log.debug(data.query);
@@ -324,8 +382,7 @@ io.on('connection', (socket) =>
 		var b = data.query[1];
 		// a = 11.1273;
 		// b = 75.8957;
-		var hos = " ";
-		var st = " ";
+
 		var d = 99999999999999.9999999999999;
 		db.selectQuery("Hospitals",function(result)
 		{	
@@ -335,11 +392,12 @@ io.on('connection', (socket) =>
                 var x = result[i].lat;
                 var y = result[i].longi;
                 var dist = getDistanceFromLatLonInKm(a,b,x,y);
-              
+              	
                	if (d >= dist){
 	                d = dist;
 	                hos = result[i].hospital;
-	                st = result[i].state;
+	                state = result[i].state;
+	                pin = result[i].pincode;
                 }
             }
 
@@ -360,8 +418,6 @@ io.on('connection', (socket) =>
 		var b = data.query[1];
 		// a = 11.1273;
 		// b = 75.8957;
-		var hos = " ";
-		var st = " ";
 		var d = 99999999999999.9999999999999;
 		db.selectQuery("Hospitals",function(result)
 		{	
@@ -375,7 +431,8 @@ io.on('connection', (socket) =>
                	if (d >= dist){
 	                d = dist;
 	                hos = result[i].hospital;
-	                st = result[i].state;
+	                state = result[i].state;
+	                pin = result[i].pincode;
                 }
             }
 
