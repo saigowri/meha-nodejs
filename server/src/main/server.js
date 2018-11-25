@@ -343,7 +343,42 @@ io.on('connection', (socket) =>
 			apiGetRes(socket,"hospital " + hos ,data.options);
 
 		});
-		
+	});
+
+	socket.on('hospitalFinderEmergency', function (data) 
+	{	
+		log.debug('latitude in server '+ data.query[0]);
+		log.debug('longitude in server '+ data.query[1]);
+		var a = data.query[0];
+		var b = data.query[1];
+		// a = 11.1273;
+		// b = 75.8957;
+		var hos = " ";
+		var st = " ";
+		var d = 99999999999999.9999999999999;
+		db.selectQuery("Hospitals",function(result)
+		{	
+			log.debug(result);
+			for (i in result) {
+
+                var x = result[i].lat;
+                var y = result[i].longi;
+                var dist = getDistanceFromLatLonInKm(a,b,x,y);
+              
+               	if (d >= dist){
+	                d = dist;
+	                hos = result[i].hospital;
+	                st = result[i].state;
+                }
+            }
+
+            d = d.toFixed(2);
+
+	        log.debug('hospital in server '+ hos);
+			log.debug('distance in server '+ d ); 
+			apiGetRes(socket,"calm " + hos ,data.options);
+
+		});	
 
 	});
 
@@ -360,11 +395,11 @@ io.on('connection', (socket) =>
 		db.insertQuery("wellness_app_details",["rating", "feedback"],[data.query[0], data.query[1]]);
 	});	
 
-	socket.on('storeChatbotRatingAndFeedback', function (data) 
+	socket.on('storeChatbotRatingAndFeedback', function (dat) 
 	{	
-		log.debug('chat rating------- '+ data.query[0]);
-		log.debug('chat feedback-------'+ data.query[1]);
-		db.insertQuery("wellness_app_details",["rating", "feedback"],[data.query[0], data.query[1]]);
+		log.debug('chat rating-------'+ dat.query[0]);
+		log.debug('chat feedback-----'+ dat.query[1]);
+		db.insertQuery("chatbot_details",["rating", "feedback"],[dat.query[0], dat.query[1]]);
 	});	
 
 

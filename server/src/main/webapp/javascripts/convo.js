@@ -419,7 +419,22 @@ function showPosition(position) {
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
+function hospitalFinderEmergency()
+{
+	 getLocationEmergency();
+}
 
+function showPositionEmergency(position) {
+	var contexts = [{
+					name: "emergency-hosp-name",
+					parameters: {},
+					lifespan:1
+			}]; 
+	console.log('latitude inside convo.js',position.coords.latitude);
+	console.log('longitude inside convo.js',position.coords.longitude);
+	var arr = [position.coords.latitude, position.coords.longitude];
+	requestToServer("hospitalFinderEmergency",arr,contexts);
+}
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:{
@@ -464,12 +479,12 @@ function storeWellnessFeedback(data){
 
 function storeChatbotRating(data){
     console.log("chatbot rating " , data.resolvedQuery);
-    wellnessRating = data.resolvedQuery;
+    chatbotRating = data.resolvedQuery;
 }
 
 function storeChatbotFeedback(data){
-    // console.log("convo.js feedback " , data.resolvedQuery);
-    // console.log("convo.js in feedback" , wellnessRating);
+    console.log("convo.js feedback " , data.resolvedQuery);
+    console.log("convo.js in feedback" , wellnessRating);
 	var contexts = [{
 					name: "",
 					parameters: {},
@@ -546,7 +561,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
-		
+		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
 		else 
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -559,7 +574,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
-		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeChatbotFeedback(data.server.result);		
+		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);		
 		
 	}
 });
