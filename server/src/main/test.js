@@ -1,4 +1,4 @@
-var http = require('http');
+//var http = require('http');
 
 /*function parseCookies (request) {
     var list = {},
@@ -26,9 +26,7 @@ http.createServer(function (request, response) {
 */
 //console.log('Server running at http://127.0.0.1:8124/');
 //var db = require('./database');
-var sentiment = require('./sentimentAnalysis');
-var freeTextScore = sentiment.sentimentAnalysis('I dont know');
-console.log(freeTextScore);
+
 //db.connectdb;
 //db.insertQuery("user",["sessionid","last_visited"],["test2", new Date() ]);
 ///db.updateQuery("user",["email","last_visited"],["kkp", new Date() ],["sessionid"],["test2"]);
@@ -41,3 +39,17 @@ console.log(freeTextScore);
 	console.log(result);
 });*/
 //db.saveHistory("user","history_user",["sessionid"],["15405358294681413562583"],"last_visited");
+
+//var sentiment = require('./sentimentAnalysis');
+//var freeTextScore = sentiment.sentimentAnalysis('I dont know');
+//console.log(freeTextScore);
+
+
+//-----------------------------Testing logger--------------------------------------------------------------------------------
+//var log = require('./logger/logger')(module);
+//log.info("Test");
+//-----------------------------Testing logger Ends---------------------------------------------------------------------------
+//-----------------------------Testing chat snapshot logger--------------------------------------------------------------------------------
+var chat_snapshot = require('./logger/snapshot_logger');
+chat_snapshot.logChat("test.log","again");
+//-----------------------------Testing chat snapshot logger Ends---------------------------------------------------------------------------

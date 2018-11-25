@@ -16,6 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `chatbot_details`
+--
+
+DROP TABLE IF EXISTS `chatbot_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chatbot_details` (
+  `id` int(11) NOT NULL,
+  `feedback` varchar(3000) DEFAULT NULL,
+  `rating` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chatbot_details`
+--
+
+LOCK TABLES `chatbot_details` WRITE;
+/*!40000 ALTER TABLE `chatbot_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `chatbot_details` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `history_user`
 --
 
@@ -40,7 +64,7 @@ CREATE TABLE `history_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_SESSION_HISTORY` (`browserid`,`chat_start`),
   CONSTRAINT `history_user_ibfk_1` FOREIGN KEY (`browserid`) REFERENCES `user` (`browserid`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,7 +73,7 @@ CREATE TABLE `history_user` (
 
 LOCK TABLES `history_user` WRITE;
 /*!40000 ALTER TABLE `history_user` DISABLE KEYS */;
-INSERT INTO `history_user` VALUES (44,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 00:23:14',NULL,NULL,1,'Happy','2018-11-23 00:26:10',NULL,-999,-999,-999),(45,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999);
+INSERT INTO `history_user` VALUES (44,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 00:23:14',NULL,NULL,1,'Happy','2018-11-23 00:26:10',NULL,-999,-999,-999),(45,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999),(46,NULL,NULL,'15429556590748528575000','2018-11-23 12:18:07',NULL,NULL,NULL,'Not So Good','2018-11-23 12:20:00',0,-999,-999,-999),(47,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 12:20:08',NULL,NULL,1,'Happy','2018-11-23 12:20:21',0,-999,-999,-999),(48,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 12:28:44',NULL,NULL,1,'Happy','2018-11-23 12:28:50',0,-999,-999,-999),(49,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 12:28:52',NULL,NULL,1,'Happy','2018-11-23 12:28:52',0,-999,-999,-999);
 /*!40000 ALTER TABLE `history_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -83,6 +107,30 @@ INSERT INTO `hospitals` VALUES (1,'Govt.  Hospital for Mental Health Care, S.R. 
 UNLOCK TABLES;
 
 --
+-- Table structure for table `pushd_details`
+--
+
+DROP TABLE IF EXISTS `pushd_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pushd_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `feedback` varchar(3000) DEFAULT NULL,
+  `rating` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pushd_details`
+--
+
+LOCK TABLES `pushd_details` WRITE;
+/*!40000 ALTER TABLE `pushd_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pushd_details` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `user`
 --
 
@@ -106,7 +154,7 @@ CREATE TABLE `user` (
   `senti_score` int(11) DEFAULT '-999',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sessionid` (`browserid`)
-) ENGINE=InnoDB AUTO_INCREMENT=227 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +163,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (222,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 00:27:09',NULL,NULL,1,'Happy','1970-01-01 05:30:00',NULL,-999,-999,-999),(224,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999);
+INSERT INTO `user` VALUES (222,NULL,'saigowri.kumar@gmail.com','15429117830151321963407','2018-11-23 12:28:52',NULL,NULL,1,'Happy','2018-11-23 12:28:52',0,-999,-999,-999),(224,NULL,'saigowri.kumar@gmail.com','15429129704222509531110','2018-11-23 00:26:15',943507,'2018-11-23 00:26:41',NULL,'Very Happy','2018-11-23 00:26:56',NULL,-999,-999,-999),(227,NULL,NULL,'15429556590748528575000','2018-11-23 12:18:07',NULL,NULL,NULL,'Not So Good','2018-11-23 12:20:00',0,-999,-999,-999),(232,NULL,NULL,'15429582733031935978848','2018-11-23 13:01:16',NULL,NULL,NULL,'Not So Good','1970-01-01 05:30:00',0,-999,-999,-999);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -152,4 +200,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-23 12:14:11
+-- Dump completed on 2018-11-23 13:11:08

@@ -8,7 +8,7 @@ var sentiment = require('./sentimentAnalysis');
 var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
-
+var chat_snapshot = require('./logger/snapshot_logger');
 
 var app = express();
 app.use('/chatbot', router);
@@ -63,6 +63,7 @@ var apiGetRes = function (socket,query,options)
 io.on('connection', (socket) => 
 {
 	var sessionId;
+	var mehaEmail='no-email';
 	var convo = "";
 	log.info('Client connected');
 	
@@ -93,6 +94,10 @@ io.on('connection', (socket) =>
 		log.info("Disconnecting session for the browserid: "+ sessionId);
 		log.info("Conversation was as follows: \n"+ convo);
 		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
+		if(mehaEmail.localeCompare('no-email')!=0)
+			chat_snapshot.logChat(mehaEmail+".log",convo);
+		else
+			chat_snapshot.logChat(sessionId+".log",convo);
 		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 		
 	});	
@@ -130,7 +135,8 @@ io.on('connection', (socket) =>
 		var name = data.options.contexts[0].parameters.name;
 		// If it is a pushd user. 
 		if(email.localeCompare('no-email')!=0)
-		{			
+		{		
+			mehaEmail = email;
 			log.debug("Begin chat with a pushd user. (email: "+email+"+, browserid: "+sessionId+")");
 			// Check if user already exists
 			db.selectWhereQuery("user",["email","verified"],[email,1],function(result)
@@ -219,6 +225,7 @@ io.on('connection', (socket) =>
 				log.debug("Minute diff: "+ dateDiff);
 				if(data.query==result[0].otp && dateDiff<=10)
 				{
+					mehaEmail=result[0].email;
 					apiGetRes(socket,"Screener-Start",data.options);
 					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
 				}
@@ -378,6 +385,10 @@ io.on('connection', (socket) =>
 			{
 				log.info("Disconnecting session for the browserid: "+ sessionId);
 				log.info("Conversation was as follows: \n"+ convo);
+				if(mehaEmail.localeCompare('no-email')!=0)
+					chat_snapshot.logChat(mehaEmail+".log",convo);
+				else
+					chat_snapshot.logChat(sessionId+".log",convo);
 				db.updateQuery("user",["chat_end"],[new Date()],["browserid"],[sessionId]);
 				db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
 			}
