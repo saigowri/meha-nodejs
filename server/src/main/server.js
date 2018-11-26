@@ -101,8 +101,8 @@ io.on('connection', (socket) =>
 	socket.on('logChatStart', function (data) 
 	{
 		sessionId = data.sessionId;
-		var fields = ["chat_start","chat_end","browserid","reported"];
-		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId,0];
+		var fields = ["chat_start","chat_end","browserid"];
+		var values = [new Date(data.chat_start),new Date("1970-01-01"),sessionId];
 		if(data.email.localeCompare('no-email')!=0)
 		{
 			fields.push("email");
