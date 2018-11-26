@@ -90,6 +90,19 @@ var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 	});
 };
 
+var truncateQuery = function(table)
+{ 
+	var sql = "TRUNCATE TABLE "+ table;
+	console.log("Truncate table Query: ", sql, table);
+	con.query(sql,fieldVals, function (err, result) 
+	{
+		if (err) 
+			log.error(err);
+		else
+			console.log("table "+table+" has been truncated");
+	});
+};
+
 
 var saveHistory = function(table,historyTable,conditions,conditionValues,dateField)
 { 
@@ -132,5 +145,5 @@ var saveHistory = function(table,historyTable,conditions,conditionValues,dateFie
 
 //con.end();
 
-module.exports = {connectdb, selectQuery, selectWhereQuery, 
+module.exports = {connectdb, selectQuery, selectWhereQuery, truncateQuery,
 					insertQuery, updateQuery, upsertQuery, saveHistory, deleteQuery}
