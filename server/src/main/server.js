@@ -42,7 +42,31 @@ function deg2rad(deg)
   return deg * (Math.PI/180)
 }
 			
-  
+ function endSession(sessionId,convo,chat_end,mehaEmail,chat_snapshot)
+ {
+		log.info("Disconnecting session for the browserid: "+ sessionId);
+		log.info("Conversation was as follows: \n"+ convo);
+		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId]);
+		if(mehaEmail.localeCompare('no-email')!=0)
+			chat_snapshot.logChat(mehaEmail+".log",convo);
+		else
+			chat_snapshot.logChat(sessionId+".log",convo);
+		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
+		
+		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
+		{
+			if(result[0])
+			{
+				var user = result[0];
+				var duration = parseFloat(user.chat_end.getTime()-user.chat_start.getTime());
+				duration = parseFloat(duration / (60 * 1000));
+				duration = Math.round(duration * 100) / 100;
+				db.insertQuery("summary",
+				["duration","screener_score","who_score","feeling","senti_score","email","convo"],
+				[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
+			}
+		});
+ }		
 
 
 const io = socketIO(server);
@@ -92,15 +116,7 @@ io.on('connection', (socket) =>
 	socket.on('logChatEnd', function (data) 
 	{
 		sessionId = data.sessionId;
-		log.info("Disconnecting session for the browserid: "+ sessionId);
-		log.info("Conversation was as follows: \n"+ convo);
-		db.updateQuery("user",["chat_end"],[new Date(data.chat_end)],["browserid"],[sessionId]);
-		if(mehaEmail.localeCompare('no-email')!=0)
-			chat_snapshot.logChat(mehaEmail+".log",convo);
-		else
-			chat_snapshot.logChat(sessionId+".log",convo);
-		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
-		
+		endSession(sessionId,convo,new Date(data.chat_end),mehaEmail,chat_snapshot);		
 	});	
 	
 	socket.on('recordFeelings', function (data) 
@@ -475,14 +491,7 @@ io.on('connection', (socket) =>
 			console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
-				log.info("Disconnecting session for the browserid: "+ sessionId);
-				log.info("Conversation was as follows: \n"+ convo);
-				if(mehaEmail.localeCompare('no-email')!=0)
-					chat_snapshot.logChat(mehaEmail+".log",convo);
-				else
-					chat_snapshot.logChat(sessionId+".log",convo);
-				db.updateQuery("user",["chat_end"],[new Date()],["browserid"],[sessionId]);
-				db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
+				endSession(sessionId,convo,new Date(),mehaEmail,chat_snapshot);
 			}
 		});
 	});

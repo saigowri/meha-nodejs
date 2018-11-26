@@ -2,6 +2,7 @@ var cron = require('node-schedule');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var mailer = require('./mailer');
+var db = require('./database');
 
 var schedule = cron.scheduleJob(config.reporting_time, function()
 {
