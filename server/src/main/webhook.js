@@ -1,18 +1,19 @@
-const bodyParser = require('body-parser');
-var express = require('express');
-var router = express.Router();
+const bodyParser = require('body-parser')
+var connectWebhook = function(app)
+{
+app.use(bodyParser.json())
+
 const REQUIRE_AUTH = true
 const AUTH_TOKEN = '4efec7cafaf24ce098001d038606e132'
 
-
-router.use(bodyParser.json());
-
-
-router.get('/', function (req, res) {
+app.get('/', function (req, res) {
+  res.send('Use the /webhook endpoint.')
+})
+app.get('/webhook', function (req, res) {
   res.send('You must POST your request')
 })
 
-router.post('/', function (req, res) {
+app.post('/webhook', function (req, res) {
   // we expect to receive JSON data from api.ai here.
   // the payload is stored on req.body
   console.log(req.body)
@@ -25,15 +26,15 @@ router.post('/', function (req, res) {
   }
 
   // and some validation too
-  if (!req.body || !req.body.result || !req.body.result.parameters) {
+  if (!req.body || !req.body.queryResult || !req.body.queryResult.parameters) {
     return res.status(400).send('Bad Request')
   }
 
   // the value of Action from api.ai is stored in req.body.result.action
-  console.log('* Received action -- %s', req.body.result.action)
+  console.log('* Received action -- %s', req.body.queryResult.action)
 
   // parameters are stored in req.body.result.parameters
-  var userName = req.body.result.parameters['given-name']
+  var userName = req.body.queryResult.parameters['given-name']
   var webhookReply = 'Hi ' + userName + '! Welcome from the webhook.'
 
   // the most basic response
@@ -43,5 +44,6 @@ router.post('/', function (req, res) {
     displayText: webhookReply
   })
 })
+};
 
-module.exports = webhook
+module.exports = {connectWebhook}

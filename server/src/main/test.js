@@ -60,8 +60,8 @@ const express = require('express');
 const app = express();
 var webhook = require('./webhook');
 var router = require('./router');
+webhook.connectWebhook(app);
 const PORT = process.env.PORT || 3000;
-app.use('/webhook', webhook);
 app.use('/chatbot', router);
 const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 //-----------------------------Testing webhook Ends--------------------------------------------------------------------------
