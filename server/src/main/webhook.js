@@ -1,4 +1,6 @@
 const bodyParser = require('body-parser')
+var connectWebhook = function(app)
+{
 app.use(bodyParser.json())
 
 const REQUIRE_AUTH = true
@@ -42,3 +44,6 @@ app.post('/webhook', function (req, res) {
     displayText: webhookReply
   })
 })
+};
+
+module.exports = {connectWebhook}

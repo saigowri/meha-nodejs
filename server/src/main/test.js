@@ -59,6 +59,7 @@ http.createServer(function (request, response) {
 const express = require('express');
 const app = express();
 var webhook = require('./webhook');
+webhook.connectWebhook(app);
 app.set('port', (process.env.PORT || 5000));
 
 app.listen(app.get('port'), function () {
