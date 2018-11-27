@@ -1,19 +1,16 @@
-const bodyParser = require('body-parser')
-var connectWebhook = function(app)
-{
-app.use(bodyParser.json())
+const bodyParser = require('body-parser');
+var express = require('express');
+var router = express.Router();
+router.use(bodyParser.json())
 
 const REQUIRE_AUTH = true
 const AUTH_TOKEN = '4efec7cafaf24ce098001d038606e132'
 
-app.get('/', function (req, res) {
-  res.send('Use the /webhook endpoint.')
-})
-app.get('/webhook', function (req, res) {
+router.get('/', function (req, res) {
   res.send('You must POST your request')
 })
 
-app.post('/webhook', function (req, res) {
+router.post('/', function (req, res) {
   // we expect to receive JSON data from api.ai here.
   // the payload is stored on req.body
   console.log(req.body)
@@ -35,7 +32,7 @@ app.post('/webhook', function (req, res) {
 
   // parameters are stored in req.body.result.parameters
   var userName = req.body.result.parameters['given-name']
-  var webhookReply = 'Hello ' + userName + '! Welcome from the webhook.'
+  var webhookReply = 'Hi ' + userName + '! Welcome from the webhook.'
 
   // the most basic response
   res.status(200).json({
@@ -44,6 +41,5 @@ app.post('/webhook', function (req, res) {
     displayText: webhookReply
   })
 })
-};
 
-module.exports = {connectWebhook}
+module.exports = webhook
