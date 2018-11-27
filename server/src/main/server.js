@@ -401,7 +401,26 @@ io.on('connection', (socket) =>
 		log.debug("total senti score "+ totalScore);
 		if(parseInt(totalScore) < 0)
 		{
-			apiGetRes(socket,"Request Email Id", data.options);
+			if(mehaEmail.localeCompare("no-email")==0)
+			{
+				apiGetRes(socket,"Request Email Id", data.options);
+			}
+			else 
+			{
+				var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "followup",
+					parameters: {"reply":mehaEmail},
+					lifespan:1
+				},{
+					name: "screener-start",
+					parameters: {},
+					lifespan:1
+				}]};
+				apiGetRes(socket,"Screener-restart", options);
+			}
 		}
 		else if(parseInt(totalScore) > 0 && parseInt(freeTextScore) > 0)
 		{
