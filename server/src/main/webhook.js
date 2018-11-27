@@ -40,7 +40,7 @@ app.post('/webhook', function (req, res) {
   // parameters are stored in req.body.result.parameters 
   var disease = req.body.queryResult.parameters['disease'];
   var webhookReply = "";
-  request('http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word=depression', function (error, response, body) 
+  request('http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word='+disease, function (error, response, body) 
 	{
 		if (!error && response.statusCode == 200) 
 		{
@@ -62,7 +62,7 @@ app.post('/webhook', function (req, res) {
 												if(definition[l].hasOwnProperty('tagName') && definition[l].tagName.localeCompare('WordDefinition')==0)
 												{
 													var webhookReply = definition[l].childNodes[0].text;
-													//webhookReply = webhookReply.replace(/"/g, "-");
+													webhookReply = webhookReply.replace(/\n/g, "</br>");
 													//webhookReply = webhookReply.replace(/:/g, "-");
 													//webhookReply = webhookReply.replace(/{/g, "(");
 													//webhookReply = webhookReply.replace(/}/g, ")");
@@ -75,13 +75,15 @@ app.post('/webhook', function (req, res) {
 														//fulfillmentText: webhookReply,
 														payload: { 
 																instructions: [{
-																			text: "According to aonaware, "+webhookReply
+																			text: "According to services.aonaware, under WordNet (r) 2.0 dictionary,"
+																		},{
+																			text: ""+webhookReply
 																		}, {
 																			text: "For additional details please refer the link - "
 																		}, {
 																			link: {
 																				title: "services.aonaware",
-																				url: "http://services.aonaware.com/DictService/Default.aspx?action=define&dict=*&query=alzhimers+"
+																				url: "http://services.aonaware.com/DictService/Default.aspx"
 																			}
 																		}]
 															}
