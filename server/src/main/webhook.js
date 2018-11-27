@@ -1,10 +1,12 @@
 const bodyParser = require('body-parser');
 var express = require('express');
 var router = express.Router();
-router.use(bodyParser.json())
-
 const REQUIRE_AUTH = true
 const AUTH_TOKEN = '4efec7cafaf24ce098001d038606e132'
+
+
+router.use(bodyParser.json());
+
 
 router.get('/', function (req, res) {
   res.send('You must POST your request')
