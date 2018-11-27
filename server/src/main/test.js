@@ -58,9 +58,18 @@ http.createServer(function (request, response) {
 //-----------------------------Testing webhook-------------------------------------------------------------------------------
 const express = require('express');
 const socketIO = require('socket.io');
-const app = express();
 var webhook = require('./webhook');
 var router = require('./router');
+var report = require('./report');
+var api = require('./api');
+var mailer = require('./mailer');
+var sentiment = require('./sentimentAnalysis');
+var db = require('./database');
+var config = require('./webapp/conf/config.json');
+var log = require('./logger/logger')(module);
+var chat_snapshot = require('./logger/snapshot_logger');
+
+const app = express();
 webhook.connectWebhook(app);
 const PORT = process.env.PORT || 3000;
 app.use('/chatbot', router);
