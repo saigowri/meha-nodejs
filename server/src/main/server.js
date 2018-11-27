@@ -19,6 +19,10 @@ var state = " ";
 report.schedule;
 db.connectdb;
 
+app.get('/webhook', function (req, res) {
+  res.send('You must POST your request')
+})
+
 function getRandomInt(max) 
 {
 	return Math.floor(Math.random() * Math.floor(max));
