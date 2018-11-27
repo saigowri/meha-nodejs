@@ -26,16 +26,18 @@ app.post('/webhook', function (req, res) {
   }
 
   // and some validation too
-  if (!req.body || !req.body.queryResult || !req.body.queryResult.parameters) {
+  if (!req.body || !req.body.queryResult ) {
     return res.status(400).send('Bad Request')
   }
 
   // the value of Action from api.ai is stored in req.body.result.action
   console.log('* Received action -- %s', req.body.queryResult.action)
 
-  // parameters are stored in req.body.result.parameters
-  var userName = req.body.queryResult.parameters['given-name']
-  var webhookReply = 'Hi ' + userName + '! Welcome from the webhook.'
+  var action = req.body.queryResult.action;
+  if(req.body.queryResult.hasOwnProperty('action') && req.body.queryResult.action.localeCompare('mental-health-info')==0)
+  // parameters are stored in req.body.result.parameters 
+  var disease = req.body.queryResult.parameters['disease']
+  var webhookReply = 'Hi ' + disease + '! Welcome from the webhook.'
 
   // the most basic response
   res.status(200).json({
