@@ -59,10 +59,11 @@ http.createServer(function (request, response) {
 const express = require('express');
 const app = express();
 var webhook = require('./webhook');
+var router = require('./router');
 webhook.connectWebhook(app);
-app.set('port', (process.env.PORT || 3000));
+const PORT = process.env.PORT || 3000;
+app.use('/chatbot', router);
 
-const server = app.listen(app.get('port'), function () {
-  console.log('* Webhook service is listening on port:' + app.get('port'))
-});
+
+const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 //-----------------------------Testing webhook Ends--------------------------------------------------------------------------
