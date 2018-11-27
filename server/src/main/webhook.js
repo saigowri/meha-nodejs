@@ -68,7 +68,7 @@ app.post('/webhook', function (req, res) {
 													webhookReply = webhookReply.replace(/}/g, ")");
 													webhookReply = webhookReply.replace(/\[/g, "(");
 													webhookReply = webhookReply.replace(/]/g, ")");
-													//webhookReply = webhookReply.split("\n")[0];
+													webhookReply = webhookReply.split("\n")[0];
 													console.log(webhookReply);
 													  res.status(200).json({
 														source: 'webhook-dm',
