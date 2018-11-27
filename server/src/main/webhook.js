@@ -71,7 +71,7 @@ app.post('/webhook', function (req, res) {
 													webhookReply = webhookReply.split("\n")[0];
 													console.log(webhookReply);
 													  res.status(200).json({
-														source: 'webhook-dm',
+														source: 'webhook',
 														//fulfillmentText: webhookReply,
 														payload: { 
 																instructions: [{
