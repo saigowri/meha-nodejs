@@ -613,14 +613,14 @@ socket.on('fromServer', function (data)
 	else
 	{
 		// recieveing a reply from server.
-		//console.log(JSON.stringify(data));
-		console.log("BrowserId: ", JSON.stringify(data.server.sessionId));
-		console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
-		console.log("action: ", JSON.stringify(data.server.result.action)); 
-		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
-		console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
-		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
-		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
+		console.log(JSON.stringify(data));
+		//console.log("BrowserId: ", JSON.stringify(data.server.sessionId));
+		//console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
+		//console.log("action: ", JSON.stringify(data.server.result.action)); 
+		//console.log("parameters: ", JSON.stringify(data.server.result.parameters));
+		//console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
+		//console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
+		//console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
 		
 		var action = data.server.result.hasOwnProperty('action');
 		var actionVal = (action) ? data.server.result.action : "";
