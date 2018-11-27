@@ -1,8 +1,5 @@
-const express = require('express')
 const bodyParser = require('body-parser')
-const app = express()
 app.use(bodyParser.json())
-app.set('port', (process.env.PORT || 5000))
 
 const REQUIRE_AUTH = true
 const AUTH_TOKEN = '4efec7cafaf24ce098001d038606e132'
@@ -44,8 +41,4 @@ app.post('/webhook', function (req, res) {
     speech: webhookReply,
     displayText: webhookReply
   })
-})
-
-app.listen(app.get('port'), function () {
-  console.log('* Webhook service is listening on port:' + app.get('port'))
 })
