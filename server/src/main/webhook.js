@@ -72,7 +72,19 @@ app.post('/webhook', function (req, res) {
 													console.log(webhookReply);
 													  res.status(200).json({
 														source: 'webhook-dm',
-														fulfillmentText: webhookReply
+														//fulfillmentText: webhookReply,
+														payload: { 
+																instructions: [{
+																			text: "According to aonaware, "+webhookReply
+																		}, {
+																			text: "For additional details please refer the link - "
+																		}, {
+																			link: {
+																				title: "services.aonaware",
+																				url: "http://services.aonaware.com/DictService/Default.aspx?action=define&dict=*&query=alzhimers+"
+																			}
+																		}]
+															}
 													  })
 												}
 										}
