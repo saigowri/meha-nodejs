@@ -65,7 +65,7 @@ var api = require('./api');
 //var mailer = require('./mailer');
 //var sentiment = require('./sentimentAnalysis');
 //var db = require('./database');
-//var config = require('./webapp/conf/config.json');
+var config = require('./webapp/conf/config.json');
 //var log = require('./logger/logger')(module);
 //var chat_snapshot = require('./logger/snapshot_logger');
 
