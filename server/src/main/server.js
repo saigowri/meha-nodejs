@@ -1,6 +1,7 @@
 const express = require('express');
 var router = require('./router');
 var report = require('./report');
+var webhook = require('./webhook');
 const socketIO = require('socket.io');
 var api = require('./api');
 var mailer = require('./mailer');
@@ -10,6 +11,7 @@ var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var chat_snapshot = require('./logger/snapshot_logger');
 var app = express();
+webhook.connectWebhook(app);
 app.use('/chatbot', router);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
@@ -18,10 +20,6 @@ var pin = 0;
 var state = " ";
 report.schedule;
 db.connectdb;
-
-app.get('/webhook', function (req, res) {
-  res.send('You must POST your request')
-})
 
 function getRandomInt(max) 
 {

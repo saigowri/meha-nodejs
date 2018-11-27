@@ -56,13 +56,13 @@ http.createServer(function (request, response) {
 //-----------------------------Testing chat snapshot logger Ends-------------------------------------------------------------
 
 //-----------------------------Testing webhook-------------------------------------------------------------------------------
-const express = require('express');
-const app = express();
-var webhook = require('./webhook');
-webhook.connectWebhook(app);
-app.set('port', (process.env.PORT || 5000));
+//const express = require('express');
+//const app = express();
+//var webhook = require('./webhook');
+//webhook.connectWebhook(app);
+//app.set('port', (process.env.PORT || 5000));
 
-app.listen(app.get('port'), function () {
-  console.log('* Webhook service is listening on port:' + app.get('port'))
-});
+//app.listen(app.get('port'), function () {
+ // console.log('* Webhook service is listening on port:' + app.get('port'))
+//});
 //-----------------------------Testing webhook Ends--------------------------------------------------------------------------
