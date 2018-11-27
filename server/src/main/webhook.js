@@ -62,12 +62,12 @@ app.post('/webhook', function (req, res) {
 												if(definition[l].hasOwnProperty('tagName') && definition[l].tagName.localeCompare('WordDefinition')==0)
 												{
 													var webhookReply = definition[l].childNodes[0].text;
-													//webhookReply = webhookReply.replace(/"/g, "-");
-													//webhookReply = webhookReply.replace(/:/g, "-");
-													//webhookReply = webhookReply.replace(/{/g, "(");
-													//webhookReply = webhookReply.replace(/}/g, ")");
-													//webhookReply = webhookReply.replace(/\[/g, "(");
-													//webhookReply = webhookReply.replace(/]/g, ")");
+													webhookReply = webhookReply.replace(/"/g, "'");
+													webhookReply = webhookReply.replace(/:/g, "-");
+													webhookReply = webhookReply.replace(/{/g, "(");
+													webhookReply = webhookReply.replace(/}/g, ")");
+													webhookReply = webhookReply.replace(/\[/g, "(");
+													webhookReply = webhookReply.replace(/]/g, ")");
 													//webhookReply = webhookReply.split("\n")[0];
 													console.log(webhookReply);
 													  res.status(200).json({
