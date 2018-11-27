@@ -427,6 +427,20 @@ function emergencyEmailVerify(data)
 	
 }
 	
+function mildDepression()
+{
+	var contexts = [{
+			name: "screener-mild-depression-followup",
+			parameters: {
+				"score" :  score
+			},
+			lifespan:1
+	}];
+	if(email) 
+		requestToServer("fromClient","Screener-mild-depression-registered",contexts);
+	else
+		requestToServer("fromClient","Screener-mild-depression-unregistered",contexts);
+}
 
 function sentimentAnalysis(freeTextMsg) 
 {
@@ -656,14 +670,14 @@ socket.on('fromServer', function (data)
 	else
 	{
 		// recieveing a reply from server.
-		console.log(JSON.stringify(data));
-		//console.log("BrowserId: ", JSON.stringify(data.server.sessionId));
-		//console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
-		//console.log("action: ", JSON.stringify(data.server.result.action)); 
-		//console.log("parameters: ", JSON.stringify(data.server.result.parameters));
-		//console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
-		//console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
-		//console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
+		//console.log(JSON.stringify(data));
+		console.log("BrowserId: ", JSON.stringify(data.server.sessionId));
+		console.log("Request: ", JSON.stringify(data.server.result.resolvedQuery)); 
+		console.log("action: ", JSON.stringify(data.server.result.action)); 
+		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
+		console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
+		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
+		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
 		
 		var action = data.server.result.hasOwnProperty('action');
 		var actionVal = (action) ? data.server.result.action : "";
@@ -684,9 +698,8 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
 		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
 		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
+		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();
 		else
-
-
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
 		{
@@ -699,7 +712,15 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);		
-		
+		else if(actionVal.localeCompare('PUSHDFeedbackFallback')==0)
+		{
+			var contexts = [{
+				name: "Feedback",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("fromClient","end-convo-ratings",contexts);
+		}
 	}
 });
 
