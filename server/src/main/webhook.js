@@ -1,8 +1,5 @@
-const express = require('express')
 const bodyParser = require('body-parser')
-const app = express()
 app.use(bodyParser.json())
-app.set('port', (process.env.PORT || 5000))
 
 const REQUIRE_AUTH = true
 const AUTH_TOKEN = 'an-example-token'
@@ -36,16 +33,12 @@ app.post('/webhook', function (req, res) {
 
   // parameters are stored in req.body.result.parameters
   var userName = req.body.result.parameters['given-name']
-  var webhookReply = 'Hello ' + userName + '! Welcome from the webhook.'
+  var webhookReply = 'Hi!! Super ' + userName + '! Welcome from the webhook.'
 
   // the most basic response
   res.status(200).json({
-    source: 'webhook',
+    source: 'webhook-dm',
     speech: webhookReply,
     displayText: webhookReply
   })
-})
-
-app.listen(app.get('port'), function () {
-  console.log('* Webhook service is listening on port:' + app.get('port'))
 })

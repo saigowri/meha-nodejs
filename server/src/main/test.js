@@ -49,7 +49,19 @@ http.createServer(function (request, response) {
 //var log = require('./logger/logger')(module);
 //log.info("Test");
 //-----------------------------Testing logger Ends---------------------------------------------------------------------------
-//-----------------------------Testing chat snapshot logger--------------------------------------------------------------------------------
-var chat_snapshot = require('./logger/snapshot_logger');
-chat_snapshot.logChat("test.log","again");
-//-----------------------------Testing chat snapshot logger Ends---------------------------------------------------------------------------
+
+//-----------------------------Testing chat snapshot logger------------------------------------------------------------------
+//var chat_snapshot = require('./logger/snapshot_logger');
+//chat_snapshot.logChat("test.log","again");
+//-----------------------------Testing chat snapshot logger Ends-------------------------------------------------------------
+
+//-----------------------------Testing webhook-------------------------------------------------------------------------------
+const express = require('express');
+const app = express();
+var webhook = require('./webhook');
+app.set('port', (process.env.PORT || 5000));
+
+app.listen(app.get('port'), function () {
+  console.log('* Webhook service is listening on port:' + app.get('port'))
+});
+//-----------------------------Testing webhook Ends--------------------------------------------------------------------------
