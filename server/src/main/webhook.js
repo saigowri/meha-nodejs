@@ -7,13 +7,10 @@ const REQUIRE_AUTH = true
 const AUTH_TOKEN = '4efec7cafaf24ce098001d038606e132'
 
 app.get('/', function (req, res) {
-  res.send('Use the /webhook endpoint.')
-})
-app.get('/webhook', function (req, res) {
   res.send('You must POST your request')
 })
 
-app.post('/webhook', function (req, res) {
+app.post('/', function (req, res) {
   // we expect to receive JSON data from api.ai here.
   // the payload is stored on req.body
   console.log(req.body)
