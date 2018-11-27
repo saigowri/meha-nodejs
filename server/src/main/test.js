@@ -64,10 +64,10 @@ var router = require('./router');
 var api = require('./api');
 //var mailer = require('./mailer');
 //var sentiment = require('./sentimentAnalysis');
-//var db = require('./database');
+var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
-//var chat_snapshot = require('./logger/snapshot_logger');
+var chat_snapshot = require('./logger/snapshot_logger');
 
 const app = express();
 webhook.connectWebhook(app);
