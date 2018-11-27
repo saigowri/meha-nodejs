@@ -60,11 +60,9 @@ const express = require('express');
 const app = express();
 var webhook = require('./webhook');
 webhook.connectWebhook(app);
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
-//app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 5000));
 
-//app.listen(app.get('port'), function () {
- // console.log('* Webhook service is listening on port:' + app.get('port'))
-//});
+app.listen(app.get('port'), function () {
+  console.log('* Webhook service is listening on port:' + app.get('port'))
+});
 //-----------------------------Testing webhook Ends--------------------------------------------------------------------------
