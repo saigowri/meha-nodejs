@@ -284,16 +284,17 @@ io.on('connection', (socket) =>
 			});
 	});
 	
+	
+
 	socket.on('EmergencySendMail', function (data) 
 	{
-		contactData = data.query;
+		var contactData = data.query;
 		var date = new Date();
-		var receiver = "minnuann5@gmail.com";
-
-		mailer.sendMail(receiver,"Emergency! A Life is under danger.",
+		
+		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
 			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>A person is showing some suicidal / murder tendencies."+
-			" The details of the person is sharing with you below<br><b> Contact Detail : "+contactData+"<br>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
-			"<br>Please take appropriate actions immediately.</b></div>",
+			" The details of the person is sharing with you below<br><b> Phone No: "+data.query[0]+"<br>Email: "+data.query[1]+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+			"<br><b>Please take appropriate actions immediately.</b></div>",
 			function(error, response)
 			{
 				if(error)
@@ -310,17 +311,15 @@ io.on('connection', (socket) =>
 		
 	});
 
-	socket.on('EmergencySendMailLocation', function (data) 
+	socket.on('EmergencySendMail2', function (data) 
 	{
-		var latitude = data.query[0];
-		var longitude = data.query[1];
+		var contactData = data.query;
 		var date = new Date();
-		var receiver = "minnuann5@gmail.com";
-
-		mailer.sendMail(receiver,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>A person is showing some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
-			" </b> in " +state+" state .<br> We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
-			"This message is sent at "+date +". <br>Please take appropriate actions immediately.</b></div>",
+		
+		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
+			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>A person is showing some suicidal / murder tendencies."+
+			" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+			"<br><b>Please take appropriate actions immediately.</b></div>",
 			function(error, response)
 			{
 				if(error)
@@ -331,7 +330,61 @@ io.on('connection', (socket) =>
 				else
 				{
 					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
-					//apiGetRes(socket,"help",data.options);
+					apiGetRes(socket,"help",data.options);
+				}
+			});
+		
+	});
+
+	socket.on('EmergencyHelp', function (data) 
+	{	
+		apiGetRes(socket,"help",data.options);
+				
+	});
+
+	socket.on('EmergencyGetEmail', function (data) 
+	{	
+		apiGetRes(socket,"get email",data.options);
+				
+	});
+
+	socket.on('EmergencyInvalidphone', function (data) 
+	{	
+		apiGetRes(socket,"get correct phone",data.options);
+				
+	});
+    
+    
+	socket.on('EmergencySendMailLocation', function (data) 
+	{
+		var latitude = data.query[0];
+		var longitude = data.query[1];
+		var date = new Date();
+		var phone = data.query[2];
+		var email = data.query[3];
+		if(phone == 0){
+			phone ="Not available";
+		}
+
+		if(!email){
+			email = "Not Available";
+		}
+		
+		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
+			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>A person is showing some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+			" in " +state+" state .<br>"+
+			"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
+			"This message is sent at "+date +". <br>Please take appropriate actions immediately.</b></div>",
+			function(error, response)
+			{
+				if(error)
+				{
+					log.error(error);
+					 // apiGetRes(socket,"Emergency email error",data.options);
+				}
+				else
+				{
+					
 				}
 			});
 		

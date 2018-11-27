@@ -7,7 +7,7 @@ var minutes = 1, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
 var chatbotRating = 0;
 var convo="";
-
+var phone = 0;
 var getCookies = function()
 {
   var pairs = document.cookie.split(";");
@@ -348,75 +348,89 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
-function validateEmail(email) {
-  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(email);
+// function validatePhone(phone) {
+//     var re = /(?:\s+|)((0|(?:(\+|)91))(?:\s|-)*(?:(?:\d(?:\s|-)*\d{9})|(?:\d{2}(?:\s|-)*\d{8})|(?:\d{3}(?:\s|-)*\d{7}))|\d{10})(?:\s+|)$/;
+//     return re.test(String(phone).toLowerCase());
+// }
+
+function validatePhone(phone) {
+
+    var re = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
+    return re.test(String(phone).toLowerCase());
 }
 
-function validateMobile(phone) {
-  var re = /^((?:\s+|)((0|(?:(\+|)91))(?:\s|-)*(?:(?:\d(?:\s|-)*\d{9})|(?:\d{2}(?:\s|-)*\d{8})|(?:\d{3}(?:\s|-)*\d{7}))|\d{10})(?:\s+|))$/;
-  return re.test(phone);
-}
-
-function emergencyEmailVerify(data)
+function emergencyPhoneVerify(data)
 {   
-	console.log("data" , data);
-	var emergencyEmail = "null"
-	var emdata ;
-	var phone = 0;
-	var correctFlag = 0;
-	if(data.parameters.email != "")
-	{
-		emergencyEmail = data.parameters.email;
-		console.log("email" , emergencyEmail);
-		if (validateEmail(emergencyEmail)) {
-		    console.log("email true");
-		    emdata = emergencyEmail;
-		    correctFlag = 1;
-		} 
-		else {
-		    console.log("email false");
-		}
-	}
-	else if(emergencyEmail == "null")
-	{
-		phone  = data.resolvedQuery;
-		console.log("phone no" , phone);
-		if (validateMobile(phone)) {
-		    console.log("mobile true");
-		    emdata = phone;
-		    correctFlag = 1;
-		} 
-		else {
-		    console.log("mobile false");
-		}
-	}	
+	phone  = data.resolvedQuery;
+	// if (validatePhone(phone)) {
 
-	if (correctFlag == 1){
-		var contexts = [{
-						name: "calm-down",
-						parameters: {},
-						lifespan:1
-				}]; 
-		requestToServer("EmergencySendMail", emdata, contexts);
-	}
-	
+	//     console.log("invalid  ph no ----***********");
+	//     requestToServer("EmergencyInvalidphone","", contexts);
+	// } 
 	// else {
 
-	// 	var contexts = [{
-	// 					name: "",
-	// 					parameters: {
-	// 					},
-	// 					lifespan:1
-	// 			}]; 
-	// 	requestToServer("sendMail",email,contexts);
+	    if(!email){
 
+	    	var contexts = [{
+				name: "get-email",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencyGetEmail","", contexts);
+	    }
+		else{
+			var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+			}]; 
+			var arr = [phone , email];
+			requestToServer("EmergencySendMail", arr, contexts);
+		}
 	// }
 }
 
+function emergencyCheckEmail()
+{   
+	console.log("checking email"); 
+	if(!email){
+	    	var contexts = [{
+				name: "get-email",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencyGetEmail","", contexts);
+	}
+	else{
+
+			var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencySendMail2", email, contexts);
+	}
+}
+
+
+function emergencyEmailVerify(data)
+{   
+
+	var obtained_email  = data.resolvedQuery;
+	var contexts = [{
+			name: "calm-down",
+			parameters: {},
+			lifespan:1
+	}]; 
+	var arr = [phone , obtained_email];
+	requestToServer("EmergencySendMail", arr, contexts);
+	
+}
+	
+
 function sentimentAnalysis(freeTextMsg) 
 {
-	console.log("Message is "+freeTextMsg);
+	
 	var score = localStorage.getItem("sentiScore");
 	console.log("Score is " + score);
 	var contexts = [{
@@ -499,6 +513,16 @@ function showPositionEmergency(position) {
 	console.log('latitude inside convo.js',position.coords.latitude);
 	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
+	if((phone != 0) && (!email)){
+		arr = [position.coords.latitude, position.coords.longitude , phone , email];
+	}
+	else if(phone != 0){
+		arr = [position.coords.latitude, position.coords.longitude , phone ];
+	}
+	else if(email){
+		arr = [position.coords.latitude, position.coords.longitude , email];
+	}
+
 
 	requestToServer("hospitalFinderEmergency",arr,contexts);
 
@@ -507,6 +531,7 @@ function showPositionEmergency(position) {
 						parameters: {},
 						lifespan:1
 				}]; 
+
 	requestToServer("EmergencySendMailLocation", arr, contexts2);
 
 }
@@ -535,14 +560,34 @@ function showError(error) {
     }
 }
 
+function hospitalNoButEmergency(data)
+{   
+	if(phone != 0)
+	{
+		var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+				}]; 
+		requestToServer("EmergencySendMail2", phone, contexts);
+	}
+	else{
+		var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+				}]; 
+		requestToServer("EmergencyHelp","", contexts);
+	}
+	
+}
+
 function storeWellnessRating(data){
-    // console.log("convo.js " , data.resolvedQuery);
     wellnessRating = data.resolvedQuery;
 }
 
 function storeWellnessFeedback(data){
-    // console.log("convo.js feedback " , data.resolvedQuery);
-    // console.log("convo.js in feedback" , wellnessRating);
+
 	var contexts = [{
 					name: "",
 					parameters: {},
@@ -553,13 +598,11 @@ function storeWellnessFeedback(data){
 }
 
 function storeChatbotRating(data){
-    console.log("chatbot rating " , data.resolvedQuery);
+
     chatbotRating = data.resolvedQuery;
 }
 
 function storeChatbotFeedback(data){
-    console.log("convo.js feedback " , data.resolvedQuery);
-    console.log("convo.js in feedback" , wellnessRating);
 	var contexts = [{
 					name: "",
 					parameters: {},
@@ -636,9 +679,14 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
+		else if(actionVal.localeCompare('EmergencyPhoneVerify')==0) emergencyPhoneVerify(data.server.result);
 		else if(actionVal.localeCompare('EmergencyEmailVerify')==0) emergencyEmailVerify(data.server.result);
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
-		else 
+		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
+		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
+		else
+
+
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
 		{
