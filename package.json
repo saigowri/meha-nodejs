@@ -7,7 +7,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/src/main/test.js"
+    "start": "node server/src/main/webhook.js"
   },
   "keywords": [],
   "author": "",
