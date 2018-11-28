@@ -96,10 +96,13 @@ var truncateQuery = function(table)
 { 
 	var sql = "TRUNCATE TABLE "+ table;
 	log.debug("Truncate table Query: "+sql+" "+table);
-	con.query(sql,fieldVals, function (err, result) 
+	con.query(sql,function (err, result, fields) 
 	{
-		if (err) 
+		if (err) {
 			log.error(err);
+			console.log("table "+table+" not truncated");
+		}
+
 		else
 			log.debug("table "+table+" has been truncated");
 	});

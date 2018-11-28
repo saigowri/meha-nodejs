@@ -8,8 +8,8 @@ var schedule = cron.scheduleJob(config.reporting_time, function()
 {
 	var subject = "Daily Summary of Chatbot usage";
 	var content = "Daily Summary of Chatbot usage is as follows";
-	var htmlContent = "<div><p>Follwoing is the Daily Summary of NIMHANS Mental Health Chatbot sent on "+ date+". </p></div>"
-	htmlContent += "<div><table border='1'>"+
+	var htmlContent = "<div><p><b>Following is the Daily Summary of NIMHANS Mental Health Chatbot sent on "+ date+". <b></p><br>"
+	htmlContent += "<table border='1'>"+
     "<tr>"+
     "<th>Duration in minutes</th>"+
     "<th>Screener Score</th>"+
@@ -22,8 +22,10 @@ var schedule = cron.scheduleJob(config.reporting_time, function()
 	db.selectQuery("summary",function(result)
 		{	
 			log.debug(result);
-			for ( var i in result) {
-
+			for ( var i in result) 
+             {
+                if(result[i].duration === undefined)
+                    break;
                 var duration = result[i].duration;
                 var screener_score = result[i].screener_score;
                 if(screener_score == -999){
@@ -44,25 +46,102 @@ var schedule = cron.scheduleJob(config.reporting_time, function()
                 "<td>"+feeling+"</td><td>"+senti_score+"</td><td>"+useremail+"</td></tr>";
             }
             htmlContent += "</table><p><b>NA : Not Available</b></p></div>";
-            log.info('Sending daily report at '+config.reporting_time.hour+':'+config.reporting_time.minute+' to '+config.doctor_email);
-			mailer.sendMail(config.doctor_email,subject,content,htmlContent,
-			function(error, response)
-			{
-				if(error)
-				{
-					log.error("Unable to send daily report");
-					log.error(error);
-				}
-				else
-				{
-					log.info("Daily report sent to "+config.doctor_email);
-					log.error(error);
-				}
-			});
+            htmlContent += "<div><p><b>Following is the Chatbot Ratings and Feedbacks from users</b></p><br></div><div><table border='1'>"+
+                "<tr>"+
+                "<th>Chatbot Rating (Out of 5)</th>"+
+                "<th>Chatbot Feedback</th>"+
+                "</tr>";
+            db.selectQuery("chatbot_details",function(result1)
+                {   
+
+                    log.debug(result1);
+
+                    for ( var i in result1) {
+                        if(result1[i].rating === undefined)
+                            break;
+                        if(result1[i].reported == 0)
+                        {
+                            var rating = result1[i].rating;
+                            var feedback = result1[i].feedback;
+                            htmlContent += "<tr><td>"+rating+"</td><td>"+feedback+"</td></tr>";
+                            db.updateQuery("chatbot_details",["reported"],[1],["id"],[result1[i].id]);
+                        }
+                    }
+
+                    htmlContent += "</table></div>";
+                    htmlContent += "<div><p><b>Following is the PUSH-D Ratings and Feedbacks from users</b></p><br></div><div><table border='1'>"+
+                        "<tr>"+
+                        "<th>Pushd Rating (Out of 5)</th>"+
+                        "<th>Pushd Feedback</th>"+
+                        "</tr>";
+                    db.selectQuery("pushd_details",function(result2)
+                        {   
+
+                            log.debug(result2);
+
+                            for ( var i in result2) {
+                                if(result2[i].rating === undefined)
+                                    break;
+                                if(result2[i].reported == 0)
+                                {
+                                        var ratingpd = result2[i].rating;
+                                        var feedbackpd = result2[i].feedback;
+                                        htmlContent += "<tr><td>"+ratingpd+"</td><td>"+feedbackpd+"</td></tr>";
+                                        db.updateQuery("pushd_details",["reported"],[1],["id"],[result2[i].id]);
+
+                                }
+                            }
+                            htmlContent += "</table></div>";
+                            htmlContent += "<div><p><b>Following is the Wellness App Ratings and Feedbacks from users</b></p><br></div><div><table border='1'>"+
+                                "<tr>"+
+                                "<th>Wellness app Rating (Out of 5)</th>"+
+                                "<th>Wellness app Feedback</th>"+
+                                "</tr>";
+                            db.selectQuery("wellness_app_details",function(result3)
+                                {   
+
+                                    log.debug(result3);
+
+                                    for ( var i in result3) {
+                                        if(result3[i].rating === undefined)
+                                            break;
+                                        if(result3[i].reported == 0)
+                                        {   
+                                            var ratingWNA = result3[i].rating;
+                                            var feedbackWNA = result3[i].feedback;
+                                            htmlContent += "<tr><td>"+ratingWNA+"</td><td>"+feedbackWNA+"</td></tr>";
+                                            db.updateQuery("wellness_app_details",["reported"],[1],["id"],[result3[i].id]);
+
+                                        }
+                                    }
+                                    htmlContent += "</table></div>";
+
+                                    log.info('Sending daily report at '+config.reporting_time.hour+':'+config.reporting_time.minute+' to '+config.doctor_email);
+                                    mailer.sendMail(config.doctor_email,subject,content,htmlContent,
+                                    function(error, response)
+                                    {
+                                     if(error)
+                                     {
+                                         log.error("Unable to send daily report");
+                                         log.error(error);
+                                     }
+                                     else
+                                     {
+                                         log.info("Daily report sent to "+config.doctor_email);
+                                          //  db.truncateQuery("summary");
+                                         log.error(error);
+
+                                     }
+                                    });
+                            });
+                        });
+                 });
 
 	});
 
 	
 });
+
+             
 
 module.exports = schedule
