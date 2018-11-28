@@ -324,7 +324,7 @@ function whoScoreDisplay()
             parameters: { "score":score},
 			lifespan:1
         }];
-	requestToServer("fromClient",result,contexts); 	
+	requestToServer("storeWHOScore",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
 
@@ -337,7 +337,7 @@ function screenerScoreDisplay()
 			lifespan:1
         }];
     console.log(score);
-	requestToServer("fromClient",result,contexts); 	
+	requestToServer("storeScreenerScore",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
 

@@ -417,6 +417,22 @@ io.on('connection', (socket) =>
 		}
 	});
 
+	socket.on('storeWHOScore',function(data){
+		var WHOScore = data.options.contexts[0].parameters.score;
+		log.debug("WHO Score: "+WHOScore);
+		log.debug(data.query);
+		db.updateQuery("user",["who_score"],[WHOScore],["browserid"],[data.options.sessionId],function(){});
+		apiGetRes(socket,data.query,data.options);
+	});
+
+	socket.on('storeScreenerScore',function(data){
+		var screenerScore = data.options.contexts[0].parameters.score;
+		log.debug("screenerScore: "+screenerScore);
+		log.debug(data.query);
+		db.updateQuery("user",["screener_score"],[screenerScore],["browserid"],[data.options.sessionId],function(){});
+		apiGetRes(socket,data.query,data.options);
+	});
+
 	socket.on('sentimentAnalysis', function(data)
 	{
 		log.debug(data.query);
