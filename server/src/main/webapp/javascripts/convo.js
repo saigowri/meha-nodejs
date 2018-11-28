@@ -458,6 +458,16 @@ function mildDepression()
 		requestToServer("fromClient","Screener-mild-depression-unregistered",contexts);
 }
 
+function talkAboutItSad()
+{
+	var contexts = [{
+			name: "screener-mild-depression-followup",
+			parameters: {},
+			lifespan:1
+	}];
+	requestToServer("fromClient","Use-PUSHD",contexts);
+}
+
 function talkAboutIt(msg)
 {
 	var contexts = [{
@@ -637,6 +647,15 @@ function storePushdFeedback(data){
 	requestToServer("storePushdRatingAndFeedback",arr,contexts);
 }
 
+function storePushdNotUseFeedback(data){
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	requestToServer("storePushdNotUseFeedback",data.resolvedQuery,contexts);
+}
+
 function storeWellnessRating(data){
     wellnessRating = data.resolvedQuery;
 }
@@ -754,7 +773,9 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);			
 		else if(actionVal.localeCompare('ReceivePushdRating')==0) storePushdRating(data.server.result);		
-		else if(actionVal.localeCompare('RecievePushdFeedback')==0) storePushdFeedback(data.server.result);	
+		else if(actionVal.localeCompare('RecievePushdFeedback')==0) storePushdFeedback(data.server.result);
+		else if(actionVal.localeCompare('PushdNotUseFeedback')==0) storePushdNotUseFeedback(data.server.result);	
+		else if(actionVal.localeCompare('TalkAboutItSad')==0) talkAboutItSad();
 		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
 	}
 });
