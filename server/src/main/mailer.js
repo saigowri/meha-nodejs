@@ -20,12 +20,11 @@ var sendMail = function(toAddress,subject,text,html,callback)
     subject: subject, // Subject line
     text: text, // plaintext body
     html: html, // html body
-    attachments: [
-    	{	
-    		path : 'minnu.pdf'
-    	}
-    ]
-
+	attachments: [
+    {   // utf-8 string as an attachment
+        filename: 'test.txt',
+        content: 'hello world!'
+    }]
 	}
 	smtpTransport.sendMail(mailOptions, function(error, response)
 	{

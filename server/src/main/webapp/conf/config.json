@@ -14,5 +14,7 @@
 			"minute": 20
 		},
 	"doctor_email":"minnuann5@gmail.com",
-	"emergency_reciever":"minnuann5@gmail.com"
+	"emergency_reciever":"minnuann5@gmail.com",
+	"webhook_dictionary":"http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word=",
+	"webhook_match":"http://services.aonaware.com/DictService/DictService.asmx/MatchInDict?dictId=wn&strategy=lev&word="
 }

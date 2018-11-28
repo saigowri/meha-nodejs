@@ -18,7 +18,7 @@ var connectdb = con.connect(function(err)
 var selectQuery = function(table,callback)
 {
 	var sql = "SELECT * FROM " + table;
-	log.debug("SELECT Query: ", sql);
+	log.debug("SELECT Query: "+ sql);
 	con.query(sql , function (err, result, fields) 
 	{
 		if (err) throw err;
@@ -37,7 +37,7 @@ var selectWhereQuery = function(table,fields,fieldVals,callback)
 	});
 };
 
-var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
+var updateQuery = function(table,fields,fieldVals,conditions,conditionValues,callback)
 {
 	var sql = "UPDATE " + table +" SET "+ fields.join(" = ?, ") + " = ?"+
 			" WHERE "+ conditions.join(" = ? and ") + " = ?";
@@ -46,7 +46,11 @@ var updateQuery = function(table,fields,fieldVals,conditions,conditionValues)
 	con.query(sql, values, function (err, result, fields) 
 	{
 		if (err) log.error("Error: "+err);
-		log.debug("Successfully updated the row.");
+		else
+		{
+			log.debug("Successfully updated the row.");
+			callback();
+		}
 	});
 };
 
@@ -67,33 +71,31 @@ var deleteQuery = function(table,conditions,conditionValues)
 var insertQuery = function(table,fields,fieldVals)
 { 
 	var sql = "INSERT INTO "+ table+ " SET "+ fields.join(" = ?, ") + " = ?";
-	console.log("Insert Query: ", sql, fieldVals);
+	log.debug("Insert Query: "+ sql+" "+fieldVals);
 	con.query(sql,fieldVals, function (err, result) 
 	{
 		if (err) 
 			throw err;
-		console.log("1 record inserted");
+		log.debug("1 record inserted");
 	});
 };
 
 
 var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 { 
-	var sql = "INSERT INTO "+ table+ " SET "+ fields.join(" = ?, ") + " = ?";
-	console.log("Insert Query: ", sql, fieldVals);
-	con.query(sql,fieldVals, function (err, result) 
+	selectWhereQuery(table,conditions,conditionValues,function(result)
 	{
-		if (err && err.code == 'ER_DUP_ENTRY') 
-			updateQuery(table,fields,fieldVals,conditions,conditionValues);
+		if(result[0])
+			updateQuery(table,fields,fieldVals,conditions,conditionValues,function(){});
 		else
-			console.log("1 record inserted");
+			insertQuery(table,fields,fieldVals);
 	});
 };
 
 var truncateQuery = function(table)
 { 
 	var sql = "TRUNCATE TABLE "+ table;
-	console.log("Truncate table Query: ", sql);
+	log.debug("Truncate table Query: "+sql+" "+table);
 	con.query(sql,function (err, result, fields) 
 	{
 		if (err) {
@@ -102,46 +104,57 @@ var truncateQuery = function(table)
 		}
 
 		else
-			console.log("table "+table+" has been truncated");
+			log.debug("table "+table+" has been truncated");
 	});
 };
 
 
-var saveHistory = function(table,historyTable,conditions,conditionValues,dateField)
+var saveHistory = function(table,historyTable,conditions,conditionValues,dateField,callback)
 { 
 	var tArray = [], htArray = [], fields = [], values = [];
 	var sql = "SELECT * FROM "+table+" WHERE " + conditions.join(" = ? and ") + " = ?";
 	con.query(sql, conditionValues , function (err, t_result, t_fields) 
 	{
-		if (err) throw err;
-		else if(!t_result[0])throw "No such record";
+		if (err) callback(err);
+		else if(!t_result[0]) callback("No such record") ;
 		conditions.push(dateField);
 		conditionValues.push(t_result[0][dateField]);
 		sql = "SELECT * FROM "+historyTable+" WHERE " + conditions.join(" = ? and ") + " = ?";
 		con.query(sql, conditionValues , function (err, ht_result, ht_fields) 
 		{
-			console.log(t_result);
-			if (err) throw err;
+			if (err) callback(err);
 			for(var i in t_fields)
 			{
-				if(t_fields[i].name!="id")
+				if(JSON.stringify(t_fields[i].name).length!=2 && t_fields[i].name!="id")
 				tArray.push(t_fields[i].name);
+				//console.log("Table field: "+t_fields[i].name+" len: "+JSON.stringify(t_fields[i].name).length);
 			}
 			for(var i in ht_fields)
 			{
-				if(ht_fields[i].name!="id")
-				htArray.push(ht_fields[i].name);
+				if(JSON.stringify(ht_fields[i].name).length!=2 && ht_fields[i].name!="id")
+				{
+					htArray.push(ht_fields[i].name);
+					//console.log("History Table field: "+ht_fields[i].name+" len: "+JSON.stringify(t_fields[i].name).length);
+				}
 			}
 			fields = tArray.filter(value => -1 !== htArray.indexOf(value));
 			if(fields.length!=tArray.length || fields.length!=htArray.length)
-				console.log("Please make sure that your history table is updated and is matching the table");
-			console.log(fields.join(", "));
+				log.warn("Please make sure that your history table is updated and is matching the table");
+			log.debug(fields.join(", "));
 			for(var i in fields)
 				values.push(t_result[0][fields[i]]);
 			if(ht_result[0])
-				updateQuery(historyTable,fields, values, conditions, conditionValues);
+			{
+				updateQuery(historyTable,fields, values, conditions, conditionValues,function(){
+					callback();
+				});
+				
+			}
 			else 
+			{
 				insertQuery(historyTable,fields, values);
+				callback();
+			}
 		});
 	});
 };

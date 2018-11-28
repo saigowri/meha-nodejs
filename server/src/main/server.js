@@ -52,32 +52,41 @@ function deg2rad(deg)
  {
 		log.info("Disconnecting session for the browserid: "+ sessionId);
 		log.info("Conversation was as follows: \n"+ convo);
-		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId]);
-		if(mehaEmail.localeCompare('no-email')!=0)
-			chat_snapshot.logChat(mehaEmail+".log",convo);
-		else
-			chat_snapshot.logChat(sessionId+".log",convo);
-		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
-		
-		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
+		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId],function()
 		{
-			if(result[0])
+			if(mehaEmail.localeCompare('no-email')!=0)
+				chat_snapshot.logChat(mehaEmail+".log",convo);
+			else
+				chat_snapshot.logChat(sessionId+".log",convo);
+			db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 			{
-				var user = result[0];
-				var duration = parseFloat(user.chat_end.getTime()-user.chat_start.getTime());
-				duration = parseFloat(duration / (60 * 1000));
-				duration = Math.round(duration * 100) / 100;
-				db.insertQuery("summary",
-				["duration","screener_score","who_score","feeling","senti_score","email","convo"],
-				[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
-			}
+				if(result[0])
+				{
+					var user = result[0];
+					var duration = parseFloat(chat_end.getTime()-user.chat_start.getTime());
+					duration = parseFloat(duration / (60 * 1000));
+					duration = Math.round(duration * 100) / 100;
+					db.insertQuery("summary",
+					["duration","screener_score","who_score","feeling","senti_score","email","convo"],
+					[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
+					
+					
+					db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start",function(err)
+					{
+						if(err) log.error(err);
+						else
+							log.debug('History saved');
+					});
+				}
+			});
 		});
+		
  }		
 
 
 const io = socketIO(server);
 
-var apiGetRes = function (socket,query,options) 
+var apiGetRes = function(socket,query,options) 
 {
 	log.debug('Request: '+query);
 	api.getRes(query,options).then(function(res)
@@ -98,13 +107,13 @@ io.on('connection', (socket) =>
 	var convo = "";
 	log.info('Client connected');
 	
-	socket.on('fromClient', function (data) 
+	socket.on('fromClient', function(data) 
 	{
 		convo = convo + data.convo;
 		apiGetRes(socket,data.query,data.options);
 	});
 	
-	socket.on('logChatStart', function (data) 
+	socket.on('logChatStart', function(data) 
 	{
 		sessionId = data.sessionId;
 		var fields = ["chat_start","chat_end","browserid"];
@@ -119,13 +128,13 @@ io.on('connection', (socket) =>
 		db.upsertQuery("user",fields,values,["browserid"],sessionId);
 	});	
 	
-	socket.on('logChatEnd', function (data) 
+	socket.on('logChatEnd', function(data) 
 	{
 		sessionId = data.sessionId;
 		endSession(sessionId,convo,new Date(data.chat_end),mehaEmail,chat_snapshot);		
 	});	
 	
-	socket.on('recordFeelings', function (data) 
+	socket.on('recordFeelings', function(data) 
 	{		
 		if(data.query!="")
 		{
@@ -133,7 +142,7 @@ io.on('connection', (socket) =>
 		}
 	});
 	
-	socket.on('beginChatbot', function (data) 
+	socket.on('beginChatbot', function(data) 
 	{
 		sessionId = data.options.sessionId;
 		var context;
@@ -233,7 +242,7 @@ io.on('connection', (socket) =>
 	});
 	
 		
-	socket.on('matchOTP', function (data) 
+	socket.on('matchOTP', function(data) 
 	{
 		db.selectWhereQuery("user",["browserid"],[data.options.sessionId],function(result)
 		{
@@ -250,7 +259,7 @@ io.on('connection', (socket) =>
 				{
 					mehaEmail=result[0].email;
 					apiGetRes(socket,"Screener-Start",data.options);
-					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
+					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId,function(){});
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -258,7 +267,7 @@ io.on('connection', (socket) =>
 		});
 	});
 	
-	socket.on('sendMail', function (data) 
+	socket.on('sendMail', function(data) 
 	{
 		var otp = getRandomInt(1000000);
 		// if(mehaEmail.localeCompare('no-email')!=0)
@@ -278,7 +287,7 @@ io.on('connection', (socket) =>
 				else
 				{
 					var date = new Date();
-					db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"OTP sent",data.options);
 				}
 			});
@@ -286,7 +295,7 @@ io.on('connection', (socket) =>
 	
 	
 
-	socket.on('EmergencySendMail', function (data) 
+	socket.on('EmergencySendMail', function(data) 
 	{
 		var contactData = data.query;
 		var date = new Date();
@@ -304,14 +313,14 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"help",data.options);
 				}
 			});
 		
 	});
 
-	socket.on('EmergencySendMail2', function (data) 
+	socket.on('EmergencySendMail2', function(data) 
 	{
 		var contactData = data.query;
 		var date = new Date();
@@ -329,33 +338,33 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"help",data.options);
 				}
 			});
 		
 	});
 
-	socket.on('EmergencyHelp', function (data) 
+	socket.on('EmergencyHelp', function(data) 
 	{	
 		apiGetRes(socket,"help",data.options);
 				
 	});
 
-	socket.on('EmergencyGetEmail', function (data) 
+	socket.on('EmergencyGetEmail', function(data) 
 	{	
 		apiGetRes(socket,"get email",data.options);
 				
 	});
 
-	socket.on('EmergencyInvalidphone', function (data) 
+	socket.on('EmergencyInvalidphone', function(data) 
 	{	
 		apiGetRes(socket,"get correct phone",data.options);
 				
 	});
     
     
-	socket.on('EmergencySendMailLocation', function (data) 
+	socket.on('EmergencySendMailLocation', function(data) 
 	{
 		var latitude = data.query[0];
 		var longitude = data.query[1];
@@ -388,6 +397,24 @@ io.on('connection', (socket) =>
 				}
 			});
 		
+	});
+
+	socket.on('talkAboutIt', function(data)
+	{
+		var score = sentiment.sentimentAnalysis(data.query);
+		log.debug("talkaboutit score : " + score);
+		if(parseInt(score) < 0)
+		{
+			apiGetRes(socket,"Talk-About-It-Sad", data.options);
+		}
+		else if(parseInt(score) > 0) 
+		{
+			apiGetRes(socket,"Talk-About-It-Happy", data.options);
+		}
+		else 
+		{
+			apiGetRes(socket,"lighten mood", data.options);
+		}
 	});
 
 	socket.on('sentimentAnalysis', function(data)
@@ -468,7 +495,7 @@ io.on('connection', (socket) =>
 		}
 	});	
 
-	socket.on('hospitalFinder', function (data) 
+	socket.on('hospitalFinder', function(data) 
 	{	
 		log.debug('latitude in server '+ data.query[0]);
 		log.debug('longitude in server '+ data.query[1]);
@@ -504,7 +531,7 @@ io.on('connection', (socket) =>
 		});
 	});
 
-	socket.on('hospitalFinderEmergency', function (data) 
+	socket.on('hospitalFinderEmergency', function(data) 
 	{	
 		log.debug('latitude in server '+ data.query[0]);
 		log.debug('longitude in server '+ data.query[1]);
@@ -540,27 +567,49 @@ io.on('connection', (socket) =>
 
 	});
 
-	socket.on('LocationDenied', function (data) 
+	socket.on('LocationDenied', function(data) 
 	{	
 		log.debug(data);
 		apiGetRes(socket,"nolocation",data.options);
 	});
 
-	socket.on('storeWellnessRatingAndFeedback', function (data) 
+	socket.on('storeWellnessRatingAndFeedback', function(data) 
 	{	
-		// log.debug('a------- '+ data.query[0]);
-		// log.debug('l-------'+ data.query[1]);
+		log.debug('wellness rating------- '+ data.query[0]);
+		log.debug('wellness feedback-------'+ data.query[1]);
 		db.insertQuery("wellness_app_details",["rating", "feedback"],[data.query[0], data.query[1]]);
 	});	
 
-	socket.on('storeChatbotRatingAndFeedback', function (dat) 
+	socket.on('storeChatbotRatingAndFeedback', function(data) 
 	{	
-		log.debug('chat rating-------'+ dat.query[0]);
-		log.debug('chat feedback-----'+ dat.query[1]);
-		db.insertQuery("chatbot_details",["rating", "feedback"],[dat.query[0], dat.query[1]]);
+		log.debug('chat rating-------'+ data.query[0]);
+		log.debug('chat feedback-----'+ data.query[1]);
+		db.insertQuery("chatbot_details",["rating", "feedback"],[data.query[0], data.query[1]]);
 	});	
 
 
+	socket.on('storePushdRatingAndFeedback',function(data) 
+	{
+		var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+						name: "Feedback",
+						parameters: {},
+						lifespan:1
+					}]
+				};
+		log.debug('pushd rating------- '+ data.query[0]);
+		log.debug('pushd feedback-------'+ data.query[1]);
+		db.insertQuery("pushd_details",["rating", "feedback"],[data.query[0], data.query[1]]);
+		apiGetRes(socket,"end-convo-ratings",options);
+	});
+
+	socket.on('storePushdNotUseFeedback',function(data)
+	{
+		log.debug('pushd not use feedback-----'+ data.query);
+		db.insertQuery("pushd_details",["feedback"],[data.query]);
+	});
 	
 	socket.on('disconnect', () => 
 	{
