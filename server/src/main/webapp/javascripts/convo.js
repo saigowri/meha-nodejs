@@ -6,6 +6,7 @@ var last_reply=null;
 var minutes = 15, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
 var chatbotRating = 0;
+var pushdRating = 0;
 var convo="";
 var phone = 0;
 var getCookies = function()
@@ -622,6 +623,20 @@ function hospitalNoButEmergency(data)
 	
 }
 
+function storePushdRating(data){
+	pushdRating = data.resolvedQuery;
+}
+
+function storePushdFeedback(data){
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	var arr = [pushdRating, data.resolvedQuery];
+	requestToServer("storePushdRatingAndFeedback",arr,contexts);
+}
+
 function storeWellnessRating(data){
     wellnessRating = data.resolvedQuery;
 }
@@ -737,17 +752,10 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
-		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);	
+		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);			
+		else if(actionVal.localeCompare('ReceivePushdRating')==0) storePushdRating(data.server.result);		
+		else if(actionVal.localeCompare('RecievePushdFeedback')==0) storePushdFeedback(data.server.result);	
 		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
-		else if(actionVal.localeCompare('PUSHDFeedbackFallback')==0)
-		{
-			var contexts = [{
-				name: "Feedback",
-				parameters: {},
-				lifespan:1
-			}]; 
-			requestToServer("fromClient","end-convo-ratings",contexts);
-		}
 	}
 });
 
