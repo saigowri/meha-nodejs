@@ -93,11 +93,14 @@ var upsertQuery = function(table,fields,fieldVals,conditions,conditionValues)
 var truncateQuery = function(table)
 { 
 	var sql = "TRUNCATE TABLE "+ table;
-	console.log("Truncate table Query: ", sql, table);
-	con.query(sql,fieldVals, function (err, result) 
+	console.log("Truncate table Query: ", sql);
+	con.query(sql,function (err, result, fields) 
 	{
-		if (err) 
+		if (err) {
 			log.error(err);
+			console.log("table "+table+" not truncated");
+		}
+
 		else
 			console.log("table "+table+" has been truncated");
 	});
