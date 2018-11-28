@@ -49,7 +49,54 @@ http.createServer(function (request, response) {
 //var log = require('./logger/logger')(module);
 //log.info("Test");
 //-----------------------------Testing logger Ends---------------------------------------------------------------------------
-//-----------------------------Testing chat snapshot logger--------------------------------------------------------------------------------
-var chat_snapshot = require('./logger/snapshot_logger');
-chat_snapshot.logChat("test.log","again");
-//-----------------------------Testing chat snapshot logger Ends---------------------------------------------------------------------------
+
+//-----------------------------Testing chat snapshot logger------------------------------------------------------------------
+//var chat_snapshot = require('./logger/snapshot_logger');
+//chat_snapshot.logChat("test.log","again");
+//-----------------------------Testing chat snapshot logger Ends-------------------------------------------------------------
+
+//-----------------------------Testing webhook-------------------------------------------------------------------------------
+//const express = require('express');
+//const socketIO = require('socket.io');
+//var webhook = require('./webhook');
+//var router = require('./router');
+
+//const app = express();
+//webhook.connectWebhook(app);
+//const PORT = process.env.PORT || 3000;
+//app.use('/chatbot', router);
+//const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+//const io = socketIO(server);
+//-----------------------------Testing webhook Ends--------------------------------------------------------------------------
+
+//-----------------------------Testing dict----------------------------------------------------------------------------------
+var request = require('request');
+const xml = require("xml-parse");
+	request('http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word=depression', function (error, response, body) 
+	{
+		if (!error && response.statusCode == 200) 
+		{
+			var xmlBody = xml.parse(body);
+			for(var i in xmlBody)
+			{
+				if(xmlBody[i].hasOwnProperty('tagName') && xmlBody[i].tagName.localeCompare('WordDefinition')==0)
+				{
+						var wordDefinition = xmlBody[i].childNodes;
+						for(var j in wordDefinition)
+							if(wordDefinition[j].hasOwnProperty('tagName') &&  wordDefinition[j].tagName.localeCompare('Definitions')==0)
+							{
+									var definitions = wordDefinition[j].childNodes;
+									for(var k in definitions)
+										if(definitions[k].hasOwnProperty('tagName') && definitions[k].tagName.localeCompare('Definition')==0)
+										{
+											var definition = definitions[k].childNodes;
+											for(var l in definition)
+												if(definition[l].hasOwnProperty('tagName') && definition[l].tagName.localeCompare('WordDefinition')==0)
+														console.log(definition[l].childNodes[0].text);
+										}
+							}
+				}
+			}
+		}
+	});
+//-----------------------------Testing dict Ends-----------------------------------------------------------------------------

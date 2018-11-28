@@ -438,6 +438,20 @@ function emergencyEmailVerify(data)
 	
 }
 	
+function mildDepression()
+{
+	var contexts = [{
+			name: "screener-mild-depression-followup",
+			parameters: {
+				"score" :  score
+			},
+			lifespan:1
+	}];
+	if(email) 
+		requestToServer("fromClient","Screener-mild-depression-registered",contexts);
+	else
+		requestToServer("fromClient","Screener-mild-depression-unregistered",contexts);
+}
 
 function sentimentAnalysis(freeTextMsg) 
 {
@@ -695,9 +709,8 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
 		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
 		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
+		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();
 		else
-
-
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
 		{
@@ -710,7 +723,15 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);		
-		
+		else if(actionVal.localeCompare('PUSHDFeedbackFallback')==0)
+		{
+			var contexts = [{
+				name: "Feedback",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("fromClient","end-convo-ratings",contexts);
+		}
 	}
 });
 

@@ -43,6 +43,7 @@
 			  $('#chatbot-maximize').hide();
 			});
 		});
+		
 		function pushdReload(pushd)
 		{
 			var nextUserId = pushd.contentWindow.userId;
@@ -51,6 +52,9 @@
 	  		{
 	  			currUserId = nextUserId; 
 	  			$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid='+currUserId);
+	  		}
+	  		else if(!currUserId && !nextUserId){
+	  			$('#chatbot-iframe').attr('src',config.chatbot_url);
 	  		}
 		}
 		

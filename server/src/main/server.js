@@ -1,7 +1,8 @@
 const express = require('express');
+const socketIO = require('socket.io');
+var webhook = require('./webhook');
 var router = require('./router');
 var report = require('./report');
-const socketIO = require('socket.io');
 var api = require('./api');
 var mailer = require('./mailer');
 var sentiment = require('./sentimentAnalysis');
@@ -9,13 +10,18 @@ var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var chat_snapshot = require('./logger/snapshot_logger');
-var app = express();
+
+
+const app = express();
+webhook.connectWebhook(app);
 app.use('/chatbot', router);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
+
 var hos = " ";
 var pin = 0;
 var state = " ";
+
 report.schedule;
 db.connectdb;
 
@@ -395,7 +401,26 @@ io.on('connection', (socket) =>
 		log.debug("total senti score "+ totalScore);
 		if(parseInt(totalScore) < 0)
 		{
-			apiGetRes(socket,"Request Email Id", data.options);
+			if(mehaEmail.localeCompare("no-email")==0)
+			{
+				apiGetRes(socket,"Request Email Id", data.options);
+			}
+			else 
+			{
+				var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "followup",
+					parameters: {"reply":mehaEmail},
+					lifespan:1
+				},{
+					name: "screener-start",
+					parameters: {},
+					lifespan:1
+				}]};
+				apiGetRes(socket,"Screener-restart", options);
+			}
 		}
 		else if(parseInt(totalScore) > 0 && parseInt(freeTextScore) > 0)
 		{
