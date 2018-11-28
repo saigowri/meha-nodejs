@@ -19,7 +19,12 @@ var sendMail = function(toAddress,subject,text,html,callback)
 	to: toAddress,
     subject: subject, // Subject line
     text: text, // plaintext body
-    html: html // html body
+    html: html, // html body
+	attachments: [
+    {   // utf-8 string as an attachment
+        filename: 'test.txt',
+        content: 'hello world!'
+    }]
 	}
 	smtpTransport.sendMail(mailOptions, function(error, response)
 	{

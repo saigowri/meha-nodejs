@@ -13,18 +13,18 @@
 }
 */
 //-----------------------------Testing database------------------------------------------------------------------------------
-var db = require('./database');
+//var db = require('./database');
 
-db.connectdb;
-db.upsertQuery("user",["email","otp"],["kpuranik08@gmail.com",123456],["browserid"],["test"]);
-db.saveHistory("user","history_user",["browserid"],["15433477358638753890021"],"chat_start",function(err)
-{
-	if(err) console.log("Err");
-	else
-		console.log('History saved');
-});
+//db.connectdb;
+//db.upsertQuery("user",["email","otp"],["kpuranik08@gmail.com",123456],["browserid"],["test"]);
+//db.saveHistory("user","history_user",["browserid"],["15433477358638753890021"],"chat_start",function(err)
+//{
+//	if(err) console.log("Err");
+//	else
+//		console.log('History saved');
+//});
 //db.insertQuery("user",["sessionid","last_visited"],["test2", new Date() ]);
-db.updateQuery("user",["email","chat_start"],["kkp", new Date() ],["browserid"],["test"],function(){});
+//db.updateQuery("user",["email","chat_start"],["kkp", new Date() ],["browserid"],["test"],function(){});
 /*db.selectWhereQuery("user",["sessionid","last_visited"],["15405336443718644775060","2018-10-26 12:06:23"],function(result)
 {
 	console.log(result);
