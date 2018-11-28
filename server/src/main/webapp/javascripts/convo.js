@@ -718,7 +718,7 @@ socket.on('fromServer', function (data)
 					"	</div>"+
 					"</li>");
 	}
-	else if(data.hasOwnProperty('home'))
+	/*else if(data.hasOwnProperty('home'))
 	{
 		var contexts = [{
 					name: "welcome",
@@ -726,7 +726,7 @@ socket.on('fromServer', function (data)
 					lifespan:1
 				}];
 		requestToServer("fromClient","home","");
-	}
+	}*/
 	else
 	{
 		// recieveing a reply from server.
@@ -737,7 +737,7 @@ socket.on('fromServer', function (data)
 		console.log("parameters: ", JSON.stringify(data.server.result.parameters));
 		console.log("contexts: ", JSON.stringify(data.server.result.contexts)); 
 		console.log("intentName: ", JSON.stringify(data.server.result.metadata.intentName)); 
-		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment)); 
+		console.log("fulfillment: ", JSON.stringify(data.server.result.fulfillment));
 		
 		var action = data.server.result.hasOwnProperty('action');
 		var actionVal = (action) ? data.server.result.action : "";
@@ -745,6 +745,7 @@ socket.on('fromServer', function (data)
 		var sourceVal = (source) ? data.server.result.fulfillment.source : "";
 		
 		if(actionVal.localeCompare('WHO-End')==0) whoScoreDisplay();
+		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);	
 		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
 		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
@@ -752,7 +753,6 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);				
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
-		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
 		else if(actionVal.localeCompare('EmergencyPhoneVerify')==0) emergencyPhoneVerify(data.server.result);
 		else if(actionVal.localeCompare('EmergencyEmailVerify')==0) emergencyEmailVerify(data.server.result);
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
@@ -790,8 +790,8 @@ function setResponse(val)
 function home()
 {	
 	var contexts = [{
-            name: "welcome",
-            parameters: {"reply":" "},
+            name: "defaultWelcomeIntent",
+            parameters: {},
 			lifespan:1
         }]; 
 	setInput("Home",contexts);
