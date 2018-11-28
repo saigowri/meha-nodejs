@@ -72,7 +72,8 @@ var searchWord = function(disease,res, callback)
 																	width:6,
 																	Option:[
 																		{title:"Yes"},
-																		{title:"No"}
+																		{title:"No"},
+																		{title:"Another query"}
 																	]
 															}
 													  })
@@ -136,7 +137,7 @@ var searchWord = function(disease,res, callback)
 		}
 		if(found) 
 		{
-			fulfillment.payload.instructions.push({text:"Or, did you mean to ask, "});
+			fulfillment.payload.instructions.push({text:"Did you mean to ask, "});
 			fulfillment.payload.Option.push({title:"None of these, continue chatting"});
 		}
 		else
