@@ -292,7 +292,7 @@ io.on('connection', (socket) =>
 		var date = new Date();
 		
 		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>A person is showing some suicidal / murder tendencies."+
+			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
 			" The details of the person is sharing with you below<br><b> Phone No: "+data.query[0]+"<br>Email: "+data.query[1]+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
 			"<br><b>Please take appropriate actions immediately.</b></div>",
 			function(error, response)
@@ -317,7 +317,7 @@ io.on('connection', (socket) =>
 		var date = new Date();
 		
 		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>A person is showing some suicidal / murder tendencies."+
+			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
 			" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
 			"<br><b>Please take appropriate actions immediately.</b></div>",
 			function(error, response)
@@ -371,7 +371,7 @@ io.on('connection', (socket) =>
 		}
 		
 		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>A person is showing some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
 			" in " +state+" state .<br>"+
 			"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
 			"This message is sent at "+date +". <br>Please take appropriate actions immediately.</b></div>",
@@ -384,7 +384,7 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					
+
 				}
 			});
 		

@@ -353,22 +353,33 @@ function emailDisplay(email)
 //     return re.test(String(phone).toLowerCase());
 // }
 
-function validatePhone(phone) {
-
-    var re = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
-    return re.test(String(phone).toLowerCase());
+function validatePhone(inputtxt) {
+  var phoneno = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  if (String(inputtxt).match(phoneno)) {
+        return true;
+  }
+  else {
+    return false;
+  }
 }
 
 function emergencyPhoneVerify(data)
 {   
 	phone  = data.resolvedQuery;
-	// if (validatePhone(phone)) {
+	var flag = validatePhone(phone);
+	console.log("Minnu--------" , flag);
 
-	//     console.log("invalid  ph no ----***********");
-	//     requestToServer("EmergencyInvalidphone","", contexts);
-	// } 
-	// else {
-
+	if (!flag) {
+		console.log("invalid  ph no ----***********");
+		var contexts = [{
+				name: "phone-verify-emergency",
+				parameters: {},
+				lifespan:1
+			}]; 
+	    requestToServer("EmergencyInvalidphone","", contexts);
+	} 
+	else {
+		console.log("valid  ph no ----***********");
 	    if(!email){
 
 	    	var contexts = [{
@@ -387,7 +398,7 @@ function emergencyPhoneVerify(data)
 			var arr = [phone , email];
 			requestToServer("EmergencySendMail", arr, contexts);
 		}
-	// }
+	}
 }
 
 function emergencyCheckEmail()
@@ -444,7 +455,7 @@ function mildDepression()
 
 function sentimentAnalysis(freeTextMsg) 
 {
-	
+
 	var score = localStorage.getItem("sentiScore");
 	console.log("Score is " + score);
 	var contexts = [{
