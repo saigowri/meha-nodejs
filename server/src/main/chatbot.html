@@ -17,11 +17,13 @@
 			function getLocation() {
 			    if (navigator.geolocation) {
 			        navigator.geolocation.getCurrentPosition(showPosition, showError);
-			    } else { 
-
-			        // To be done !!!
-			    }
+			    } 
 			}
+            function getLocationEmergency() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(showPositionEmergency, showError);
+                } 
+            }
 	</script>
     <script src="javascripts/convo.js"></script>
 	

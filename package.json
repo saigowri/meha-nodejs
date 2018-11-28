@@ -7,13 +7,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/src/main/server.js"
+    "start": "node server/src/main/heroku.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "apiai": "^4.0.3",
+    "body-parser": "^1.17.2",
     "express": "^4.16.4",
     "hashmap": "^2.3.0",
     "mysql": "^2.16.0",
@@ -23,6 +24,7 @@
     "request": "^2.88.0",
     "sentiment": "^5.0.1",
     "socket.io": "1.4.6",
-    "winston": "^3.1.0"
+    "winston": "^3.1.0",
+    "xml-parse": "^0.3.1"
   }
 }

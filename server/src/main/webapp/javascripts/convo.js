@@ -3,10 +3,11 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b71
 var score = 0;
 var chat_start=null;
 var last_reply=null;
-var minutes = 15, the_interval = minutes * 60 * 1000;
+var minutes = 1, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
+var chatbotRating = 0;
 var convo="";
-
+var phone = 0;
 var getCookies = function()
 {
   var pairs = document.cookie.split(";");
@@ -347,9 +348,114 @@ function emailDisplay(email)
 	requestToServer("sendMail",email,contexts);
 }
 
+// function validatePhone(phone) {
+//     var re = /(?:\s+|)((0|(?:(\+|)91))(?:\s|-)*(?:(?:\d(?:\s|-)*\d{9})|(?:\d{2}(?:\s|-)*\d{8})|(?:\d{3}(?:\s|-)*\d{7}))|\d{10})(?:\s+|)$/;
+//     return re.test(String(phone).toLowerCase());
+// }
+
+function validatePhone(inputtxt) {
+  var phoneno = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  if (String(inputtxt).match(phoneno)) {
+        return true;
+  }
+  else {
+    return false;
+  }
+}
+
+function emergencyPhoneVerify(data)
+{   
+	phone  = data.resolvedQuery;
+	var flag = validatePhone(phone);
+	console.log("Minnu--------" , flag);
+
+	if (!flag) {
+		console.log("invalid  ph no ----***********");
+		var contexts = [{
+				name: "phone-verify-emergency",
+				parameters: {},
+				lifespan:1
+			}]; 
+	    requestToServer("EmergencyInvalidphone","", contexts);
+	} 
+	else {
+		console.log("valid  ph no ----***********");
+	    if(!email){
+
+	    	var contexts = [{
+				name: "get-email",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencyGetEmail","", contexts);
+	    }
+		else{
+			var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+			}]; 
+			var arr = [phone , email];
+			requestToServer("EmergencySendMail", arr, contexts);
+		}
+	}
+}
+
+function emergencyCheckEmail()
+{   
+	console.log("checking email"); 
+	if(!email){
+	    	var contexts = [{
+				name: "get-email",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencyGetEmail","", contexts);
+	}
+	else{
+
+			var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("EmergencySendMail2", email, contexts);
+	}
+}
+
+
+function emergencyEmailVerify(data)
+{   
+
+	var obtained_email  = data.resolvedQuery;
+	var contexts = [{
+			name: "calm-down",
+			parameters: {},
+			lifespan:1
+	}]; 
+	var arr = [phone , obtained_email];
+	requestToServer("EmergencySendMail", arr, contexts);
+	
+}
+	
+function mildDepression()
+{
+	var contexts = [{
+			name: "screener-mild-depression-followup",
+			parameters: {
+				"score" :  score
+			},
+			lifespan:1
+	}];
+	if(email) 
+		requestToServer("fromClient","Screener-mild-depression-registered",contexts);
+	else
+		requestToServer("fromClient","Screener-mild-depression-unregistered",contexts);
+}
+
 function sentimentAnalysis(freeTextMsg) 
 {
-	console.log("Message is "+freeTextMsg);
+
 	var score = localStorage.getItem("sentiScore");
 	console.log("Score is " + score);
 	var contexts = [{
@@ -418,7 +524,42 @@ function showPosition(position) {
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
+function hospitalFinderEmergency()
+{
+	 getLocationEmergency();
+}
 
+function showPositionEmergency(position) {
+	var contexts = [{
+					name: "emergency-hosp-name",
+					parameters: {},
+					lifespan:1
+			}]; 
+	console.log('latitude inside convo.js',position.coords.latitude);
+	console.log('longitude inside convo.js',position.coords.longitude);
+	var arr = [position.coords.latitude, position.coords.longitude];
+	if((phone != 0) && (!email)){
+		arr = [position.coords.latitude, position.coords.longitude , phone , email];
+	}
+	else if(phone != 0){
+		arr = [position.coords.latitude, position.coords.longitude , phone ];
+	}
+	else if(email){
+		arr = [position.coords.latitude, position.coords.longitude , email];
+	}
+
+
+	requestToServer("hospitalFinderEmergency",arr,contexts);
+
+	var contexts2 = [{
+						name: "calm-down",
+						parameters: {},
+						lifespan:1
+				}]; 
+
+	requestToServer("EmergencySendMailLocation", arr, contexts2);
+
+}
 function showError(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:{
@@ -444,14 +585,34 @@ function showError(error) {
     }
 }
 
+function hospitalNoButEmergency(data)
+{   
+	if(phone != 0)
+	{
+		var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+				}]; 
+		requestToServer("EmergencySendMail2", phone, contexts);
+	}
+	else{
+		var contexts = [{
+				name: "calm-down",
+				parameters: {},
+				lifespan:1
+				}]; 
+		requestToServer("EmergencyHelp","", contexts);
+	}
+	
+}
+
 function storeWellnessRating(data){
-    console.log("convo.js " , data.resolvedQuery);
     wellnessRating = data.resolvedQuery;
 }
 
 function storeWellnessFeedback(data){
-    console.log("convo.js feedback " , data.resolvedQuery);
-    console.log("convo.js in feedback" , wellnessRating);
+
 	var contexts = [{
 					name: "",
 					parameters: {},
@@ -459,6 +620,21 @@ function storeWellnessFeedback(data){
 				}]
 	var arr = [wellnessRating, data.resolvedQuery];
 	requestToServer("storeWellnessRatingAndFeedback",arr,contexts);
+}
+
+function storeChatbotRating(data){
+
+    chatbotRating = data.resolvedQuery;
+}
+
+function storeChatbotFeedback(data){
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan:1
+				}]
+	var arr = [chatbotRating, data.resolvedQuery];
+	requestToServer("storeChatbotRatingAndFeedback",arr,contexts);
 }
 
 function welcomeBackFollowup(data)
@@ -528,8 +704,13 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
 		else if(actionVal.localeCompare('HowAreYouFeeling')==0) sentimentAnalysis(data.server.result.resolvedQuery);
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);		
-		
-		else 
+		else if(actionVal.localeCompare('EmergencyPhoneVerify')==0) emergencyPhoneVerify(data.server.result);
+		else if(actionVal.localeCompare('EmergencyEmailVerify')==0) emergencyEmailVerify(data.server.result);
+		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
+		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
+		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
+		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();
+		else
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
 		{
@@ -540,7 +721,17 @@ socket.on('fromServer', function (data)
 		}
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
-		
+		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
+		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);		
+		else if(actionVal.localeCompare('PUSHDFeedbackFallback')==0)
+		{
+			var contexts = [{
+				name: "Feedback",
+				parameters: {},
+				lifespan:1
+			}]; 
+			requestToServer("fromClient","end-convo-ratings",contexts);
+		}
 	}
 });
 

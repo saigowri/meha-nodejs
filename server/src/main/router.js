@@ -20,7 +20,7 @@ router.use(express.static(path.join(__dirname, 'webapp')))
 router.get('/', function (req, res) 
 {
 	var userid = req.query.userid;
-	res.cookie("mehaEmail", "no-email");
+	res.cookie("mehaEmail", "no-email"); 
 	res.cookie("mehaName", "no-name");
 	for (var key in userInfo)
 	{
