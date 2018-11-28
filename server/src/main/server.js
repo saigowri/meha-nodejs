@@ -71,7 +71,7 @@ function deg2rad(deg)
 					[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
 					
 					
-					db.saveHistory("user","history_user",["browserid"],["15433477358638753890021"],"chat_start",function(err)
+					db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start",function(err)
 					{
 						if(err) log.error(err);
 						else
