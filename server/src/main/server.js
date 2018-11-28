@@ -52,26 +52,35 @@ function deg2rad(deg)
  {
 		log.info("Disconnecting session for the browserid: "+ sessionId);
 		log.info("Conversation was as follows: \n"+ convo);
-		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId]);
-		if(mehaEmail.localeCompare('no-email')!=0)
-			chat_snapshot.logChat(mehaEmail+".log",convo);
-		else
-			chat_snapshot.logChat(sessionId+".log",convo);
-		db.saveHistory("user","history_user",["browserid"],[sessionId],"chat_start");
-		
-		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
+		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId],function()
 		{
-			if(result[0])
+			if(mehaEmail.localeCompare('no-email')!=0)
+				chat_snapshot.logChat(mehaEmail+".log",convo);
+			else
+				chat_snapshot.logChat(sessionId+".log",convo);
+			db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 			{
-				var user = result[0];
-				var duration = parseFloat(user.chat_end.getTime()-user.chat_start.getTime());
-				duration = parseFloat(duration / (60 * 1000));
-				duration = Math.round(duration * 100) / 100;
-				db.insertQuery("summary",
-				["duration","screener_score","who_score","feeling","senti_score","email","convo"],
-				[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
-			}
+				if(result[0])
+				{
+					var user = result[0];
+					var duration = parseFloat(chat_end.getTime()-user.chat_start.getTime());
+					duration = parseFloat(duration / (60 * 1000));
+					duration = Math.round(duration * 100) / 100;
+					db.insertQuery("summary",
+					["duration","screener_score","who_score","feeling","senti_score","email","convo"],
+					[duration,user.screener_score,user.who_score,user.feeling,user.senti_score,user.email,convo ]);
+					
+					
+					db.saveHistory("user","history_user",["browserid"],["15433477358638753890021"],"chat_start",function(err)
+					{
+						if(err) log.error(err);
+						else
+							log.debug('History saved');
+					});
+				}
+			});
 		});
+		
  }		
 
 
@@ -250,7 +259,7 @@ io.on('connection', (socket) =>
 				{
 					mehaEmail=result[0].email;
 					apiGetRes(socket,"Screener-Start",data.options);
-					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId);
+					db.updateQuery("user",["verified"],[1],["browserid"],data.options.sessionId,function(){});
 				}
 				else
 					apiGetRes(socket,"OTP invalid",data.options);
@@ -278,7 +287,7 @@ io.on('connection', (socket) =>
 				else
 				{
 					var date = new Date();
-					db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"OTP sent",data.options);
 				}
 			});
@@ -304,7 +313,7 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"help",data.options);
 				}
 			});
@@ -329,7 +338,7 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId]);
+					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
 					apiGetRes(socket,"help",data.options);
 				}
 			});
