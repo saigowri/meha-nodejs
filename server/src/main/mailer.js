@@ -4,8 +4,8 @@ var nodemailer = require("nodemailer");
 var smtpTransport = nodemailer.createTransport("SMTP",{
     service: "Gmail",
     auth: {
-    user: 'meha.nimhans@gmail.com',
-    pass: 'nimhans.meha1'
+	    user: 'meha.nimhans@gmail.com',
+	    pass: 'nimhans.meha1'
     }
 });
 
@@ -19,7 +19,13 @@ var sendMail = function(toAddress,subject,text,html,callback)
 	to: toAddress,
     subject: subject, // Subject line
     text: text, // plaintext body
-    html: html // html body
+    html: html, // html body
+    attachments: [
+    	{	
+    		path : 'minnu.pdf'
+    	}
+    ]
+
 	}
 	smtpTransport.sendMail(mailOptions, function(error, response)
 	{
