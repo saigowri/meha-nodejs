@@ -390,6 +390,24 @@ io.on('connection', (socket) =>
 		
 	});
 
+	socket.on('talkAboutIt', function(data)
+	{
+		var score = sentiment.sentimentAnalysis(data.query);
+		log.debug("talkaboutit score : " + score);
+		if(parseInt(score) < 0)
+		{
+			apiGetRes(socket,"Use-PUSHD", data.options);
+		}
+		else if(parseInt(score) > 0) 
+		{
+			apiGetRes(socket,"Talk-About-It-Happy", data.options);
+		}
+		else 
+		{
+			apiGetRes(socket,"lighten mood", data.options);
+		}
+	});
+
 	socket.on('sentimentAnalysis', function(data)
 	{
 		log.debug(data.query);

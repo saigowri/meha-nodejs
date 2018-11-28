@@ -3,7 +3,7 @@ var img = 'https://storage.googleapis.com/cloudprod-apiai/0b77b714-874b-4ddd-b71
 var score = 0;
 var chat_start=null;
 var last_reply=null;
-var minutes = 1, the_interval = minutes * 60 * 1000;
+var minutes = 15, the_interval = minutes * 60 * 1000;
 var wellnessRating = 0;
 var chatbotRating = 0;
 var convo="";
@@ -273,16 +273,19 @@ function processPayload(responseMessage, payload)
 function processResponse(fulfillment)
 {
 	var responseMessage = 	"<li class='p-1 rounded mb-1'>"+
-							"	<div class='receive-msg'>"+
-							"   	<img src='"+img+"'>"+
-							"		<div class='container-fluid'>"+
-							"  			<div class='row'>";
+							"	<div class='receive-msg'>";
 	for (var i in fulfillment.messages) 	
 	{		
 		// Custom Payload
 		if(fulfillment.messages[i].type==4)
 		{
-			responseMessage = processPayload(responseMessage, fulfillment.messages[i].payload);
+			var payload = fulfillment.messages[i].payload;
+			if(!payload.hasOwnProperty('icon') || (payload.hasOwnProperty('icon') && payload.icon))
+				responseMessage = responseMessage + "   	<img src='"+img+"'>";
+			responseMessage = responseMessage +
+							"		<div class='container-fluid'>"+
+							"  			<div class='row'>";
+			responseMessage = processPayload(responseMessage, payload);
 		}
 	}
 	responseMessage =	responseMessage +
@@ -332,6 +335,7 @@ function screenerScoreDisplay()
             parameters: { "score":score},
 			lifespan:1
         }];
+    console.log(score);
 	requestToServer("fromClient",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
@@ -451,6 +455,17 @@ function mildDepression()
 		requestToServer("fromClient","Screener-mild-depression-registered",contexts);
 	else
 		requestToServer("fromClient","Screener-mild-depression-unregistered",contexts);
+}
+
+function talkAboutIt(msg)
+{
+	var contexts = [{
+					name: "",
+					parameters: {},
+					lifespan : 1
+	}]; 
+	//console.log(msg);
+	requestToServer("talkAboutIt",msg,contexts);
 }
 
 function sentimentAnalysis(freeTextMsg) 
@@ -709,7 +724,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('EmergencyHospitalFinder')==0) hospitalFinderEmergency();	
 		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
 		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
-		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();
+		else if(actionVal.localeCompare('TalkAboutIt')==0) talkAboutIt(data.server.result.resolvedQuery);
 		else
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -722,7 +737,8 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
-		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);		
+		else if(actionVal.localeCompare('RecieveChatbotFeedback')==0) storeChatbotFeedback(data.server.result);	
+		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
 		else if(actionVal.localeCompare('PUSHDFeedbackFallback')==0)
 		{
 			var contexts = [{
