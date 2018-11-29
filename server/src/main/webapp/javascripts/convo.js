@@ -12,6 +12,7 @@ var phone = 0;
 var doctorDetails = "";
 var consultationDetails = "";
 var medicine = "";
+var obtained_email ="";
 var getCookies = function()
 {
   var pairs = document.cookie.split(";");
@@ -375,10 +376,8 @@ function emergencyPhoneVerify(data)
 {   
 	phone  = data.resolvedQuery;
 	var flag = validatePhone(phone);
-	console.log("Minnu--------" , flag);
 
 	if (!flag) {
-		console.log("invalid  ph no ----***********");
 		var contexts = [{
 				name: "phone-verify-emergency",
 				parameters: {},
@@ -387,7 +386,6 @@ function emergencyPhoneVerify(data)
 	    requestToServer("EmergencyInvalidphone","", contexts);
 	} 
 	else {
-		console.log("valid  ph no ----***********");
 	    if(!email){
 
 	    	var contexts = [{
@@ -411,7 +409,6 @@ function emergencyPhoneVerify(data)
 
 function emergencyCheckEmail()
 {   
-	console.log("checking email"); 
 	if(!email){
 	    	var contexts = [{
 				name: "get-email",
@@ -427,15 +424,15 @@ function emergencyCheckEmail()
 				parameters: {},
 				lifespan:1
 			}]; 
-			requestToServer("EmergencySendMail2", email, contexts);
+			var arr = ["email",email];
+			requestToServer("EmergencySendMail2", arr, contexts);
 	}
 }
 
 
 function emergencyEmailVerify(data)
 {   
-	console.log(data);
-	var obtained_email  = data.parameters.email;
+	obtained_email  = data.parameters.email;
 	var contexts = [{
 			name: "calm-down",
 			parameters: {},
@@ -548,8 +545,6 @@ function showPosition(position) {
 					parameters: {},
 					lifespan:1
 			}]; 
-	console.log('latitude inside convo.js',position.coords.latitude);
-	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
@@ -564,18 +559,16 @@ function showPositionEmergency(position) {
 					parameters: {},
 					lifespan:1
 			}]; 
-	console.log('latitude inside convo.js',position.coords.latitude);
-	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
-	if((phone != 0) && (!email)){
+	// if((phone != 0) && (!email)){
 		arr = [position.coords.latitude, position.coords.longitude , phone , email];
-	}
-	else if(phone != 0){
-		arr = [position.coords.latitude, position.coords.longitude , phone ];
-	}
-	else if(email){
-		arr = [position.coords.latitude, position.coords.longitude , email];
-	}
+	// }
+	// else if(phone != 0){
+	// 	arr = [position.coords.latitude, position.coords.longitude , phone ];
+	// }
+	// else if(email){
+	// 	arr = [position.coords.latitude, position.coords.longitude , email];
+	// }
 
 
 	requestToServer("hospitalFinderEmergency",arr,contexts);
@@ -623,7 +616,8 @@ function hospitalNoButEmergency(data)
 				parameters: {},
 				lifespan:1
 				}]; 
-		requestToServer("EmergencySendMail2", phone, contexts);
+		var arr = ["phone" , phone];
+		requestToServer("EmergencySendMail2", arr, contexts);
 	}
 	else{
 		var contexts = [{
@@ -652,8 +646,15 @@ function medicineDetails(data){
 				parameters: {},
 				lifespan:1
 				}]; 
+	if(!email){
+		if(obtained_email == ""){
+			email = "Not Available";
+		}
+		else{
+			email = obtained_email;
+		}
+	}
 	var arr = [phone, email, doctorDetails, consultationDetails, medicine];
-	console.log("Ividunde");
 	requestToServer("FollowupEmergencyEmail",arr, contexts);
 }
 

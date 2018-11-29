@@ -11,10 +11,6 @@ var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var chat_snapshot = require('./logger/snapshot_logger');
 var fs = require('fs');
-var static_lat = 0;
-var static_long = 0;
-var static_email = " ";
-var contactData = " ";
 const app = express();
 webhook.connectWebhook(app);
 app.use('/chatbot', router);
@@ -24,6 +20,10 @@ const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
 var hos = " ";
 var pin = 0;
 var state = " ";
+var static_lat = 0;
+var static_long = 0;
+var static_email = " ";
+var phone = 0;
 
 report.schedule;
 db.connectdb;
@@ -292,26 +292,12 @@ io.on('connection', (socket) =>
 	});
 	
 	socket.on('FollowupEmergencyEmail', function(data) 
-	{	console.log("data "+data );
+	{	
 		phone = data.query[0];
-		// email = data.query[1];
-		if(!data.query[1]){
-			email = " ";
-		}
-		if(email == " " && static_email != " "){
-			email = static_email;
-		}
-		
+		email = data.query[1];
+
 		if(phone == 0){
 			phone ="Not Available";
-		}
-
-		if(email == " "  && contactData != " "){
-			email = contactData;
-		}
-
-		if(email ==  " "){
-			email ="Not Available";
 		}
 		if(static_lat == 0){
 			static_lat ="Not Available";
@@ -319,16 +305,7 @@ io.on('connection', (socket) =>
 		if(static_long == 0){
 			static_long ="Not Available";
 		}
-		console.log("abraham");
-		console.log(phone);
-		console.log(email);
-		console.log(static_lat);
-		console.log(static_long);
-		console.log(data.query[2]);
-		console.log(data.query[3]);
-		console.log(data.query[4]);
-		console.log(static_email);
-		console.log(contactData);
+		
 
 		
 		mailer.sendMail(config.emergency_reciever,"Emergency! Email's Followup",
@@ -343,14 +320,13 @@ io.on('connection', (socket) =>
 				}
 				else
 				{
-					console.log("success");
+					// console.log("success");
 				}
 			});
 	});
 
 	socket.on('EmergencySendMail', function(data) 
 	{
-		contactData = data.query;
 		var date = new Date();
 
 		var attachmentID1 = "";
@@ -447,12 +423,17 @@ io.on('connection', (socket) =>
 
 	socket.on('EmergencySendMail2', function(data) 
 	{
-		contactData = data.query;
 		var date = new Date();
-		
+		if(data.query[0] == "email"){
+			static_email = data.query[1];
+		}
+		else if(data.query[0] == "phone"){
+			phone = data.query[1];
+		}
+
 		var attachmentID1 = "";
 		if (fs.existsSync('./logs/users/'+sessionId+'.log')) {
-		    console.log("sessionid its present");
+		    // console.log("sessionid its present");
 		    attachmentID1 = './logs/users/'+sessionId+'.log';
 		}
 
@@ -470,7 +451,7 @@ io.on('connection', (socket) =>
 		if(attachmentID2 != "" && attachmentID1 != ""){
 					mailer.sendMail2Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
 					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
-					" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
 					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
 					function(error, response)
 					{
@@ -489,7 +470,7 @@ io.on('connection', (socket) =>
 		else if (attachmentID2 != ""){
 					mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
 					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
-					" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
 					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
 					function(error, response)
 					{
@@ -512,7 +493,7 @@ io.on('connection', (socket) =>
 
 					mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
 					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
-					" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
 					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
 					function(error, response)
 					{
@@ -559,6 +540,7 @@ io.on('connection', (socket) =>
 		var date = new Date();
 		phone = data.query[2];
 		email = data.query[3];
+
 		var attachmentID = " ";
 
 		
@@ -868,7 +850,7 @@ io.on('connection', (socket) =>
 	{
 		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
-			console.log(result);
+			// console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
 				endSession(sessionId,convo,new Date(),mehaEmail,chat_snapshot);
