@@ -112,8 +112,12 @@ io.on('connection', (socket) =>
 	
 	socket.on('fromClient', function(data) 
 	{
-		convo = convo + data.convo;
 		apiGetRes(socket,data.query,data.options);
+	});
+	
+	socket.on('logConvo', function(data) 
+	{
+		convo = convo + data.convo;
 	});
 	
 	socket.on('logChatStart', function(data) 
