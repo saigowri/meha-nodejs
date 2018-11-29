@@ -462,7 +462,9 @@ function talkAboutItSad()
 {
 	var contexts = [{
 			name: "screener-mild-depression-followup",
-			parameters: {},
+			parameters: {
+				
+			},
 			lifespan:1
 	}];
 	requestToServer("fromClient","Use-PUSHD",contexts);
@@ -768,6 +770,8 @@ socket.on('fromServer', function (data)
 			console.log(sentiScore);
 			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 		}
+		else if(actionVal.localeCompare('ScreenerStart')==0) resetScore();
+		else if(actionVal.localeCompare('WHOStart')==0) resetScore();
 		else if(actionVal.localeCompare('ReceiveWellnessRating')==0) storeWellnessRating(data.server.result);		
 		else if(actionVal.localeCompare('RecieveWellnessFeedback')==0) storeWellnessFeedback(data.server.result);		
 		else if(actionVal.localeCompare('ReceiveChatbotRating')==0) storeChatbotRating(data.server.result);		
@@ -779,6 +783,11 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
 	}
 });
+
+function resetScore(){
+	localStorage.setItem('score',0);
+	score = 0;
+}
 
 function setResponse(val) 
 {
