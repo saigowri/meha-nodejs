@@ -9,6 +9,10 @@ var chatbotRating = 0;
 var pushdRating = 0;
 var convo="";
 var phone = 0;
+var doctorDetails = "";
+var consultationDetails = "";
+var medicine = "";
+var obtained_email ="";
 var getCookies = function()
 {
   var pairs = document.cookie.split(";");
@@ -22,10 +26,13 @@ var getCookies = function()
 var myCookies = getCookies();
 var mehaEmail = myCookies.mehaEmail;
 var mehaName = myCookies.mehaName;
+var mehaUser = myCookies.mehaUser;
 var email = mehaEmail.localeCompare("no-email")? mehaEmail : null;
 var name = mehaName.localeCompare("no-name")? mehaName : null;
+mehaUser = mehaUser.localeCompare("no-user")? JSON.parse(mehaUser) : null;
 console.log("Email: ",mehaEmail);
 console.log("Name: ",mehaName);
+console.log("User: ",mehaUser);
 
 			
 // Beginning Conversation From Chatbot
@@ -372,10 +379,8 @@ function emergencyPhoneVerify(data)
 {   
 	phone  = data.resolvedQuery;
 	var flag = validatePhone(phone);
-	console.log("Minnu--------" , flag);
 
 	if (!flag) {
-		console.log("invalid  ph no ----***********");
 		var contexts = [{
 				name: "phone-verify-emergency",
 				parameters: {},
@@ -384,7 +389,6 @@ function emergencyPhoneVerify(data)
 	    requestToServer("EmergencyInvalidphone","", contexts);
 	} 
 	else {
-		console.log("valid  ph no ----***********");
 	    if(!email){
 
 	    	var contexts = [{
@@ -408,7 +412,6 @@ function emergencyPhoneVerify(data)
 
 function emergencyCheckEmail()
 {   
-	console.log("checking email"); 
 	if(!email){
 	    	var contexts = [{
 				name: "get-email",
@@ -424,15 +427,15 @@ function emergencyCheckEmail()
 				parameters: {},
 				lifespan:1
 			}]; 
-			requestToServer("EmergencySendMail2", email, contexts);
+			var arr = ["email",email];
+			requestToServer("EmergencySendMail2", arr, contexts);
 	}
 }
 
 
 function emergencyEmailVerify(data)
 {   
-
-	var obtained_email  = data.resolvedQuery;
+	obtained_email  = data.parameters.email;
 	var contexts = [{
 			name: "calm-down",
 			parameters: {},
@@ -445,10 +448,15 @@ function emergencyEmailVerify(data)
 	
 function mildDepression()
 {
+	var section = (mehaUser)? mehaUser.currentSection : "";
+	var subSection = (mehaUser)? mehaUser.currentSubSection : "";
+	
 	var contexts = [{
 			name: "screener-mild-depression-followup",
 			parameters: {
-				"score" :  score
+				"score" :  score,
+				"section" : section,
+				"subsection" : subSection
 			},
 			lifespan:1
 	}];
@@ -547,8 +555,6 @@ function showPosition(position) {
 					parameters: {},
 					lifespan:1
 			}]; 
-	console.log('latitude inside convo.js',position.coords.latitude);
-	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
 	requestToServer("hospitalFinder",arr,contexts);
 }
@@ -563,18 +569,16 @@ function showPositionEmergency(position) {
 					parameters: {},
 					lifespan:1
 			}]; 
-	console.log('latitude inside convo.js',position.coords.latitude);
-	console.log('longitude inside convo.js',position.coords.longitude);
 	var arr = [position.coords.latitude, position.coords.longitude];
-	if((phone != 0) && (!email)){
+	// if((phone != 0) && (!email)){
 		arr = [position.coords.latitude, position.coords.longitude , phone , email];
-	}
-	else if(phone != 0){
-		arr = [position.coords.latitude, position.coords.longitude , phone ];
-	}
-	else if(email){
-		arr = [position.coords.latitude, position.coords.longitude , email];
-	}
+	// }
+	// else if(phone != 0){
+	// 	arr = [position.coords.latitude, position.coords.longitude , phone ];
+	// }
+	// else if(email){
+	// 	arr = [position.coords.latitude, position.coords.longitude , email];
+	// }
 
 
 	requestToServer("hospitalFinderEmergency",arr,contexts);
@@ -622,7 +626,8 @@ function hospitalNoButEmergency(data)
 				parameters: {},
 				lifespan:1
 				}]; 
-		requestToServer("EmergencySendMail2", phone, contexts);
+		var arr = ["phone" , phone];
+		requestToServer("EmergencySendMail2", arr, contexts);
 	}
 	else{
 		var contexts = [{
@@ -633,6 +638,34 @@ function hospitalNoButEmergency(data)
 		requestToServer("EmergencyHelp","", contexts);
 	}
 	
+}
+
+function pshychiatristDetails(data){
+	doctorDetails = data;
+}
+
+function consultationPeriodDetails(data){
+	consultationDetails = data;
+}
+
+function medicineDetails(data){
+
+	medicine = data;
+	var contexts = [{
+				name: "",
+				parameters: {},
+				lifespan:1
+				}]; 
+	if(!email){
+		if(obtained_email == ""){
+			email = "Not Available";
+		}
+		else{
+			email = obtained_email;
+		}
+	}
+	var arr = [phone, email, doctorDetails, consultationDetails, medicine];
+	requestToServer("FollowupEmergencyEmail",arr, contexts);
 }
 
 function storePushdRating(data){
@@ -761,6 +794,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
 		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
 		else if(actionVal.localeCompare('TalkAboutIt')==0) talkAboutIt(data.server.result.resolvedQuery);
+		
 		else
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -781,6 +815,10 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('PushdNotUseFeedback')==0) storePushdNotUseFeedback(data.server.result);	
 		else if(actionVal.localeCompare('TalkAboutItSad')==0) talkAboutItSad();
 		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
+		else if(actionVal.localeCompare('PshychiatristDetails')==0) pshychiatristDetails(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('ConsultationPeriodDetails')==0) consultationPeriodDetails(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('MedicineDetails')==0) medicineDetails(data.server.result.resolvedQuery);
+
 	}
 });
 
