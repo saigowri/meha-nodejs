@@ -405,7 +405,7 @@ io.on('connection', (socket) =>
 		log.debug("talkaboutit score : " + score);
 		if(parseInt(score) < 0)
 		{
-			apiGetRes(socket,"Use-PUSHD", data.options);
+			apiGetRes(socket,"Talk-About-It-Sad", data.options);
 		}
 		else if(parseInt(score) > 0) 
 		{
@@ -415,6 +415,22 @@ io.on('connection', (socket) =>
 		{
 			apiGetRes(socket,"lighten mood", data.options);
 		}
+	});
+
+	socket.on('storeWHOScore',function(data){
+		var WHOScore = data.options.contexts[0].parameters.score;
+		log.debug("WHO Score: "+WHOScore);
+		log.debug(data.query);
+		db.updateQuery("user",["who_score"],[WHOScore],["browserid"],[data.options.sessionId],function(){});
+		apiGetRes(socket,data.query,data.options);
+	});
+
+	socket.on('storeScreenerScore',function(data){
+		var screenerScore = data.options.contexts[0].parameters.score;
+		log.debug("screenerScore: "+screenerScore);
+		log.debug(data.query);
+		db.updateQuery("user",["screener_score"],[screenerScore],["browserid"],[data.options.sessionId],function(){});
+		apiGetRes(socket,data.query,data.options);
 	});
 
 	socket.on('sentimentAnalysis', function(data)
@@ -594,14 +610,21 @@ io.on('connection', (socket) =>
 				{
 					sessionId: data.options.sessionId,
 					contexts: [{
-				name: "Feedback",
-				parameters: {},
-				lifespan:1
-			}]};
+						name: "Feedback",
+						parameters: {},
+						lifespan:1
+					}]
+				};
 		log.debug('pushd rating------- '+ data.query[0]);
 		log.debug('pushd feedback-------'+ data.query[1]);
 		db.insertQuery("pushd_details",["rating", "feedback"],[data.query[0], data.query[1]]);
 		apiGetRes(socket,"end-convo-ratings",options);
+	});
+
+	socket.on('storePushdNotUseFeedback',function(data)
+	{
+		log.debug('pushd not use feedback-----'+ data.query);
+		db.insertQuery("pushd_details",["feedback"],[data.query]);
 	});
 	
 	socket.on('disconnect', () => 
