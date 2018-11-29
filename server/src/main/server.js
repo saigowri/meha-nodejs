@@ -10,8 +10,7 @@ var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
 var chat_snapshot = require('./logger/snapshot_logger');
-
-
+var fs = require('fs');
 const app = express();
 webhook.connectWebhook(app);
 app.use('/chatbot', router);
@@ -21,6 +20,10 @@ const server = app.listen(PORT, () => log.info(`Listening on ${ PORT }`));
 var hos = " ";
 var pin = 0;
 var state = " ";
+var static_lat = 0;
+var static_long = 0;
+var static_email = " ";
+var phone = 0;
 
 report.schedule;
 db.connectdb;
@@ -53,7 +56,7 @@ function deg2rad(deg)
 		log.info("Disconnecting session for the browserid: "+ sessionId);
 		log.info("Conversation was as follows: \n"+ convo);
 		db.updateQuery("user",["chat_end"],[chat_end],["browserid"],[sessionId],function()
-		{
+		{	
 			if(mehaEmail.localeCompare('no-email')!=0)
 				chat_snapshot.logChat(mehaEmail+".log",convo);
 			else
@@ -270,11 +273,6 @@ io.on('connection', (socket) =>
 	socket.on('sendMail', function(data) 
 	{
 		var otp = getRandomInt(1000000);
-		// if(mehaEmail.localeCompare('no-email')!=0)
-		// 	//
-		// else
-		// 	//
-
 		mailer.sendMail(data.query,"Thank you for registering with MeHA",
 			"Your OTP is "+otp, "<div><b>Your OTP is "+otp+"</b></div><div><b>This is valid for 10 minutes.</b></div>",
 			function(error, response)
@@ -293,55 +291,224 @@ io.on('connection', (socket) =>
 			});
 	});
 	
-	
+	socket.on('FollowupEmergencyEmail', function(data) 
+	{	
+		phone = data.query[0];
+		email = data.query[1];
 
-	socket.on('EmergencySendMail', function(data) 
-	{
-		var contactData = data.query;
-		var date = new Date();
+		if(phone == 0){
+			phone ="Not Available";
+		}
+		if(static_lat == 0){
+			static_lat ="Not Available";
+		}
+		if(static_long == 0){
+			static_long ="Not Available";
+		}
 		
-		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
-			" The details of the person is sharing with you below<br><b> Phone No: "+data.query[0]+"<br>Email: "+data.query[1]+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
-			"<br><b>Please take appropriate actions immediately.</b></div>",
+
+		
+		mailer.sendMail(config.emergency_reciever,"Emergency! Email's Followup",
+			"Additional data of user ", "<div><b>As per the further conversation with the user, chatbot recieved additional information as follows : </b></div>"+
+			"<div><b>Phone </>: "+phone+"<br> <b>Email</b> : "+email+"<br><b>Geo Location :: Latitude </b>:"+static_lat+" ,<b> Longitude </b>: "+ static_long+"<br> "+
+			"</div><div><b>Doctor details </b>: "+data.query[2]+"<br> <b>Consultation Period Details</b> : "+data.query[3]+"<br><b>Medicine Details </b>: "+data.query[4]+"</div>",
 			function(error, response)
 			{
 				if(error)
 				{
 					log.error(error);
-					 // apiGetRes(socket,"Emergency email error",data.options);
 				}
 				else
 				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
-					apiGetRes(socket,"help",data.options);
+					// console.log("success");
 				}
 			});
-		
+	});
+
+	socket.on('EmergencySendMail', function(data) 
+	{
+		var date = new Date();
+
+		var attachmentID1 = "";
+		if (fs.existsSync('./logs/users/'+sessionId+'.log')) {
+		    attachmentID1 = './logs/users/'+sessionId+'.log';
+		}
+
+
+		var attachmentID2 = "";
+		if(mehaEmail.localeCompare("no-email")==0){
+			// console.log("email failed");
+		}
+		else {
+				if (fs.existsSync('./logs/users/'+mehaEmail+'.log')) {
+
+			    	attachmentID2 = './logs/users/'+mehaEmail+'.log';
+				}
+		}
+		phone = data.query[0];
+		email = data.query[1];
+
+		if(phone == 0){
+			phone ="Not Available";
+		}
+
+		if(!email){
+			email = "Not Available";
+			static_email = email;
+		}
+
+		if(attachmentID2 != "" && attachmentID1 != ""){
+				mailer.sendMail2Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+				" The details of the person is sharing with you below<br><b> Phone No: "+phone+"<br>Email: "+email+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+				"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+						// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+						apiGetRes(socket,"help",data.options);
+					}
+				},attachmentID1, attachmentID2);
+		}
+		else if(attachmentID2 != ""){
+				mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+				" The details of the person is sharing with you below<br><b> Phone No: "+phone+"<br>Email: "+email+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+				"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+						// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+						apiGetRes(socket,"help",data.options);
+					}
+				},attachmentID2);
+
+
+		}
+
+		else if(attachmentID1 != ""){
+				mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+				" The details of the person is sharing with you below<br><b> Phone No: "+phone+"<br>Email: "+email+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+				"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+						// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+						apiGetRes(socket,"help",data.options);
+					}
+				},attachmentID1);
+
+		}
+
 	});
 
 	socket.on('EmergencySendMail2', function(data) 
 	{
-		var contactData = data.query;
 		var date = new Date();
-		
-		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
-			" The details of the person is sharing with you below<br><b> Contact Detail: "+contactData+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
-			"<br><b>Please take appropriate actions immediately.</b></div>",
-			function(error, response)
-			{
-				if(error)
-				{
-					log.error(error);
-					 // apiGetRes(socket,"Emergency email error",data.options);
+		if(data.query[0] == "email"){
+			static_email = data.query[1];
+		}
+		else if(data.query[0] == "phone"){
+			phone = data.query[1];
+		}
+
+		var attachmentID1 = "";
+		if (fs.existsSync('./logs/users/'+sessionId+'.log')) {
+		    // console.log("sessionid its present");
+		    attachmentID1 = './logs/users/'+sessionId+'.log';
+		}
+
+
+		var attachmentID2 = "";
+		if(mehaEmail.localeCompare("no-email")==0){
+			// console.log("email failed");
+		}
+		else {
+				if (fs.existsSync('./logs/users/'+mehaEmail+'.log')) {
+			    	// console.log("mailID its present");
+			    	attachmentID2 = './logs/users/'+mehaEmail+'.log';
 				}
-				else
-				{
-					// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
-					apiGetRes(socket,"help",data.options);
-				}
-			});
+		}
+		if(attachmentID2 != "" && attachmentID1 != ""){
+					mailer.sendMail2Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+					function(error, response)
+					{
+						if(error)
+						{
+							log.error(error);
+							 // apiGetRes(socket,"Emergency email error",data.options);
+						}
+						else
+						{
+							// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+							apiGetRes(socket,"help",data.options);
+						}
+					},attachmentID1,attachmentID2);
+		}
+		else if (attachmentID2 != ""){
+					mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+					function(error, response)
+					{
+						if(error)
+						{
+							log.error(error);
+							 // apiGetRes(socket,"Emergency email error",data.options);
+						}
+						else
+						{
+							// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+							apiGetRes(socket,"help",data.options);
+						}
+					},attachmentID2);
+
+
+		}
+		else if (attachmentID1 != ""){
+
+
+					mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+					"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
+					" The details of the person is sharing with you below<br><b> "+data.query[0]+": "+data.query[1]+".<br><b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
+					"<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+					function(error, response)
+					{
+						if(error)
+						{
+							log.error(error);
+							 // apiGetRes(socket,"Emergency email error",data.options);
+						}
+						else
+						{
+							// db.updateQuery("user",["email","otp","otp_sent_at"],[data.query,otp,date],["browserid"],[data.options.sessionId],function(){});
+							apiGetRes(socket,"help",data.options);
+						}
+					},attachmentID1);
+		}
 		
 	});
 
@@ -367,35 +534,102 @@ io.on('connection', (socket) =>
 	socket.on('EmergencySendMailLocation', function(data) 
 	{
 		var latitude = data.query[0];
+		static_lat = latitude;
 		var longitude = data.query[1];
+		static_long = longitude;
 		var date = new Date();
-		var phone = data.query[2];
-		var email = data.query[3];
+		phone = data.query[2];
+		email = data.query[3];
+
+		var attachmentID = " ";
+
+		
 		if(phone == 0){
-			phone ="Not available";
+			phone ="Not Available";
 		}
 
 		if(!email){
 			email = "Not Available";
+			static_email = email;
 		}
-		
-		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
-			"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
-			" in " +state+" state .<br>"+
-			"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
-			"This message is sent at "+date +". <br>Please take appropriate actions immediately.</b></div>",
-			function(error, response)
-			{
-				if(error)
-				{
-					log.error(error);
-					 // apiGetRes(socket,"Emergency email error",data.options);
-				}
-				else
-				{
+		var attachmentID1 = "";
+		if (fs.existsSync('./logs/users/'+sessionId+'.log')) {
+		    attachmentID1 = './logs/users/'+sessionId+'.log';
+		}
 
+		var attachmentID2 = "";
+		if(mehaEmail.localeCompare("no-email")==0){
+			// console.log("email failed");
+		}
+		else {
+				if (fs.existsSync('./logs/users/'+mehaEmail+'.log')) {
+			    	attachmentID2 = './logs/users/'+mehaEmail+'.log';
 				}
-			});
+		}
+		if(attachmentID2 != "" && attachmentID1 != ""){
+		
+			mailer.sendMail2Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+				".<br>"+
+				"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
+				"This message is sent at "+date +
+				".<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+
+					}
+				},attachmentID1,attachmentID2);
+		}
+		else if(attachmentID2 != ""){
+
+			mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+				".<br>"+
+				"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
+				"This message is sent at "+date +
+				".<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+
+					}
+				},attachmentID2);
+		}
+
+		else if(attachmentID1 !=""){
+
+			mailer.sendMail1Attachment(config.emergency_reciever,"Emergency! A Life is under danger.",
+				"A person is showing some suicidal / murder tendencies. The details of the person is sharing with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies.The details of the person is sharing with you below.<br><b> Geo Location Details - Latitude : "+latitude+" Longitude : "+longitude+
+				".<br>"+
+				"Phone : "+phone +"<br> Email : "+email +"</b> <br>We have suggested the individual to consult a doctor in the nearby hospital <b>"+hos+"</b>, pincode "+pin+".<br><b>"+
+				"This message is sent at "+date +
+				".<br><b>Please take appropriate actions immediately.</b><br>  Conversation log of the user is attached with this mail, which will be helpful for your analysis.</div>",
+				function(error, response)
+				{
+					if(error)
+					{
+						log.error(error);
+						 // apiGetRes(socket,"Emergency email error",data.options);
+					}
+					else
+					{
+
+					}
+				},attachmentID1);
+		}
 		
 	});
 
@@ -582,6 +816,7 @@ io.on('connection', (socket) =>
 		});	
 
 	});
+	
 
 	socket.on('LocationDenied', function(data) 
 	{	
@@ -631,7 +866,7 @@ io.on('connection', (socket) =>
 	{
 		db.selectWhereQuery("user",["browserid"],[sessionId],function(result)
 		{
-			console.log(result);
+			// console.log(result);
 			if(result[0] && result[0].chat_end.getTime()===0)
 			{
 				endSession(sessionId,convo,new Date(),mehaEmail,chat_snapshot);
