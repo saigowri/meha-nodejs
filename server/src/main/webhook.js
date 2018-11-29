@@ -15,6 +15,7 @@ var wordNotFound = function(res)
 				width:12,
 				enabled:true,
 				Option:[
+					{title:"Ask again"},
 					{title:"Continue with the conversation"}
 				]
 			}
