@@ -15,7 +15,7 @@ var wordNotFound = function(res)
 				width:12,
 				enabled:true,
 				Option:[
-					{title:"Continue chatting"}
+					{title:"Continue with the conversation"}
 				]
 			}
 		};
@@ -138,10 +138,10 @@ var searchWord = function(disease,res, callback)
 		if(found) 
 		{
 			fulfillment.payload.instructions.push({text:"Did you mean to ask, "});
-			fulfillment.payload.Option.push({title:"None of these, continue chatting"});
+			fulfillment.payload.Option.push({title:"No, Continue with the conversation"});
 		}
 		else
-			fulfillment.payload.Option.push({title:"Continue chatting"});
+			fulfillment.payload.Option.push({title:"Continue with the conversation"});
 		res.status(200).json(fulfillment);
 		//else
 			//wordNotFound(res);
