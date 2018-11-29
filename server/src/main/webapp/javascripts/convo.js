@@ -448,10 +448,15 @@ function emergencyEmailVerify(data)
 	
 function mildDepression()
 {
+	var section = (mehaUser)? mehaUser.currentSection : "";
+	var subSection = (mehaUser)? mehaUser.currentSubSection : "";
+	
 	var contexts = [{
 			name: "screener-mild-depression-followup",
 			parameters: {
-				"score" :  score
+				"score" :  score,
+				"section" : section,
+				"subsection" : subSection
 			},
 			lifespan:1
 	}];

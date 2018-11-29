@@ -303,7 +303,9 @@ io.on('connection', (socket) =>
 		mailer.sendMail(config.emergency_reciever,"Emergency! A Life is under danger.",
 			"A person is showing some suicidal / murder tendencies.The details of the person is shring with you below", "<div>Based on the conversation just now the person seems to show some suicidal / murder tendencies."+
 			" The details of the person is sharing with you below<br><b> Phone No: "+data.query[0]+"<br>Email: "+data.query[1]+"<br></b>This message is sent at "+date +". We have adviced the individual to keep calm and relax."+
-			"<br><b>Please take appropriate actions immediately.</b></div>",
+			"<br><b>Please take appropriate actions immediately.</b></div>"+
+			"<div><h3>The conversation was as follows: </h3></div>"+
+			"<div border=1>"+convo+"</div>",
 			function(error, response)
 			{
 				if(error)
