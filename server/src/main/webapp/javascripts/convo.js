@@ -468,10 +468,13 @@ function mildDepression()
 
 function talkAboutItSad()
 {
+	var section = (mehaUser)? mehaUser.currentSection : "";
+	var subSection = (mehaUser)? mehaUser.currentSubSection : "";
 	var contexts = [{
 			name: "screener-mild-depression-followup",
 			parameters: {
-				
+				"section" : section,
+				"subsection" : subSection
 			},
 			lifespan:1
 	}];
