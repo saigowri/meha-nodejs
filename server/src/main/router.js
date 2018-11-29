@@ -5,11 +5,6 @@ var request = require('request');
 var config = require('./webapp/conf/config.json');
 var userInfo; 
 
-request(config.pushd_url+config.pushd_api_userinfo, function (error, response, body) 
-{
-    if (!error && response.statusCode == 200) 
-        userInfo = JSON.parse(body);
-});
 
 const INDEX = path.join(__dirname, 'chatbot.html');
 
@@ -19,21 +14,30 @@ router.use(express.static(path.join(__dirname, 'webapp')))
 // define the home page route
 router.get('/', function (req, res) 
 {
-	var userid = req.query.userid;
-	res.cookie("mehaEmail", "no-email"); 
-	res.cookie("mehaName", "no-name");
-	for (var key in userInfo)
+	request(config.pushd_url+config.pushd_api_userinfo, function (error, response, body) 
 	{
-		//console.log(userInfo[key].mailId);
-		if(userid==userInfo[key].id)
+		if (!error && response.statusCode == 200) 
+			userInfo = JSON.parse(body);
+		var userid = req.query.userid;
+		res.cookie("mehaEmail", "no-email"); 
+		res.cookie("mehaName", "no-name");
+		res.cookie("mehaUser", "no-user");
+		for (var key in userInfo)
 		{
-			res.cookie("mehaEmail", userInfo[key].mailId);
-			if(userInfo[key].hasOwnProperty('name'))
-				res.cookie("mehaName", userInfo[key].name);
-			break;		
-		}
-	}	
-	res.sendFile(INDEX);
+			//console.log(userInfo[key].mailId);
+			if(userid==userInfo[key].id)
+			{
+				delete userInfo[key]['sessionStats'];
+				res.cookie("mehaEmail", userInfo[key].mailId);
+				//console.log("mehaUser: "+JSON.stringify(userInfo[key]));
+				res.cookie("mehaUser", JSON.stringify(userInfo[key]));
+				if(userInfo[key].hasOwnProperty('name'))
+					res.cookie("mehaName", userInfo[key].name);
+				break;		
+			}
+		}	
+		res.sendFile(INDEX);
+	});
 })
 
 //console.log('Userid: '+userid);
