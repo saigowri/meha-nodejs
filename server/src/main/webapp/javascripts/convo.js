@@ -9,6 +9,9 @@ var chatbotRating = 0;
 var pushdRating = 0;
 var convo="";
 var phone = 0;
+var doctorDetails = "";
+var consultationDetails = "";
+var medicine = "";
 var getCookies = function()
 {
   var pairs = document.cookie.split(";");
@@ -431,8 +434,8 @@ function emergencyCheckEmail()
 
 function emergencyEmailVerify(data)
 {   
-
-	var obtained_email  = data.resolvedQuery;
+	console.log(data);
+	var obtained_email  = data.parameters.email;
 	var contexts = [{
 			name: "calm-down",
 			parameters: {},
@@ -633,6 +636,27 @@ function hospitalNoButEmergency(data)
 	
 }
 
+function pshychiatristDetails(data){
+	doctorDetails = data;
+}
+
+function consultationPeriodDetails(data){
+	consultationDetails = data;
+}
+
+function medicineDetails(data){
+
+	medicine = data;
+	var contexts = [{
+				name: "",
+				parameters: {},
+				lifespan:1
+				}]; 
+	var arr = [phone, email, doctorDetails, consultationDetails, medicine];
+	console.log("Ividunde");
+	requestToServer("FollowupEmergencyEmail",arr, contexts);
+}
+
 function storePushdRating(data){
 	pushdRating = data.resolvedQuery;
 }
@@ -759,6 +783,7 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('getEmailEmergency')==0) emergencyCheckEmail();	
 		else if(actionVal.localeCompare('KeepCalm')==0) hospitalNoButEmergency();	
 		else if(actionVal.localeCompare('TalkAboutIt')==0) talkAboutIt(data.server.result.resolvedQuery);
+		
 		else
 			processResponse(data.server.result.fulfillment);
 		if(actionVal.localeCompare('MoodofUserFollowup')==0) 
@@ -777,6 +802,10 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('PushdNotUseFeedback')==0) storePushdNotUseFeedback(data.server.result);	
 		else if(actionVal.localeCompare('TalkAboutItSad')==0) talkAboutItSad();
 		else if(actionVal.localeCompare('ScreenerMildDepression')==0) mildDepression();	
+		else if(actionVal.localeCompare('PshychiatristDetails')==0) pshychiatristDetails(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('ConsultationPeriodDetails')==0) consultationPeriodDetails(data.server.result.resolvedQuery);
+		else if(actionVal.localeCompare('MedicineDetails')==0) medicineDetails(data.server.result.resolvedQuery);
+
 	}
 });
 
