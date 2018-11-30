@@ -143,7 +143,10 @@ var searchWord = function(disease,res, callback)
 			fulfillment.payload.Option.push({title:"Continue with the conversation"});
 		}
 		else
+		{
+			fulfillment.payload.Option.push({title:"Ask again"});
 			fulfillment.payload.Option.push({title:"Continue with the conversation"});
+		}
 		res.status(200).json(fulfillment);
 		//else
 			//wordNotFound(res);
