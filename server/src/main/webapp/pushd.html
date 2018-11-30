@@ -54,7 +54,7 @@
 	  			$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid='+currUserId);
 	  		}
 	  		else if(!currUserId && !nextUserId){
-	  			$('#chatbot-iframe').attr('src',config.chatbot_url);
+	  			$('#chatbot-iframe').attr('src',config.chatbot_url + '?userid=null');
 	  		}
 		}
 		

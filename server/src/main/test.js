@@ -12,6 +12,10 @@
     //return list;
 }
 */
+//-----------------------------Testing sentiment ----------------------------------------------------------------------------
+var sentiment = require('./sentiment/sentimentAnalysis');
+sentiment.sentimentAnalysis("big issue");
+//-----------------------------Testing sentiment Ends------------------------------------------------------------------------
 //-----------------------------Testing database------------------------------------------------------------------------------
 //var db = require('./database');
 

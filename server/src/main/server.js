@@ -5,7 +5,7 @@ var router = require('./router');
 var report = require('./report');
 var api = require('./api');
 var mailer = require('./mailer');
-var sentiment = require('./sentimentAnalysis');
+var sentiment = require('./sentiment/sentimentAnalysis');
 var db = require('./database');
 var config = require('./webapp/conf/config.json');
 var log = require('./logger/logger')(module);
@@ -649,7 +649,7 @@ io.on('connection', (socket) =>
 		}
 		else 
 		{
-			apiGetRes(socket,"lighten mood", data.options);
+			apiGetRes(socket,"graceful-exit-sentiment", data.options);
 		}
 	});
 
@@ -674,11 +674,31 @@ io.on('connection', (socket) =>
 		log.debug(data.query);
 		var emoticonScore = data.options.contexts[0].parameters.sentiScore;
 		var freeTextScore = sentiment.sentimentAnalysis(data.query);
-		var totalScore = parseInt(emoticonScore) + parseInt(freeTextScore);
+		var totalScore;
+		if(freeTextScore=='a')
+		{
+			totalScore = parseInt(emoticonScore);
+		}
+		else 
+		{
+			totalScore = parseInt(emoticonScore) + parseInt(freeTextScore);
+		}
 		log.debug("emoticon score "+ emoticonScore);
 		log.debug("free text score "+ freeTextScore);
 		log.debug("total senti score "+ totalScore);
-		if(parseInt(totalScore) < 0)
+		if(freeTextScore=='a' && totalScore==0)
+		{
+			var options = 
+				{
+					sessionId: data.options.sessionId,
+					contexts: [{
+					name: "Lighten-mood",
+					parameters: {},
+					lifespan:1
+				}]};
+			apiGetRes(socket,"lighten mood", data.options);
+		}
+		else if(parseInt(totalScore) < 0)
 		{
 			if(mehaEmail.localeCompare("no-email")==0)
 			{
@@ -739,11 +759,11 @@ io.on('connection', (socket) =>
 				{
 					sessionId: data.options.sessionId,
 					contexts: [{
-					name: "Lighten-mood",
+					name: "gracefulExit",
 					parameters: {},
 					lifespan:1
 				}]};
-			apiGetRes(socket,"lighten mood", options);
+			apiGetRes(socket,"graceful-exit-sentiment", options);
 		}
 	});	
 
