@@ -139,7 +139,8 @@ var searchWord = function(disease,res, callback)
 		if(found) 
 		{
 			fulfillment.payload.instructions.push({text:"Did you mean to ask, "});
-			fulfillment.payload.Option.push({title:"No, Continue with the conversation"});
+			fulfillment.payload.Option.push({title:"No, ask again"});
+			fulfillment.payload.Option.push({title:"Continue with the conversation"});
 		}
 		else
 			fulfillment.payload.Option.push({title:"Continue with the conversation"});
@@ -198,6 +199,8 @@ app.post('/webhook', function (req, res) {
   var action = req.body.queryResult.action;
   if(req.body.queryResult.hasOwnProperty('action') && req.body.queryResult.action.localeCompare('mental-health-info')==0)
 	mentalHealthInfo(req, res);
+  else if(req.body.queryResult.hasOwnProperty('action') && req.body.queryResult.action.localeCompare('mental-health-info-fallback')==0)
+	  wordNotFound(res);
   else
 	  res.status(404).send('Webhook undefined');
   
