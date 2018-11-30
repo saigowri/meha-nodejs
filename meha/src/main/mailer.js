@@ -1,11 +1,12 @@
 var nodemailer = require("nodemailer");
+var config = require('./webapp/conf/config.json');
 
 // create reusable transport method (opens pool of SMTP connections)
 var smtpTransport = nodemailer.createTransport("SMTP",{
     service: "Gmail",
     auth: {
-	    user: 'meha.nimhans@gmail.com',
-	    pass: 'nimhans.meha1'
+	    user: config.chat_admin_email,
+	    pass: config.chat_admin_pass
     }
 });
 

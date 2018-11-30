@@ -25,7 +25,8 @@ var static_long = 0;
 var static_email = " ";
 var phone = 0;
 
-report.schedule;
+report.scheduleChatAdminReport;
+report.scheduleDoctorReport;
 db.connectdb;
 
 function getRandomInt(max) 

@@ -19,6 +19,10 @@
 -- Table structure for table `chatbot_details`
 --
 
+DROP DATABASE IF EXISTS mehaDB;
+CREATE DATABASE mehadb;
+USE mehadb;
+
 DROP TABLE IF EXISTS `chatbot_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -212,6 +216,15 @@ CREATE TABLE `wellness_app_details` (
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+
+DROP TABLE IF EXISTS `free_text_details`;
+CREATE TABLE `free_text_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `free_text` varchar(3000) DEFAULT NULL,
+  `senti_score` int(11) DEFAULT NULL,
+  `reported` decimal(1,0) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 --
 -- Dumping data for table `wellness_app_details`
 --
@@ -231,4 +244,9 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+
+
+
 -- Dump completed on 2018-11-27 23:37:13
+
+

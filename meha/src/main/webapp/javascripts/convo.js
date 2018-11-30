@@ -337,8 +337,7 @@ function screenerScoreDisplay()
             parameters: { "score":score},
 			lifespan:1
         }];
-    console.log(score);
-	requestToServer("storeScreenerScore",result,contexts); 	
+    requestToServer("storeScreenerScore",result,contexts); 	
 	localStorage.setItem("score", 0);
 }
 
@@ -482,7 +481,6 @@ function talkAboutIt(msg)
 					parameters: {},
 					lifespan : 1
 	}]; 
-	//console.log(msg);
 	requestToServer("talkAboutIt",msg,contexts);
 }
 
@@ -490,7 +488,6 @@ function sentimentAnalysis(freeTextMsg)
 {
 
 	var score = localStorage.getItem("sentiScore");
-	console.log("Score is " + score);
 	var contexts = [{
 					name: "",
 					parameters: 
@@ -798,7 +795,7 @@ socket.on('fromServer', function (data)
 		{
 			var sentiScore = hashMap[data.server.result.parameters.Feelings];
 			localStorage.setItem("sentiScore",sentiScore);
-			console.log(sentiScore);
+		//	console.log(sentiScore);
 			requestToServer("recordFeelings",data.server.result.parameters.Feelings,"");	
 		}
 		else if(actionVal.localeCompare('ScreenerStart')==0) resetScore();

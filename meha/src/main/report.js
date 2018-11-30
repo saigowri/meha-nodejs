@@ -4,7 +4,43 @@ var log = require('./logger/logger')(module);
 var mailer = require('./mailer');
 var db = require('./database');
 var date = new Date();
-var schedule = cron.scheduleJob(config.reporting_time, function()
+
+var scheduleChatAdminReport = cron.scheduleJob(config.reporting_time, function()
+{
+	db.selectQuery("free_text_details",function(result)
+    {   
+        log.debug(result);
+		var subject = "Free text messages and score";
+		var content = "A list of all the free text entered by different users along with their corresponding sentiment score.";
+		var htmlContent = "<h3>"+content+"</h3>"+
+				"<div><table border='1'><tr><th>Free Text</th><th>Score</th></tr>";
+        for ( var i in result) 
+		{
+            if(result[i].reported == 0)
+            {   
+                htmlContent += "<tr><td>"+result[i].free_text+"</td><td>"+result[i].senti_score+"</td></tr>";
+                db.updateQuery("free_text_details",["reported"],[1],["id"],[result[i].id]);
+            }
+        }
+        htmlContent += "</table></div>";
+		log.info('Sending daily report at '+config.reporting_time.hour+':'+config.reporting_time.minute+' to '+config.chat_admin_email);
+        mailer.sendMail(config.chat_admin_email,subject,content,htmlContent,
+        function(error, response)
+        {
+            if(error)
+            {
+                log.error("Unable to send daily report to chat admin");
+                log.error(error);
+            }
+            else
+			{
+                log.info("Daily report sent to "+config.chat_admin_email);
+            }
+        });
+    });               
+});
+
+var scheduleDoctorReport = cron.scheduleJob(config.reporting_time, function()
 {
 	var subject = "Daily Summary of Chatbot usage";
 	var content = "Daily Summary of Chatbot usage is as follows";
@@ -128,13 +164,12 @@ var schedule = cron.scheduleJob(config.reporting_time, function()
                                      else
                                      {
                                          log.info("Daily report sent to "+config.doctor_email);
-                                          //  db.truncateQuery("summary");
-                                         log.error(error);
 
                                      }
                                     });
                             });
-                        });
+                        
+						});
                  });
 
 	});
@@ -144,4 +179,4 @@ var schedule = cron.scheduleJob(config.reporting_time, function()
 
              
 
-module.exports = schedule
+module.exports = {scheduleDoctorReport,scheduleChatAdminReport}
