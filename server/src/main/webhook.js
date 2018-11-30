@@ -57,7 +57,7 @@ var searchWord = function(disease,res, callback)
 														//fulfillmentText: webhookReply,
 														payload: { 
 																instructions: [{
-																			text: "According to services.aonaware, under WordNet (r) 2.0 dictionary,"
+																			text: "The meaning of the word <b>"+disease+"</b> according to services.aonaware, under WordNet (r) 2.0 dictionary is as follows,"
 																		},{
 																			text: ""+webhookReply
 																		}, {
@@ -101,12 +101,14 @@ var searchWord = function(disease,res, callback)
 			source: 'webhook',
 			payload: { 
 				instructions: [{
-					text: "Sorry I am not able to find the meaning of the word "+disease+", under WordNet (r) 2.0 dictionary, in the following link -"
+					text: "Sorry I am not able to find the meaning of the word <b>"+disease+"</b>, under WordNet (r) 2.0 dictionary, in the following link -"
 				},{
 					link: {
 							title: "services.aonaware",
 							url: "http://services.aonaware.com/DictService/Default.aspx"
 					}
+				},{
+					text: "If you provide the name of any illness/disease, I can help you with details about the same."
 				}],
 				width:12,
 				Option:[]
