@@ -57,7 +57,7 @@ var searchWord = function(disease,res, callback)
 														//fulfillmentText: webhookReply,
 														payload: { 
 																instructions: [{
-																			text: "According to services.aonaware, under WordNet (r) 2.0 dictionary,"
+																			text: "The meaning of the word <b>"+disease+"</b> according to services.aonaware, under WordNet (r) 2.0 dictionary is as follows,"
 																		},{
 																			text: ""+webhookReply
 																		}, {
@@ -101,12 +101,14 @@ var searchWord = function(disease,res, callback)
 			source: 'webhook',
 			payload: { 
 				instructions: [{
-					text: "Sorry I am not able to find the meaning of the word "+disease+", under WordNet (r) 2.0 dictionary, in the following link -"
+					text: "Sorry I am not able to find the meaning of the word <b>"+disease+"</b>, under WordNet (r) 2.0 dictionary, in the following link -"
 				},{
 					link: {
 							title: "services.aonaware",
 							url: "http://services.aonaware.com/DictService/Default.aspx"
 					}
+				},{
+					text: "If you provide the name of any illness/disease, I can help you with details about the same."
 				}],
 				width:12,
 				Option:[]
@@ -139,10 +141,14 @@ var searchWord = function(disease,res, callback)
 		if(found) 
 		{
 			fulfillment.payload.instructions.push({text:"Did you mean to ask, "});
-			fulfillment.payload.Option.push({title:"No, Continue with the conversation"});
+			fulfillment.payload.Option.push({title:"No, ask again"});
+			fulfillment.payload.Option.push({title:"Continue with the conversation"});
 		}
 		else
+		{
+			fulfillment.payload.Option.push({title:"Ask again"});
 			fulfillment.payload.Option.push({title:"Continue with the conversation"});
+		}
 		res.status(200).json(fulfillment);
 		//else
 			//wordNotFound(res);
@@ -198,6 +204,8 @@ app.post('/webhook', function (req, res) {
   var action = req.body.queryResult.action;
   if(req.body.queryResult.hasOwnProperty('action') && req.body.queryResult.action.localeCompare('mental-health-info')==0)
 	mentalHealthInfo(req, res);
+  else if(req.body.queryResult.hasOwnProperty('action') && req.body.queryResult.action.localeCompare('mental-health-info-fallback')==0)
+	  wordNotFound(res);
   else
 	  res.status(404).send('Webhook undefined');
   

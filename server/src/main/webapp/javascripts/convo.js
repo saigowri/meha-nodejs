@@ -85,13 +85,7 @@ function requestToServer(req,text,contexts)
 	    sessionId: sessionId,
 	    contexts: contexts
 	};
-	if(req.localeCompare('fromClient')==0)
-	{
-		socket.emit(req, {query : text , options : options, convo : convo});
-		convo = "";
-	}
-	else
-		socket.emit(req, {query : text , options : options});
+	socket.emit(req, {query : text , options : options});
 }
 
 function resetBrowserId()
@@ -171,7 +165,7 @@ function setInput(text,contexts)
 	requestToServer("fromClient",text,contexts);
 	console.log("Input:", text);
 	var logText = ""+new Date()+"\t[User]\t"+text+"\n";
-	convo = convo + logText;
+	convo = convo + logText +"\n";
 	setResponse("<li class='pl-2 pr-2 bg-primary rounded text-white text-center send-msg mb-1'>"+
                                 text+"</li>");
 	$("#input").val("");
@@ -822,6 +816,8 @@ socket.on('fromServer', function (data)
 		else if(actionVal.localeCompare('ConsultationPeriodDetails')==0) consultationPeriodDetails(data.server.result.resolvedQuery);
 		else if(actionVal.localeCompare('MedicineDetails')==0) medicineDetails(data.server.result.resolvedQuery);
 
+		socket.emit("logConvo", {convo : convo});
+		convo = "\n";
 	}
 });
 
