@@ -10,8 +10,13 @@
 	"how_are_you_interval" : 12,
 	"reporting_time": 
 		{
-			"hour": 14,
-			"minute": 30
+			"hour": 19,
+			"minute": 12
+		},
+	"reporting_time2": 
+		{
+			"hour": 19,
+			"minute": 15
 		},
 	"chat_admin_email":"meha.nimhans@gmail.com",
 	"chat_admin_pass":"nimhans.meha1",
