@@ -59,7 +59,7 @@ var scheduleDoctorReport = cron.scheduleJob(config.reporting_time, function()
                             var rating = result1[i].rating;
                             var feedback = result1[i].feedback;
                             htmlContent += "<tr><td>"+rating+"</td><td>"+feedback+"</td></tr>";
-                            db.updateQuery("chatbot_details",["reported"],[1],["id"],[result1[i].id]);
+                            db.updateQuery("chatbot_details",["reported"],[1],["id"],[result1[i].id],function(){});
                         }
                     }
 
@@ -82,7 +82,7 @@ var scheduleDoctorReport = cron.scheduleJob(config.reporting_time, function()
                                         var ratingpd = result2[i].rating;
                                         var feedbackpd = result2[i].feedback;
                                         htmlContent += "<tr><td>"+ratingpd+"</td><td>"+feedbackpd+"</td></tr>";
-                                        db.updateQuery("pushd_details",["reported"],[1],["id"],[result2[i].id]);
+                                        db.updateQuery("pushd_details",["reported"],[1],["id"],[result2[i].id],function(){});
 
                                 }
                             }
@@ -105,7 +105,7 @@ var scheduleDoctorReport = cron.scheduleJob(config.reporting_time, function()
                                             var ratingWNA = result3[i].rating;
                                             var feedbackWNA = result3[i].feedback;
                                             htmlContent += "<tr><td>"+ratingWNA+"</td><td>"+feedbackWNA+"</td></tr>";
-                                            db.updateQuery("wellness_app_details",["reported"],[1],["id"],[result3[i].id]);
+                                            db.updateQuery("wellness_app_details",["reported"],[1],["id"],[result3[i].id],function(){});
 
                                         }
                                     }
@@ -151,12 +151,12 @@ var scheduleChatAdminReport = cron.scheduleJob(config.reporting_time2, function(
             if(result4[i].reported == 0)
             {   
                 htmlContents += "<tr><td>"+result4[i].free_text+"</td><td>"+result4[i].senti_score+"</td></tr>";
-                db.updateQuery("free_text_details",["reported"],[1],["id"],[result4[i].id]);
+                db.updateQuery("free_text_details",["reported"],[1],["id"],[result4[i].id],function(){});
             }
         }
         htmlContents += "</table></div>";
         log.info('Sending daily report at '+config.reporting_time.hour+':'+config.reporting_time.minute+' to '+config.chat_admin_email);
-        mailer.sendMail(config.emergency_reciever,mailSubject,mailContent,htmlContents,
+        mailer.sendMail(config.chat_admin_email,mailSubject,mailContent,htmlContents,
         function(error, response)
         {
             if(error)
@@ -169,6 +169,7 @@ var scheduleChatAdminReport = cron.scheduleJob(config.reporting_time2, function(
                 log.info("Daily report sent to "+config.chat_admin_email);
             }
         });
+
     });               
 });
              
