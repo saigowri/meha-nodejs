@@ -27,16 +27,14 @@ var myCookies = getCookies();
 var mehaEmail = myCookies.mehaEmail;
 var mehaName = myCookies.mehaName;
 var mehaUser = myCookies.mehaUser;
-var mehaURL = myCookies.mehaURL;
 //this origin is the site that is iFraming in the content...
-var ORIGIN = 'http://localhost:8080';
+var ORIGIN = myCookies.mehaURL;
 var email = mehaEmail.localeCompare("no-email")? mehaEmail : null;
 var name = mehaName.localeCompare("no-name")? mehaName : null;
 mehaUser = mehaUser.localeCompare("no-user")? JSON.parse(mehaUser) : null;
 console.log("Email: ",mehaEmail);
 console.log("Name: ",mehaName);
 console.log("User: ",mehaUser);
-console.log("URL: ",mehaURL);
 
 			
 // Beginning Conversation From Chatbot

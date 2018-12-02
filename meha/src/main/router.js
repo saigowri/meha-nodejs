@@ -16,8 +16,8 @@ router.use(express.static(path.join(__dirname, 'webapp')))
 router.get('/', function (req, res) 
 {
 	log.info("Redirecting to: "+config.base_url+config.pushd_url+config.pushd_api_userinfo);
-	res.cookie("mehaURL", config.base_url);
-	request(config.base_url+config.pushd_url+config.pushd_api_userinfo, function (error, response, body) 
+	res.cookie("mehaURL", config.pushd_baseurl);
+	request(config.pushd_baseurl+config.pushd_url+config.pushd_api_userinfo, function (error, response, body) 
 	{
 		if (!error && response.statusCode == 200) 
 			userInfo = JSON.parse(body);
@@ -45,7 +45,7 @@ router.get('/', function (req, res)
 /*
 router.get('/iframe', function (req, res) 
 {
-	res.sendFile(path.join(__dirname, 'iframe.html'));
+	res.sendFile(path.join(__dirname, 'chatbot.html'));
 });*/
 
 //console.log('Userid: '+userid);

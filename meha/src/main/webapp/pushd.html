@@ -8,16 +8,19 @@
 <script>
 var currUserId = null;
 var config = null;
-var baseurl = null;
-var ORIGIN = "http://localhost:3000";
+var chatbot_baseurl = null;
+var pushd_baseurl = null;
+var ORIGIN = null;
 var chatbot_url = null;
 var pushd_url = null;
 readTextFile("./conf/config.json", function(text)
 {
 	config = JSON.parse(text);
-	baseurl = config.base_url;
+	chatbot_baseurl = config.chatbot_baseurl;
+	pushd_baseurl = config.pushd_baseurl;
 	chatbot_url = config.chatbot_url;
 	pushd_url = config.pushd_url;
+	ORIGIN = chatbot_baseurl;
 });
 function readTextFile(file, callback) 
 {
@@ -36,7 +39,8 @@ function readTextFile(file, callback)
 
 $(document).ready(function() 
 {
-	$('#pushd-iframe').attr('src',baseurl+pushd_url);
+	$('#pushd-iframe').attr('src',pushd_baseurl+pushd_url);
+	$('#chatbot-iframe').attr('src',chatbot_baseurl+chatbot_url+"/?userid=-9999");
 	$('#chatbot-maximize').hide();
 	  
 	$('#chatbot-minimize').click(function() 
@@ -60,10 +64,11 @@ function pushdReload(pushd)
 		if(currUserId != nextUserId)
 		{
 			currUserId = nextUserId; 
-			$('#chatbot-iframe').attr('src',baseurl+chatbot_url + '?userid='+currUserId);
+			$('#chatbot-iframe').attr('src',chatbot_baseurl+chatbot_url + '?userid='+currUserId);
 		}
-		else if(!currUserId && !nextUserId){
-			$('#chatbot-iframe').attr('src',baseurl+chatbot_url + '?userid=-9999');
+		else if(!currUserId && !nextUserId)
+		{
+			$('#chatbot-iframe').attr('src',chatbot_baseurl+chatbot_url + '?userid=-9999');
 		}
 }
 
