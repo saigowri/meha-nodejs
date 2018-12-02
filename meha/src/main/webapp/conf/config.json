@@ -1,0 +1,29 @@
+{
+	"chatbot_baseurl":"http://localhost:3000",
+	"pushd_baseurl":"http://localhost:8080",
+	"chatbot_url":"/chatbot",
+	"pushd_url":"/pushd",
+	"pushd_api":"/webapi/external",
+	"pushd_api_userinfo":"/webapi/external/userInfo/tytuh6",
+	"db_host": "localhost",
+	"database": "mehadb",
+	"user": "meha",
+	"password": "Password1",
+	"how_are_you_interval" : 12,
+	"reporting_time": 
+		{
+			"hour": 19,
+			"minute": 12
+		},
+	"reporting_time2": 
+		{
+			"hour": 19,
+			"minute": 15
+		},
+	"chat_admin_email":"meha.nimhans@gmail.com",
+	"chat_admin_pass":"nimhans.meha1",
+	"doctor_email":"meha.nimhans@gmail.com",
+	"emergency_reciever":"meha.nimhans@gmail.com",
+	"webhook_dictionary":"http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word=",
+	"webhook_match":"http://services.aonaware.com/DictService/DictService.asmx/MatchInDict?dictId=wn&strategy=lev&word="
+}
