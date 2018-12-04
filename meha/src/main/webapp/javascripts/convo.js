@@ -742,7 +742,7 @@ function storeChatbotFeedback(data){
 	requestToServer("storeChatbotRatingAndFeedback",arr,contexts);
 }
 
-function welcomeBackFollowup(data)
+function welcomeBackFollowup()
 {	
 		resetBrowserId();
 		var contexts = [{
@@ -752,6 +752,21 @@ function welcomeBackFollowup(data)
 		}]; 
 		requestToServer("beginChatbot","Begin Chatbot",contexts);
 }
+
+function welcomeFallBack()
+{
+			var contexts = 
+				[{
+					name: "followup",
+					parameters: {"reply":"Sorry, I am unable to proceed for some reason "},
+					lifespan:1
+				},{
+					name: "customWelcomeIntent",
+					parameters: {},
+					lifespan:1
+				}];
+			requestToServer("fromClient","Custom welcome intent",contexts);
+}
 		
 socket.on('setServerBrowserId', function (data) 
 {
@@ -759,6 +774,8 @@ socket.on('setServerBrowserId', function (data)
 		localStorage.setItem("sessionId", data);
 });
 
+
+var currIntent = null, prevIntent = null;
 socket.on('fromServer', function (data) 
 { 
 	if(data.hasOwnProperty('error'))
@@ -774,15 +791,13 @@ socket.on('fromServer', function (data)
 					"	</div>"+
 					"</li>");
 	}
-	/*else if(data.hasOwnProperty('home'))
-	{
-		var contexts = [{
-					name: "welcome",
-					parameters: {"reply":""},
-					lifespan:1
-				}];
-		requestToServer("fromClient","home","");
-	}*/
+	else if(data.server.result.metadata.intentName.localeCompare(currIntent)==0 && 
+		   currIntent.localeCompare(prevIntent)==0) 
+	{	
+		welcomeFallBack();
+		prevIntent = currIntent;
+		currIntent = data.server.result.metadata.intentName;
+	}
 	else
 	{
 		// recieveing a reply from server.
@@ -804,7 +819,7 @@ socket.on('fromServer', function (data)
 		else if(sourceVal.localeCompare('webhook')==0) processWebhook(data.server.result.fulfillment.data);	
 		else if(actionVal.localeCompare('Screener-End')==0) screenerScoreDisplay();	
 		else if(actionVal.localeCompare('FindEmail')==0) findEmail();		
-		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup(data.server);
+		else if(actionVal.localeCompare('WelcomeBackFollowup')==0) welcomeBackFollowup();
 		else if(actionVal.localeCompare('EmailVerify')==0) emailDisplay(data.server.result.parameters.email);
 		else if(actionVal.localeCompare('OtpVerify')==0) otpDisplay(data.server.result.parameters.otp);				
 		else if(actionVal.localeCompare('HospitalFinder')==0) hospitalFinder();		
@@ -842,6 +857,8 @@ socket.on('fromServer', function (data)
 
 		socket.emit("logConvo", {convo : convo});
 		convo = "\n";
+		prevIntent = currIntent;
+		currIntent = data.server.result.metadata.intentName;
 	}
 });
 
