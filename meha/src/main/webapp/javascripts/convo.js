@@ -361,7 +361,8 @@ function emailDisplay(email)
 // }
 
 function validatePhone(inputtxt) {
-  var phoneno = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+
+  var phoneno = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
   if (String(inputtxt).match(phoneno)) {
         return true;
   }
@@ -384,8 +385,9 @@ function emergencyPhoneVerify(data)
 	    requestToServer("EmergencyInvalidphone","", contexts);
 	} 
 	else {
+		//console.log("inside emergencyPhoneVerify else part");
 	    if(!email){
-
+	    	//console.log("inside emergencyPhoneVerify else  if part");
 	    	var contexts = [{
 				name: "get-email",
 				parameters: {},
@@ -394,6 +396,7 @@ function emergencyPhoneVerify(data)
 			requestToServer("EmergencyGetEmail","", contexts);
 	    }
 		else{
+			//console.log("inside emergencyPhoneVerify else else part");
 			var contexts = [{
 				name: "calm-down",
 				parameters: {},
@@ -543,7 +546,9 @@ function otpDisplay(otp)
 
 //these are functions that are called from the parent page into this one...
 function listener(event)
-{
+{	
+	//console.log("-------------in Listener convo.js ---------");
+
 	if(event.origin !== ORIGIN && 
 			event.origin !== "http://localhost:3000" && 
 			event.origin !== "http://localhost"&& 
@@ -553,14 +558,22 @@ function listener(event)
 	}
 	else
 	{
+
 		console.log("In client",event);
 		var response   = JSON.parse(event.data);
-		if(response.success)
-			showPosition(response.arr);
+		if(response.success){
+			//console.log("-----in Listener convo.js  response.success----------");
+			console.log(response.types);
+			if(response.types == "normal")
+				showPosition(response.arr);
+			else if(response.types == "emergency")
+				showPositionEmergency(response.arr);
+		}
 		else 
 			showError();
 	}
 }
+
 
 //attach a listener for when postMessage calls come in...
 if (window.addEventListener)
@@ -587,7 +600,8 @@ function showPosition(arr) {
 }
 function hospitalFinderEmergency()
 {
-	 getLocationEmergency();
+	window.parent.postMessage('requesting location emergency', (ORIGIN == 'file:' ? '*' : ORIGIN));
+
 }
 
 function showPositionEmergency(position) {
@@ -596,18 +610,12 @@ function showPositionEmergency(position) {
 					parameters: {},
 					lifespan:1
 			}]; 
-	var arr = [position.coords.latitude, position.coords.longitude];
-	// if((phone != 0) && (!email)){
-		arr = [position.coords.latitude, position.coords.longitude , phone , email];
-	// }
-	// else if(phone != 0){
-	// 	arr = [position.coords.latitude, position.coords.longitude , phone ];
-	// }
-	// else if(email){
-	// 	arr = [position.coords.latitude, position.coords.longitude , email];
-	// }
-
-
+	//console.log("Show position emergency reached!!!");
+	console.log("latitude :"+ position[0]+ " ;; Longitude :" + position[1]);
+	var latitude = position[0];
+	var longitude = position[1];
+	var	arr = [latitude, longitude, phone, email];
+	
 	requestToServer("hospitalFinderEmergency",arr,contexts);
 
 	var contexts2 = [{
@@ -622,7 +630,7 @@ function showPositionEmergency(position) {
 function showError() 
 {
     var contexts = [{
-					name: "hospitals-followup",
+					name: "location-denied",
 					parameters: {},
 					lifespan:1
 			}]; 
