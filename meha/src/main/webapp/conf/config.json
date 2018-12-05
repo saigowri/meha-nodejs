@@ -1,6 +1,6 @@
 {
-	"chatbot_baseurl":"http://localhost:3000",
-	"pushd_baseurl":"http://localhost:8080",
+	"chatbot_baseurl":"http://ehrcapps.iiitb.ac.in",
+	"pushd_baseurl":"http://ehrcapps.iiitb.ac.in",
 	"chatbot_url":"/chatbot",
 	"pushd_url":"/pushd",
 	"pushd_api":"/webapi/external",
