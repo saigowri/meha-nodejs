@@ -1,7 +1,7 @@
 {
-	"chatbot_baseurl":"http://localhost:3000",
-	"pushd_baseurl":"http://localhost:8080",
-	"chatbot_url":"/chatbot",
+	"chatbot_baseurl":"http://ehrcapps.iiitb.ac.in",
+	"pushd_baseurl":"http://ehrcapps.iiitb.ac.in",
+	"chatbot_url":"/mha/chatbot",
 	"pushd_url":"/pushd",
 	"pushd_api":"/webapi/external",
 	"pushd_api_userinfo":"/webapi/external/userInfo/tytuh6",
@@ -22,8 +22,8 @@
 		},
 	"chat_admin_email":"meha.nimhans@gmail.com",
 	"chat_admin_pass":"nimhans.meha1",
-	"doctor_email":"meha.nimhans@gmail.com",
-	"emergency_reciever":"meha.nimhans@gmail.com",
+	"doctor_email":"minnuann5@gmail.com",
+	"emergency_reciever":"minnuann5@gmail.com",
 	"webhook_dictionary":"http://services.aonaware.com/DictService/DictService.asmx/DefineInDict?dictId=wn&word=",
 	"webhook_match":"http://services.aonaware.com/DictService/DictService.asmx/MatchInDict?dictId=wn&strategy=lev&word="
 }
